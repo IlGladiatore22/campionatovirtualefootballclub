@@ -11,6 +11,54 @@
         body { background: var(--bg-primary); }
         .form-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         .form-section h3 { margin-bottom: 15px; color: var(--accent-gold); font-size: 1.1rem; }
+        
+        /* Stili per l'upload immagine */
+        .image-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+        .image-upload-area:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255,255,255,0.05);
+        }
+        .image-upload-area i {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: block;
+        }
+        .image-upload-area p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        #imagePreview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        .remove-image-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -33,6 +81,20 @@
                     <form id="form">
                         <div class="form-section">
                             <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
+                            
+                            <!-- CAMPO IMMAGINE AGGIUNTO QUI -->
+                            <div class="input-group">
+                                <label class="input-label">Foto Competizione</label>
+                                <div class="image-upload-area" id="uploadArea">
+                                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                                    <button type="button" class="remove-image-btn" id="removeBtn"><i class="fas fa-times"></i></button>
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p id="uploadText">Clicca o trascina un'immagine</p>
+                                    <img id="imagePreview" src="#" alt="Preview">
+                                </div>
+                            </div>
+                            <!-- FINE CAMPO IMMAGINE -->
+
                             <div class="input-group">
                                 <label class="input-label">Nome Competizione *</label>
                                 <input type="text" id="name" class="input-field" placeholder="Es. Champions League FC27" required>
@@ -97,7 +159,47 @@
             window.location.href = 'accesso-admin.html';
         }
 
-        // Submit
+        // === GESTIONE IMMAGINE ===
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadText = document.getElementById('uploadText');
+        const removeBtn = document.getElementById('removeBtn');
+        let savedImageData = null; // Variabile per salvare l'immagine
+
+        // Click sull'area per aprire il selettore file
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        // Quando viene selezionato un file
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    savedImageData = event.target.result; // Salva Base64
+                    imagePreview.src = savedImageData;
+                    imagePreview.style.display = 'block';
+                    removeBtn.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    uploadArea.querySelector('i').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Rimuovi immagine
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evita che riapra il selettore file
+            savedImageData = null;
+            imageInput.value = '';
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
+            removeBtn.style.display = 'none';
+            uploadText.style.display = 'block';
+            uploadArea.querySelector('i').style.display = 'block';
+        });
+
+        // === SUBMIT FORM ===
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -112,6 +214,8 @@
                 name: document.getElementById('name').value,
                 description: document.getElementById('description').value,
                 status: document.getElementById('status').value,
+                // Salva l'immagine (se c'è) o stringa vuota
+                image: savedImageData || '', 
                 maxTeams: parseInt(document.getElementById('maxTeams').value) || null,
                 cost: parseInt(document.getElementById('cost').value) || 0,
                 startDate: document.getElementById('startDate').value,
