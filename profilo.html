@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Profilo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../estetica/style.css">
+    <link rel="stylesheet" href="../estetica/components.css">
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        
+        /* Stili per la modifica profilo */
+        .profile-avatar-wrapper { position: relative; display: inline-block; cursor: pointer; }
+        .profile-avatar { transition: filter 0.3s; }
+        .profile-avatar-wrapper:hover .profile-avatar { filter: brightness(0.7); }
+        .avatar-edit-icon {
+            position: absolute; bottom: 5px; right: 5px;
+            background: var(--accent-gold); color: #000;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .profile-avatar-wrapper:hover .avatar-edit-icon { opacity: 1; }
+        
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-value { font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        
+        /* Input inline per modifica */
+        .inline-input {
+            background: var(--bg-tertiary); border: 1px solid var(--accent-gold);
+            color: var(--text-primary); padding: 5px 10px; border-radius: 6px;
+            font-size: 0.9rem; width: 150px; text-align: right;
+        }
+        
+        .action-btn {
+            background: transparent; border: none; color: var(--accent-gold);
+            cursor: pointer; font-size: 0.9rem; transition: opacity 0.2s;
+        }
+        .action-btn:hover { opacity: 0.8; }
+        
+        /* Card Sicurezza */
+        .security-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div></div>
+            <div class="header-right"><button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button></div>
+        </header>
+
+        <div class="sidebar-overlay" id="overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">Menu</div><a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a><a href="competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a><a href="tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a><a href="club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a></div>
+                <div class="nav-section"><div class="nav-section-title">Account</div><a href="messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a><a href="notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a><a href="profilo.html" class="nav-link active"><i class="fas fa-user"></i><span>Profilo</span></a></div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <section class="profile-header animate-slideUp">
+                    <!-- Avatar Modificabile -->
+                    <div class="profile-avatar-wrapper" onclick="document.getElementById('avatar-upload').click()">
+                        <div class="profile-avatar" id="avatar">U</div>
+                        <div class="avatar-edit-icon"><i class="fas fa-camera"></i></div>
+                    </div>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                    
+                    <div class="profile-info">
+                        <h2 class="profile-name" id="name-display">Nome EA</h2>
+                        <p class="profile-gamertag" id="gamertag-display">@gamertag</p>
+                        <div class="profile-tags" id="tags"></div>
+                    </div>
+                </section>
+
+                <div class="card mt-4 animate-slideUp stagger-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 style="margin:0;"><i class="fas fa-info-circle text-gold"></i> Informazioni</h3>
+                        <button id="edit-toggle-btn" class="action-btn" onclick="toggleEdit()"><i class="fas fa-pen"></i> Modifica</button>
+                    </div>
+                    <div id="info-list"></div>
+                    
+                    <!-- Sezione Sicurezza (Aggiunta) -->
+                    <div class="security-section">
+                        <h4 style="margin-bottom: 15px;"><i class="fas fa-shield-alt text-gold"></i> Sicurezza</h4>
+                        <div id="password-form" style="display:none;">
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <input type="password" id="curr-pass" class="input-field" placeholder="Password Attuale" style="padding: 10px;">
+                            </div>
+                            <div class="input-group" style="margin-bottom: 10px;">
+                                <input type="password" id="new-pass" class="input-field" placeholder="Nuova Password" style="padding: 10px;">
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-secondary btn-small" onclick="togglePasswordForm(false)">Annulla</button>
+                                <button class="btn btn-primary btn-small" onclick="changePassword()">Aggiorna Password</button>
+                            </div>
+                        </div>
+                        <button id="change-pass-btn" class="btn btn-secondary btn-block" onclick="togglePasswordForm(true)">
+                            <i class="fas fa-key"></i> Cambia Password
+                        </button>
+                    </div>
+                </div>
+
+                <button id="logout-btn" class="btn btn-secondary btn-block btn-large mt-4 animate-slideUp stagger-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Logic (Invariato)
+        document.getElementById('menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); });
+        document.getElementById('close-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
+        document.getElementById('overlay').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
+
+        // User Data Load
+        let user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) window.location.href = 'accesso.html';
+
+        // Elementi DOM
+        const avatarDiv = document.getElementById('avatar');
+        const nameDisplay = document.getElementById('name-display');
+        const gamertagDisplay = document.getElementById('gamertag-display');
+        const tagsDiv = document.getElementById('tags');
+        const infoListDiv = document.getElementById('info-list');
+        
+        let isEditing = false;
+
+        // Funzione di rendering
+        function renderProfile() {
+            // Avatar
+            if (user.avatar) {
+                avatarDiv.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            } else {
+                avatarDiv.textContent = user.nomeEA ? user.nomeEA.substring(0,2).toUpperCase() : 'U';
+            }
+
+            // Header Info
+            nameDisplay.textContent = user.nomeEA;
+            gamertagDisplay.textContent = '@' + user.gamertag;
+
+            // Tags
+            let tagsHtml = `<span class="tag">${user.piattaforma}</span>`;
+            if(user.isAdmin) tagsHtml += '<span class="tag tag-admin">Admin</span>';
+            tagsDiv.innerHTML = tagsHtml;
+
+            // Info List (Modalità Vista o Modifica)
+            if (isEditing) {
+                infoListDiv.innerHTML = `
+                    <div class="info-row">
+                        <span class="text-muted">Nome EA</span>
+                        <input type="text" id="edit-nome" class="inline-input" value="${user.nomeEA}">
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Gamertag</span>
+                        <input type="text" id="edit-gamertag" class="inline-input" value="${user.gamertag}">
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Piattaforma</span>
+                        <span>${user.piattaforma}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Club</span>
+                        <span>${getClubName()}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Discord ID</span>
+                        <input type="text" id="edit-discord" class="inline-input" value="${user.discordId || ''}" placeholder="Inserisci ID">
+                    </div>
+                    <div style="margin-top: 15px; text-align: right;">
+                        <button class="btn btn-primary btn-small" onclick="saveChanges()"><i class="fas fa-save"></i> Salva Modifiche</button>
+                    </div>
+                `;
+                document.getElementById('edit-toggle-btn').innerHTML = '<i class="fas fa-times"></i> Annulla';
+            } else {
+                infoListDiv.innerHTML = `
+                    <div class="info-row">
+                        <span class="text-muted">Nome EA</span>
+                        <span class="info-value">${user.nomeEA}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Gamertag</span>
+                        <span class="info-value">${user.gamertag}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Piattaforma</span>
+                        <span class="info-value">${user.piattaforma}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Club</span>
+                        <span class="info-value">${getClubName()}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="text-muted">Discord ID</span>
+                        <span class="info-value">${user.discordId || 'Non impostato'}</span>
+                    </div>
+                `;
+                document.getElementById('edit-toggle-btn').innerHTML = '<i class="fas fa-pen"></i> Modifica';
+            }
+        }
+
+        function getClubName() {
+            const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+            const myClub = clubs.find(c => c.members && c.members.includes(user.id));
+            return myClub ? myClub.name : 'Nessun club';
+        }
+
+        // Toggle Modifica
+        function toggleEdit() {
+            isEditing = !isEditing;
+            renderProfile();
+        }
+
+        // Salvataggio Modifiche Profilo
+        function saveChanges() {
+            const newName = document.getElementById('edit-nome').value.trim();
+            const newGamertag = document.getElementById('edit-gamertag').value.trim();
+            const newDiscord = document.getElementById('edit-discord').value.trim();
+
+            if (!newName || !newGamertag) {
+                alert("Nome e Gamertag sono obbligatori!");
+                return;
+            }
+
+            user.nomeEA = newName;
+            user.gamertag = newGamertag;
+            user.discordId = newDiscord;
+
+            localStorage.setItem('user', JSON.stringify(user));
+            isEditing = false;
+            renderProfile();
+            alert("Profilo aggiornato!");
+        }
+
+        // Cambio Avatar
+        document.getElementById('avatar-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    user.avatar = ev.target.result;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    renderProfile();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Gestione Password
+        function togglePasswordForm(show) {
+            document.getElementById('password-form').style.display = show ? 'block' : 'none';
+            document.getElementById('change-pass-btn').style.display = show ? 'none' : 'block';
+        }
+
+        function changePassword() {
+            const curr = document.getElementById('curr-pass').value;
+            const newP = document.getElementById('new-pass').value;
+
+            // Recupera password salvata (simulazione)
+            const storedPass = localStorage.getItem('userPass') || 'demo123'; // Default demo
+
+            if (curr !== storedPass) {
+                alert("La password attuale non è corretta.");
+                return;
+            }
+            if (newP.length < 4) {
+                alert("La nuova password deve avere almeno 4 caratteri.");
+                return;
+            }
+
+            localStorage.setItem('userPass', newP);
+            alert("Password cambiata con successo!");
+            togglePasswordForm(false);
+            document.getElementById('curr-pass').value = '';
+            document.getElementById('new-pass').value = '';
+        }
+
+        // Logout (Invariato)
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            window.location.href = 'home-non-loggato.html';
+        });
+
+        // Init
+        renderProfile();
+    </script>
+</body>
+</html>

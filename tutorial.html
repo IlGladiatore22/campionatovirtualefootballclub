@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TITOLO - Tutorial</title>
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+        <link rel="stylesheet" href="../estetica/style.css">
+        <link rel="stylesheet" href="../estetica/animations.css">
+        </head>
+        <body>
+            <div class="tutorial-container">
+
+                <div class="tutorial-slide active" data-slide="0">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-futbol"></i>
+                    </div>
+                    <h1>Benvenuto in FC</h1>
+                    <p class="mt-2">
+                        La piattaforma definitiva per gestire tornei, competizioni su FC27.
+                        Unisciti alla community e inizia a competere!
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-secondary" onclick="skipTutorial()">Salta</button>
+                        <button class="btn btn-primary" onclick="nextSlide()">
+                            Avanti <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="tutorial-slide" data-slide="1">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h1>Tornei e Competizioni</h1>
+                    <p class="mt-2">
+                        Partecipa a tornei ufficiali e competizioni esclusive.
+                        Vinci premi, scala la classifica e diventa un campione!
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-secondary" onclick="skipTutorial()">Salta</button>
+                        <button class="btn btn-primary" onclick="nextSlide()">
+                            Avanti <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="tutorial-slide" data-slide="2">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h1>Il Tuo Club</h1>
+                    <p class="mt-2">
+                        Crea o unisciti a un club, gestisci la formazione,
+                        chatta con i compagni e portate il vostro club alla vittoria!
+                    </p>
+                    <div class="tutorial-buttons">
+                        <button class="btn btn-primary btn-large" onclick="completeTutorial()">
+                            <i class="fas fa-rocket"></i> Inizia Ora
+                        </button>
+            </div>
+    </div>
+
+    
+    <div class="tutorial-dots">
+        <div class="tutorial-dot active" onclick="goToSlide(0)"></div>
+        <div class="tutorial-dot" onclick="goToSlide(1)"></div>
+        <div class="tutorial-dot" onload="goToSlide(2)"></div>
+    </div>
+</body>
+
+<script>
+    let currentSlide = 0;
+    const totalSlides = 3;
+
+    function showSlide(index) {
+        const slides = document.querySelectorAll('.tutorial-slide');
+        const dots = document.querySelectorAll('.tutorial-dot');
+
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === index) {
+                slide.classList.add('active');
+            }
+        });
+
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            showSlide(currentSlide + 1);
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) {
+            showSlide(currentSlide - 1);
+        }
+    }
+
+    function goToSlide(index) {
+        showSlide(index);
+    }
+
+    function skipTutorial() {
+        completeTutorial();
+    }
+
+    function completeTutorial() {
+        localStorage.setItem('tutorial_completed', 'true');
+        window.location.href = 'home-non-loggato.html';
+    }
+
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                nextSlide();
+            } else {
+                prevSlide();
+            }
+        }
+    }
+</script>
+</body>
+</html>

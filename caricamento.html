@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TITOLO - Caricamento</title>
+
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+        <link rel="stylesheet" href="../estetica/style.css">
+        <link rel="stylesheet" href="../estetica/animations.css">
+    </head>
+    <body>
+        
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-logo animate-pulse">FC</div>
+            
+            <h1 class="loading-title">TITOLO</h1>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <p class="loading-status" id="loading-status">Inizializzazione...</p>
+        </div>
+
+
+        <script src="../script/main.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                const loadingScreen = document.getElementById('loading-screen');
+                const progressFill = document.getElementById('progress-fill');
+                const loadingStatus = document.getElementById('loading-status');
+
+                const steps = [
+                    { progress: 20, status: 'Inizializzazione...' },
+                    { progress: 40, status: 'Caricamento risorse...' },
+                    { progress: 60, status: 'Connessione al server...' },
+                    { progress: 80, status: 'Preparazione interfaccia...' },
+                    { progress: 100, status: 'Caricamento completato!' },
+                ];
+
+                for (const step of steps) {
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                    progressFill.style.width = step.progress + '%';
+                    loadingStatus.textContent = step.status;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                loadingScreen.style.transition = 'opacity 0.5s ease';
+                loadingScreen.style.opacity = '0';
+                
+                setTimeout(() => {
+
+                    const tutorialCompleted = localStorage.getItem('tutorial_completed');
+
+                    if (tutorialCompleted) {
+                        window.location.href = 'home-non-loggato.html';
+                    } else {
+                        window.location.href = 'tutorial.html';
+                    }
+                }, 500);
+            });
+        </script>
+    </body>
+</html>
