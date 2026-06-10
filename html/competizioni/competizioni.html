@@ -9,36 +9,41 @@
     <link rel="stylesheet" href="../../estetica/style.css">
     <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
+    
+    <!-- Favicon per togliere l'errore 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
-        /* === STILI PER IMMAGINI COMPETIZIONI === */
+        /* === STILI RIQUADRO IMMAGINE === */
         .card-image {
-            height: 160px; /* Altezza fissa per il riquadro */
+            height: 160px; /* Altezza fissa del riquadro */
             width: 100%;
+            background: var(--bg-secondary); /* Sfondo grigio se non c'è foto */
             position: relative;
-            overflow: hidden; /* Nasconde ciò che esce fuori */
-            background: var(--bg-secondary); /* Sfondo grigio se non c'è img */
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* Stile per l'IMMAGINE (riempie tutto il quadrato) */
+        /* Stile IMMAGINE: riempie tutto il riquadro */
         .card-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Taglia e adatta l'immagine per riempire tutto */
+            object-fit: cover; /* Adatta l'immagine coprendo tutto */
             position: absolute;
             top: 0;
             left: 0;
         }
-
-        /* Stile per l'ICONA TROFEO (solo se NON c'è immagine) */
-        .card-image i.fa-trophy {
-            font-size: 3rem;
+        
+        /* Testo se manca la foto (opzionale, al posto del trofeo) */
+        .no-image-text {
             color: var(--text-muted);
-            z-index: 1;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -205,12 +210,15 @@
                 const statusColor = comp.status === 'aperta' ? 'var(--accent-green)' : comp.status === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
                 const statusText = comp.status === 'aperta' ? 'Aperta' : comp.status === 'chiusa' ? 'Chiusa' : 'In Corso';
                 
-                // --- LOGICA IMMAGINE AUTOMATICA ---
-                // Se comp.image esiste (salvato dalla pagina crea), mostra IMG.
-                // Altrimenti mostra l'icona del trofeo.
-                const imageContent = comp.image 
-                    ? `<img src="${comp.image}" alt="${comp.name}">` 
-                    : `<i class="fas fa-trophy"></i>`;
+                // --- LOGICA MODIFICATA ---
+                // Se c'è l'immagine, la mostro. Se NON c'è, non metto nulla (o un testo piccolo).
+                let imageContent = '';
+                if (comp.image) {
+                    imageContent = `<img src="${comp.image}" alt="${comp.name}">`;
+                } else {
+                    // Se non c'è immagine, mostro un testo semplice (niente trofeo)
+                    imageContent = `<span class="no-image-text">Nessuna foto</span>`;
+                }
 
                 card.innerHTML = `
                     <div class="card-image">${imageContent}</div>
