@@ -6,18 +6,47 @@
     <title>FC27 - Competizioni</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Corretto percorso CSS (un livello su) -->
     <link rel="stylesheet" href="../../estetica/style.css">
     <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
-    <style>html, body { height: auto; min-height: 100vh; overflow-y: auto; }</style>
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        
+        /* === STILI PER IMMAGINI COMPETIZIONI === */
+        .card-image {
+            height: 160px; /* Altezza fissa per il riquadro */
+            width: 100%;
+            position: relative;
+            overflow: hidden; /* Nasconde ciò che esce fuori */
+            background: var(--bg-secondary); /* Sfondo grigio se non c'è img */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Stile per l'IMMAGINE (riempie tutto il quadrato) */
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Taglia e adatta l'immagine per riempire tutto */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Stile per l'ICONA TROFEO (solo se NON c'è immagine) */
+        .card-image i.fa-trophy {
+            font-size: 3rem;
+            color: var(--text-muted);
+            z-index: 1;
+        }
+    </style>
 </head>
 <body>
     <div class="page-wrapper">
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- AGGIUNTO: TASTO INDIETRO -->
                 <button onclick="history.back()" class="header-btn" style="background: transparent; border: none; margin-right: 10px;">
                     <i class="fas fa-arrow-left"></i>
                 </button>
@@ -54,7 +83,6 @@
             </div>
             
             <nav class="sidebar-nav">
-                <!-- Menu Principale -->
                 <div class="nav-section">
                     <div class="nav-section-title">Menu Principale</div>
                     <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
@@ -63,21 +91,18 @@
                     <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
                 </div>
                 
-                <!-- Comunicazioni -->
                 <div class="nav-section">
                     <div class="nav-section-title">Comunicazioni</div>
                     <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
                     <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
                 </div>
                 
-                <!-- Account -->
                 <div class="nav-section">
                     <div class="nav-section-title">Account</div>
                     <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
                     <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
                 </div>
                 
-                <!-- Admin -->
                 <div class="nav-section" id="admin-nav" style="display: none;">
                     <div class="nav-section-title">Admin</div>
                     <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
@@ -85,13 +110,11 @@
                     <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
                 </div>
                 
-                <!-- Staff -->
                 <div class="nav-section" id="guest-admin-nav">
                     <div class="nav-section-title">Staff</div>
                     <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
                 </div>
                 
-                <!-- Info -->
                 <div class="nav-section">
                     <div class="nav-section-title">Info</div>
                     <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
@@ -139,21 +162,18 @@
         } else {
             document.getElementById('username-display').textContent = user.nomeEA;
             
-            // Logica visibilità Admin/Staff
             const adminNav = document.getElementById('admin-nav');
             const guestAdminNav = document.getElementById('guest-admin-nav');
 
             if (user.isAdmin) {
                 adminNav.style.display = 'block';
                 guestAdminNav.style.display = 'none';
-                // Mostra il bottone "Crea" nella pagina
                 document.getElementById('create-btn').style.display = 'inline-flex';
             } else {
                 adminNav.style.display = 'none';
                 guestAdminNav.style.display = 'block';
             }
 
-            // Logica Badge Notifiche
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
             const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
             if (unread > 0) {
@@ -163,7 +183,6 @@
             }
         }
 
-        // === LOGICA LOGOUT ===
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('user');
             localStorage.removeItem('auth_token');
@@ -185,8 +204,16 @@
                 card.style.animationDelay = (index * 0.1) + 's';
                 const statusColor = comp.status === 'aperta' ? 'var(--accent-green)' : comp.status === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
                 const statusText = comp.status === 'aperta' ? 'Aperta' : comp.status === 'chiusa' ? 'Chiusa' : 'In Corso';
+                
+                // --- LOGICA IMMAGINE AUTOMATICA ---
+                // Se comp.image esiste (salvato dalla pagina crea), mostra IMG.
+                // Altrimenti mostra l'icona del trofeo.
+                const imageContent = comp.image 
+                    ? `<img src="${comp.image}" alt="${comp.name}">` 
+                    : `<i class="fas fa-trophy"></i>`;
+
                 card.innerHTML = `
-                    <div class="card-image"><i class="fas fa-trophy"></i></div>
+                    <div class="card-image">${imageContent}</div>
                     <span class="card-badge" style="background: ${statusColor};">${statusText}</span>
                     <h4 class="card-title">${comp.name}</h4>
                     <p class="card-description">${comp.description || 'Competizione FC27'}</p>
