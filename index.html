@@ -13,8 +13,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 
-        <link rel="stylesheet" href="../estetica/style.css">
-        <link rel="stylesheet" href="../estetica/animations.css">
+        <link rel="stylesheet" href="estetica/style.css">
+        <link rel="stylesheet" href="estetica/animations.css">
     </head>
     <body>
         
@@ -64,9 +64,9 @@
                     const tutorialCompleted = localStorage.getItem('tutorial_completed');
 
                     if (tutorialCompleted) {
-                        window.location.href = 'home-non-loggato.html';
+                        window.location.href = 'html/home-non-loggato.html';
                     } else {
-                        window.location.href = 'tutorial.html';
+                        window.location.href = 'html/tutorial.html';
                     }
                 }, 500);
             });
