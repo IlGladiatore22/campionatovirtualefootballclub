@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestione Competizione</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); }
+        
+        /* Griglia e Card */
+        .match-card-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+        .match-card { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s; }
+        .match-card:hover { border-color: var(--accent-gold); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        .match-header { background: rgba(0,0,0,0.2); padding: 8px 15px; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        
+        .match-body { padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        
+        .team-box { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; min-width: 0; }
+        
+        /* Loghi Squadre */
+        .team-logo-lg { width: 60px; height: 60px; border-radius: 50%; background: var(--bg-secondary); object-fit: cover; border: 2px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        .team-name-lg { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+
+        /* Sezione Risultato */
+        .score-section { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; flex-shrink: 0; border: 1px solid var(--border-color); }
+        
+        /* INPUT NUMERI SENZA FRECCE */
+        .score-input-lg {
+            width: 45px; height: 45px;
+            background: transparent;
+            border: none;
+            color: var(--accent-gold);
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            outline: none;
+            -moz-appearance: textfield; /* Firefox */
+        }
+        .score-input-lg::-webkit-outer-spin-button,
+        .score-input-lg::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Focus effect */
+        .score-input-lg:focus { background: rgba(0, 229, 255, 0.1); border-radius: 6px; }
+
+        .match-footer { padding: 10px 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; }
+        
+        .matchday-section { margin-bottom: 40px; }
+        .matchday-locked-wrap { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
+        .locked-label { font-size: 0.8rem; color: var(--accent-red); margin-bottom: 8px; display: inline-block; }
+        
+        .badge-current { background: var(--accent-gold); color: #000; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .badge-done { background: var(--accent-green); color: #000; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent-green); color: #000; padding: 15px 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 99999; opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; gap: 10px; font-weight: bold; pointer-events: none; white-space: nowrap; }
+        .toast.show { opacity: 1; }
+        .toast.error { background: var(--accent-red); color: white; }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <header class="header">
+        <div class="header-left">
+            <a href="dashboard.html" class="header-btn" style="background:transparent;border:none;"><i class="fas fa-arrow-left"></i></a>
+            <span class="site-name" style="color:var(--accent-gold);">Gestione Competizione</span>
+        </div>
+        <div class="header-right">
+             <button class="header-btn" onclick="window.location.href='crea-club.html'" title="Aggiungi Club"><i class="fas fa-plus"></i></button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container" style="padding:20px;">
+            <!-- Lista Competizioni -->
+            <div id="comp-list" class="grid-2 mb-4"></div>
+
+            <!-- Pannello Gestione -->
+            <div id="management-panel" style="display:none;">
+                <div class="card mb-4 animate-slideUp">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 id="comp-title" style="margin:0;"></h2>
+                        <button class="btn btn-secondary btn-small" id="reset-btn" style="display:none;" onclick="resetCompetition()"><i class="fas fa-redo"></i> Reset</button>
+                    </div>
+                    <button class="btn btn-primary btn-block btn-large" id="gen-btn" onclick="generateSchedule()">
+                        <i class="fas fa-calendar-alt"></i> Genera Calendario
+                    </button>
+                </div>
+                <div id="matchdays-container"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+<script>
+    // --- CONTROLLO SESSIONE & DATI ---
+    const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+    if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
+
+    let competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
+    let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]'); // Carica i club (con loghi)
+    let currentComp = null;
+
+    const DEFAULT_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%231a1a25'/%3E%3Ctext x='30' y='37' text-anchor='middle' font-size='22' fill='%2355'%3E?%3C/text%3E%3C/svg%3E";
+
+    // Funzione helper per trovare il logo
+    function getLogo(teamId) {
+        const club = clubs.find(c => c.id === teamId);
+        // Se il club esiste e ha un logo valido (stringa base64 o url), usalo. Altrimenti default.
+        return (club && club.logo && club.logo.length > 10) ? club.logo : DEFAULT_LOGO;
+    }
+    
+    // Funzione helper per il nome
+    function getTeamName(teamId) {
+        const club = clubs.find(c => c.id === teamId);
+        return club ? club.name : 'N/D';
+    }
+
+    // --- LISTA COMPETIZIONI ---
+    const listEl = document.getElementById('comp-list');
+    const panelEl = document.getElementById('management-panel');
+    const genBtn = document.getElementById('gen-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    if (competitions.length === 0) {
+        listEl.innerHTML = '<p style="color:#888;">Nessuna competizione creata.</p>';
+    } else {
+        competitions.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'card hover-lift animate-slideUp';
+            card.style.cursor = 'pointer';
+            card.innerHTML = `<h4>${c.name}</h4><p style="color:#888;">${(c.registeredClubs||[]).length} Squadre</p>`;
+            card.onclick = () => loadCompetition(c.id);
+            listEl.appendChild(card);
+        });
+    }
+
+    function loadCompetition(id) {
+        listEl.style.display = 'none';
+        panelEl.style.display = 'block';
+        currentComp = competitions.find(c => c.id === id);
+        document.getElementById('comp-title').textContent = currentComp.name;
+        refreshButtons();
+        renderMatchdays();
+    }
+
+    function refreshButtons() {
+        const has = currentComp.matchdays && currentComp.matchdays.length > 0;
+        genBtn.style.display = has ? 'none' : 'block';
+        resetBtn.style.display = has ? 'inline-block' : 'none';
+    }
+
+    // --- GENERA CALENDARIO ---
+    function generateSchedule() {
+        if (!currentComp.registeredClubs || currentComp.registeredClubs.length < 2) {
+            showToast('Servono almeno 2 squadre!', true); return;
+        }
+        
+        let teams = [...currentComp.registeredClubs];
+        if (teams.length % 2 !== 0) teams.push(null); // BYE
+        
+        const n = teams.length;
+        const rounds = [];
+
+        for (let r = 0; r < n - 1; r++) {
+            const matches = [];
+            for (let i = 0; i < n / 2; i++) {
+                const home = teams[i];
+                const away = teams[n - 1 - i];
+                if (home && away) {
+                    matches.push({ home, away, homeScore: null, awayScore: null, played: false, scorers: [], assists: [], cards: [] });
+                }
+            }
+            rounds.push(matches);
+            const last = teams.pop();
+            teams.splice(1, 0, last);
+        }
+
+        // Ritorno (Andata/Ritorno)
+        const andata = JSON.parse(JSON.stringify(rounds));
+        andata.forEach(md => {
+            rounds.push(md.map(m => ({
+                home: m.away, away: m.home,
+                homeScore: null, awayScore: null,
+                played: false, scorers: [], assists: [], cards: []
+            })));
+        });
+
+        currentComp.matchdays = rounds;
+        currentComp.standings = {};
+        currentComp.registeredClubs.forEach(id => {
+            currentComp.standings[id] = { points:0, played:0, wins:0, draws:0, losses:0, gf:0, gs:0 };
+        });
+        
+        save();
+        showToast('Calendario generato!');
+        refreshButtons();
+        renderMatchdays();
+    }
+
+    // --- LOGICA GIORNATE (Progressiva) ---
+    function firstUnfinishedMd() {
+        if (!currentComp.matchdays) return 0;
+        for (let i = 0; i < currentComp.matchdays.length; i++) {
+            if (!currentComp.matchdays[i].every(m => m.played)) return i;
+        }
+        return currentComp.matchdays.length;
+    }
+
+    // --- RENDER GIORNATE ---
+    function renderMatchdays() {
+        const container = document.getElementById('matchdays-container');
+        container.innerHTML = '';
+
+        if (!currentComp.matchdays || currentComp.matchdays.length === 0) {
+            container.innerHTML = '<div class="card" style="text-align:center;color:#888;padding:20px;">Nessun calendario generato.</div>';
+            return;
+        }
+
+        const activeMd = firstUnfinishedMd();
+
+        currentComp.matchdays.forEach((md, mdIdx) => {
+            const allDone = md.every(m => m.played);
+            const isCurrent = mdIdx === activeMd;
+            const isLocked = mdIdx > activeMd;
+
+            const section = document.createElement('div');
+            section.className = 'matchday-section animate-slideUp';
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center mb-3';
+            
+            let badge = '';
+            if (allDone) badge = '<span class="badge-done">✓ Completata</span>';
+            else if (isCurrent) badge = '<span class="badge-current">▶ In corso</span>';
+
+            header.innerHTML = `<h3 style="margin:0;color:var(--accent-gold);">Giornata ${mdIdx + 1} ${badge}</h3>`;
+            
+            if (isLocked) {
+                header.innerHTML += '<span class="locked-label"><i class="fas fa-lock"></i> Completa la precedente</span>';
+            } else if (!allDone) {
+                const randBtn = document.createElement('button');
+                randBtn.className = 'btn btn-secondary btn-small';
+                randBtn.innerHTML = '<i class="fas fa-dice"></i> Risultati Casuali';
+                randBtn.onclick = () => randomResults(mdIdx);
+                header.appendChild(randBtn);
+            }
+            section.appendChild(header);
+
+            // Griglia Partite
+            const grid = document.createElement('div');
+            grid.className = 'match-card-container';
+            if (isLocked) grid.className += ' matchday-locked-wrap';
+            section.appendChild(grid);
+
+            if (!isLocked) {
+                md.forEach((m, mIdx) => {
+                    grid.appendChild(buildMatchCard(m, mdIdx, mIdx));
+                });
+            }
+
+            container.appendChild(section);
+        });
+    }
+
+    // --- COSTRUISCE CARD PARTITA ---
+    function buildMatchCard(m, mdIdx, mIdx) {
+        const card = document.createElement('div');
+        card.className = 'match-card';
+
+        // Header Partita
+        const mh = document.createElement('div');
+        mh.className = 'match-header';
+        mh.innerHTML = m.played
+            ? '<span style="color:var(--accent-green)"><i class="fas fa-check-circle"></i> Completata</span>'
+            : '<span style="color:#888">In attesa</span>';
+        card.appendChild(mh);
+
+        // Body (Loghi + Risultato)
+        const mb = document.createElement('div');
+        mb.className = 'match-body';
+
+        // Casa
+        const hBox = document.createElement('div');
+        hBox.className = 'team-box';
+        const hImg = document.createElement('img');
+        hImg.className = 'team-logo-lg';
+        hImg.src = getLogo(m.home);
+        hImg.onerror = () => hImg.src = DEFAULT_LOGO;
+        const hName = document.createElement('div');
+        hName.className = 'team-name-lg';
+        hName.textContent = getTeamName(m.home);
+        hName.title = getTeamName(m.home);
+        hBox.appendChild(hImg);
+        hBox.appendChild(hName);
+
+        // Input Risultato (Senza frecce, gestito da CSS globale)
+        const sc = document.createElement('div');
+        sc.className = 'score-section';
+        
+        const inpH = document.createElement('input');
+        inpH.type = 'number'; inpH.min = 0; inpH.inputMode = 'numeric';
+        inpH.className = 'score-input-lg';
+        inpH.value = m.homeScore !== null ? m.homeScore : '';
+        inpH.placeholder = '0';
+
+        const sep = document.createElement('span');
+        sep.textContent = '-'; sep.style.color = '#555'; sep.style.fontSize = '1.5rem';
+
+        const inpA = document.createElement('input');
+        inpA.type = 'number'; inpA.min = 0; inpA.inputMode = 'numeric';
+        inpA.className = 'score-input-lg';
+        inpA.value = m.awayScore !== null ? m.awayScore : '';
+        inpA.placeholder = '0';
+
+        sc.appendChild(inpH); sc.appendChild(sep); sc.appendChild(inpA);
+
+        // Trasferta
+        const aBox = document.createElement('div');
+        aBox.className = 'team-box';
+        const aImg = document.createElement('img');
+        aImg.className = 'team-logo-lg';
+        aImg.src = getLogo(m.away);
+        aImg.onerror = () => aImg.src = DEFAULT_LOGO;
+        const aName = document.createElement('div');
+        aName.className = 'team-name-lg';
+        aName.textContent = getTeamName(m.away);
+        aName.title = getTeamName(m.away);
+        aBox.appendChild(aImg);
+        aBox.appendChild(aName);
+
+        mb.appendChild(hBox); mb.appendChild(sc); mb.appendChild(aBox);
+        card.appendChild(mb);
+
+        // Footer Azioni
+        const mf = document.createElement('div');
+        mf.className = 'match-footer';
+
+        // Pulsante Dettagli
+        const btnDet = document.createElement('button');
+        btnDet.className = 'btn btn-secondary btn-small';
+        btnDet.innerHTML = '<i class="fas fa-edit"></i> Dettagli';
+        btnDet.onclick = () => {
+            // Reindirizza alla pagina dettagli passando indici
+            window.location.href = `aggiungi-dettagli.html?c=${currentComp.id}&md=${mdIdx}&m=${mIdx}`;
+        };
+
+        // Pulsante Conferma
+        const btnConf = document.createElement('button');
+        btnConf.className = 'btn btn-primary btn-small';
+        btnConf.innerHTML = `<i class="fas fa-check"></i> ${m.played ? 'Aggiorna' : 'Conferma'}`;
+        btnConf.onclick = () => confirmResult(mdIdx, mIdx, inpH.value, inpA.value);
+
+        mf.appendChild(btnDet);
+        mf.appendChild(btnConf);
+        card.appendChild(mf);
+
+        return card;
+    }
+
+    // --- LOGICA CONFERMA ---
+    function confirmResult(mdIdx, mIdx, hVal, aVal) {
+        const h = parseInt(hVal);
+        const a = parseInt(aVal);
+        if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
+            showToast('Inserisci un risultato valido!', true); return;
+        }
+        
+        const match = currentComp.matchdays[mdIdx][mIdx];
+        
+        // Rollback se già giocata
+        if (match.played) {
+            updateStandings(match.home, match.homeScore, match.awayScore, true);
+            updateStandings(match.away, match.awayScore, match.homeScore, true);
+        }
+
+        match.homeScore = h; match.awayScore = a; match.played = true;
+        
+        updateStandings(match.home, h, a, false);
+        updateStandings(match.away, a, h, false);
+        
+        save();
+        showToast('Risultato confermato!');
+        renderMatchdays(); // Ri-renderizza per sbloccare la prossima giornata
+    }
+
+    function randomResults(mdIdx) {
+        currentComp.matchdays[mdIdx].forEach(m => {
+            if (!m.played) {
+                const h = Math.floor(Math.random() * 5);
+                const a = Math.floor(Math.random() * 5);
+                m.homeScore = h; m.awayScore = a; m.played = true;
+                updateStandings(m.home, h, a, false);
+                updateStandings(m.away, a, h, false);
+            }
+        });
+        save();
+        showToast('Giornata completata casualmente!');
+        renderMatchdays();
+    }
+
+    function updateStandings(teamId, gf, gs, isRollback) {
+        if (!teamId || !currentComp.standings || !currentComp.standings[teamId]) return;
+        const s = currentComp.standings[teamId];
+        const x = isRollback ? -1 : 1;
+        s.played += x; s.gf += gf * x; s.gs += gs * x;
+        if (gf > gs) { s.wins += x; s.points += 3 * x; }
+        else if (gf < gs) { s.losses += x; }
+        else { s.draws += x; s.points += x; }
+    }
+
+    // --- UTILS ---
+    function showToast(msg, isError=false) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.className = 'toast show' + (isError ? ' error' : '');
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function resetCompetition() {
+        if (!confirm('Resettare tutto? Calendario e classifica verranno cancellati.')) return;
+        currentComp.matchdays = [];
+        currentComp.standings = {};
+        save();
+        refreshButtons();
+        renderMatchdays();
+    }
+
+    function save() {
+        const idx = competitions.findIndex(c => c.id === currentComp.id);
+        competitions[idx] = currentComp;
+        localStorage.setItem('fc27_competitions', JSON.stringify(competitions));
+    }
+</script>
+</body>
+</html>

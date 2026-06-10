@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Crea Competizione</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); }
+        .form-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .form-section h3 { margin-bottom: 15px; color: var(--accent-gold); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <a href="dashboard.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name" style="color: var(--accent-orange);">Crea Competizione</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container" style="max-width: 600px; padding: 60px 20px;">
+                <div class="card animate-slideUp">
+                    <h2 class="mb-3 text-center"><i class="fas fa-trophy text-gold"></i> Nuova Competizione</h2>
+                    
+                    <form id="form">
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
+                            <div class="input-group">
+                                <label class="input-label">Nome Competizione *</label>
+                                <input type="text" id="name" class="input-field" placeholder="Es. Champions League FC27" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Descrizione</label>
+                                <textarea id="description" class="input-field" rows="3" placeholder="Descrizione breve..."></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Stato</label>
+                                <select id="status" class="input-field">
+                                    <option value="aperta">Iscrizioni Aperte</option>
+                                    <option value="chiusa">Iscrizioni Chiuse</option>
+                                    <option value="in_corso">In Corso</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-cogs"></i> Impostazioni</h3>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Max Squadre</label>
+                                    <input type="number" id="maxTeams" class="input-field" placeholder="Es. 16" min="2">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Costo Iscrizione (Crediti)</label>
+                                    <input type="number" id="cost" class="input-field" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Data Inizio</label>
+                                    <input type="date" id="startDate" class="input-field">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Ora Inizio</label>
+                                    <input type="time" id="startTime" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section" style="border-bottom: none;">
+                            <h3><i class="fas fa-gift"></i> Premi</h3>
+                            <div class="input-group">
+                                <label class="input-label">Lista Premi (uno per riga)</label>
+                                <textarea id="prizes" class="input-field" rows="3" placeholder="1° Posto: 500 Crediti&#10;2° Posto: 200 Crediti"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Crea Competizione</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === CONTROLLO SESSIONE ADMIN ===
+        const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+        if (!admin || !admin.isAdmin) {
+            window.location.href = 'accesso-admin.html';
+        }
+
+        // Submit
+        document.getElementById('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
+            
+            // ID univoco
+            const newId = 'comp_' + Date.now();
+            
+            // Creazione oggetto
+            competitions.push({
+                id: newId,
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                status: document.getElementById('status').value,
+                maxTeams: parseInt(document.getElementById('maxTeams').value) || null,
+                cost: parseInt(document.getElementById('cost').value) || 0,
+                startDate: document.getElementById('startDate').value,
+                startTime: document.getElementById('startTime').value,
+                startDateTime: document.getElementById('startDate').value + 'T' + document.getElementById('startTime').value,
+                prizes: document.getElementById('prizes').value,
+                registeredClubs: [],
+                standings: {},
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('fc27_competitions', JSON.stringify(competitions));
+            alert('Competizione creata con successo!');
+            window.location.href = 'dashboard.html';
+        });
+
+        // Logout Admin
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('admin');
+            window.location.href = 'accesso-admin.html';
+        });
+    </script>
+</body>
+</html>

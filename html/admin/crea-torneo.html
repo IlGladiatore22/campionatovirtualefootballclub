@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Crea Torneo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); }
+        .form-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .form-section h3 { margin-bottom: 15px; color: var(--accent-blue); font-size: 1.1rem; }
+        .format-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .format-option { flex: 1; padding: 15px; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .format-option:hover { border-color: var(--accent-blue); }
+        .format-option.active { border-color: var(--accent-blue); background: rgba(52, 152, 219, 0.1); }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <a href="dashboard.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name" style="color: var(--accent-orange);">Crea Torneo</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container" style="max-width: 600px; padding: 60px 20px;">
+                <div class="card animate-slideUp">
+                    <h2 class="mb-3 text-center"><i class="fas fa-medal" style="color: #9b59b6;"></i> Nuovo Torneo</h2>
+                    
+                    <form id="form">
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Informazioni</h3>
+                            <div class="input-group">
+                                <label class="input-label">Nome Torneo *</label>
+                                <input type="text" id="name" class="input-field" placeholder="Es. Torneo del Venerdì" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Descrizione</label>
+                                <textarea id="description" class="input-field" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-sitemap"></i> Formato Torneo</h3>
+                            
+                            <label class="input-label">Struttura</label>
+                            <div class="format-selector">
+                                <div class="format-option active" data-format="groups_knockout" onclick="selectFormat(this)">
+                                    <i class="fas fa-table"></i>
+                                    <div style="font-size: 0.8rem; margin-top: 5px;">Gironi + Eliminazione</div>
+                                </div>
+                                <div class="format-option" data-format="groups_only" onclick="selectFormat(this)">
+                                    <i class="fas fa-th-large"></i>
+                                    <div style="font-size: 0.8rem; margin-top: 5px;">Solo Gironi</div>
+                                </div>
+                                <div class="format-option" data-format="knockout_only" onclick="selectFormat(this)">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <div style="font-size: 0.8rem; margin-top: 5px;">Solo Eliminazione</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="format" value="groups_knockout">
+
+                            <div class="grid-2 mt-3">
+                                <div class="input-group">
+                                    <label class="input-label">Numero Gironi</label>
+                                    <input type="number" id="numGroups" class="input-field" value="4" min="1" max="16">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Qualificati per Girone</label>
+                                    <input type="number" id="qualifyPerGroup" class="input-field" value="2" min="1" max="4">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-cogs"></i> Impostazioni</h3>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Max Partecipanti</label>
+                                    <input type="number" id="maxTeams" class="input-field" placeholder="Es. 16">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Costo (Crediti)</label>
+                                    <input type="number" id="cost" class="input-field" value="0" min="0">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Data Inizio</label>
+                                <input type="text" id="startDate" class="input-field" placeholder="Es. 25 Dicembre">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Premi (uno per riga)</label>
+                                <textarea id="prizes" class="input-field" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Crea Torneo</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+        if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
+
+        window.selectFormat = function(el) {
+            document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('format').value = el.dataset.format;
+        }
+
+        document.getElementById('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
+            
+            tournaments.push({
+                id: 'tourn_' + Date.now(),
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                status: 'aperta',
+                format: document.getElementById('format').value,
+                numGroups: parseInt(document.getElementById('numGroups').value) || 4,
+                qualifyPerGroup: parseInt(document.getElementById('qualifyPerGroup').value) || 2,
+                maxTeams: parseInt(document.getElementById('maxTeams').value) || 16,
+                cost: parseInt(document.getElementById('cost').value) || 0,
+                startDate: document.getElementById('startDate').value,
+                prizes: document.getElementById('prizes').value,
+                registeredClubs: [],
+                // Dati Gironi
+                groups: [], 
+                // Dati Eliminazione
+                knockoutRounds: [], // Array di array di match
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('fc27_tournaments', JSON.stringify(tournaments));
+            alert('Torneo creato!');
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('admin');
+            window.location.href = 'accesso-admin.html';
+        });
+    </script>
+</body>
+</html>

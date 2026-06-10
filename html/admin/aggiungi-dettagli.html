@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestione Partita</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); color: var(--text-primary); }
+        .detail-container { max-width: 600px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
+        
+        /* Score Input Section */
+        .score-editor { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
+        .score-editor h3 { margin-top: 0; color: var(--accent-gold); }
+        .score-inputs { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 15px; }
+        .score-inputs input { width: 60px; height: 60px; font-size: 2rem; text-align: center; background: #000; border: 2px solid var(--accent-gold); color: var(--accent-gold); border-radius: 8px; font-family: 'Orbitron', sans-serif; }
+        .score-inputs span { font-size: 1.5rem; color: #555; }
+        .team-label { font-weight: bold; font-size: 1.1rem; margin: 0 10px; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Stats Sections */
+        .stat-section { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .stat-title { font-size: 0.9rem; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .stat-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .stat-row input, .stat-row select { background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; font-size: 0.9rem; }
+        .stat-row input { flex: 1; min-width: 0; }
+        .stat-row select { flex-shrink: 0; }
+        .stat-row input[type="number"] { width: 70px; flex: none; }
+        .btn-trash { background: #c0392b; color: white; border: none; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .btn-add { background: rgba(255,255,255,0.05); border: 1px dashed #555; color: #aaa; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 5px; transition: all 0.2s; }
+        .btn-add:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+        
+        .footer-actions { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px; background: #161b22; border-top: 1px solid #30363d; display: flex; gap: 10px; justify-content: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <header class="header">
+        <div class="header-left">
+            <a href="javascript:history.back()" class="header-btn" style="background:transparent;border:none;"><i class="fas fa-arrow-left"></i></a>
+            <span class="site-name">Gestione Partita</span>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="detail-container">
+            <!-- Intestazione -->
+            <div class="score-editor animate-slideUp">
+                <h3 id="match-title-header">Caricamento...</h3>
+                <div class="score-inputs">
+                    <div class="team-label" id="home-label">Casa</div>
+                    <input type="number" id="score-home" min="0" value="0">
+                    <span>-</span>
+                    <input type="number" id="score-away" min="0" value="0">
+                    <div class="team-label" id="away-label">Ospiti</div>
+                </div>
+            </div>
+
+            <!-- Marcatori -->
+            <div class="stat-section animate-slideUp">
+                <div class="stat-title"><i class="fas fa-futbol"></i> Marcatori</div>
+                <div id="scorers-list"></div>
+                <button class="btn-add" onclick="addScorerInput()"><i class="fas fa-plus"></i> Aggiungi Marcatore</button>
+            </div>
+
+            <!-- Assist -->
+            <div class="stat-section animate-slideUp">
+                <div class="stat-title"><i class="fas fa-hands-helping"></i> Assist</div>
+                <div id="assists-list"></div>
+                <button class="btn-add" onclick="addAssistInput()"><i class="fas fa-plus"></i> Aggiungi Assist</button>
+            </div>
+
+            <!-- Cartellini -->
+            <div class="stat-section animate-slideUp">
+                <div class="stat-title"><i class="fas fa-square"></i> Cartellini</div>
+                <div id="cards-list"></div>
+                <button class="btn-add" onclick="addCardInput()"><i class="fas fa-plus"></i> Aggiungi Cartellino</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="footer-actions">
+        <button class="btn btn-secondary" onclick="history.back()" style="flex:1;">Annulla</button>
+        <button class="btn btn-primary" onclick="saveAllData()" style="flex:2;"><i class="fas fa-save"></i> Salva Risultato e Dettagli</button>
+    </div>
+</div>
+
+<script>
+    // Auth Check
+    const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+    if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
+
+    // Data Load
+    let competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
+    let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+
+    // Params
+    const params = new URLSearchParams(window.location.search);
+    const compId = params.get('c');
+    const mdIdx  = parseInt(params.get('md'));
+    const mIdx   = parseInt(params.get('m'));
+
+    let currentComp = competitions.find(c => c.id === compId);
+    let match = null;
+    let homeClub = null;
+    let awayClub = null;
+
+    if (currentComp && currentComp.matchdays && currentComp.matchdays[mdIdx] && currentComp.matchdays[mdIdx][mIdx]) {
+        match = currentComp.matchdays[mdIdx][mIdx];
+        homeClub = clubs.find(c => c.id === match.home);
+        awayClub = clubs.find(c => c.id === match.away);
+
+        // UI Setup
+        const hName = homeClub ? homeClub.name : 'Casa';
+        const aName = awayClub ? awayClub.name : 'Ospiti';
+        
+        document.getElementById('match-title-header').textContent = hName + ' vs ' + aName;
+        document.getElementById('home-label').textContent = hName;
+        document.getElementById('away-label').textContent = aName;
+        
+        // Pre-fill scores
+        document.getElementById('score-home').value = match.homeScore !== null ? match.homeScore : 0;
+        document.getElementById('score-away').value = match.awayScore !== null ? match.awayScore : 0;
+
+        // Pre-fill Stats
+        (match.scorers || []).forEach(s => addScorerInput(s.teamId, s.player, s.minute));
+        (match.assists || []).forEach(a => addAssistInput(a.teamId, a.player, a.minute));
+        (match.cards   || []).forEach(c => addCardInput(c.teamId, c.player, c.type, c.minute));
+    } else {
+        alert('Errore: Partita non trovata.');
+        window.history.back();
+    }
+
+    // Dynamic Team Selector
+    function getTeamOptions(selectedId) {
+        if (!homeClub || !awayClub) return '';
+        return `<option value="${homeClub.id}" ${selectedId === homeClub.id ? 'selected' : ''}>${homeClub.name}</option>
+                <option value="${awayClub.id}" ${selectedId === awayClub.id ? 'selected' : ''}>${awayClub.name}</option>`;
+    }
+
+    // Row Generators
+    function createRow(htmlContent) {
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        row.innerHTML = htmlContent;
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-trash';
+        delBtn.type = 'button';
+        delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        delBtn.onclick = () => row.remove();
+        row.appendChild(delBtn);
+        return row;
+    }
+
+    function addScorerInput(teamId = null, player = '', minute = '') {
+        const defaultTeam = teamId || (homeClub ? homeClub.id : null);
+        const html = `
+            <select class="scorer-team">${getTeamOptions(defaultTeam)}</select>
+            <input type="text" class="scorer-name" placeholder="Nome Giocatore" value="${player}">
+            <input type="number" class="scorer-min" placeholder="Min" value="${minute}" min="1" max="120">
+        `;
+        document.getElementById('scorers-list').appendChild(createRow(html));
+    }
+
+    function addAssistInput(teamId = null, player = '', minute = '') {
+        const defaultTeam = teamId || (homeClub ? homeClub.id : null);
+        const html = `
+            <select class="assist-team">${getTeamOptions(defaultTeam)}</select>
+            <input type="text" class="assist-name" placeholder="Nome Assist Man" value="${player}">
+            <input type="number" class="assist-min" placeholder="Min" value="${minute}" min="1" max="120">
+        `;
+        document.getElementById('assists-list').appendChild(createRow(html));
+    }
+
+    function addCardInput(teamId = null, player = '', type = 'yellow', minute = '') {
+        const defaultTeam = teamId || (homeClub ? homeClub.id : null);
+        const typeHtml = `<select class="card-type">
+            <option value="yellow" ${type==='yellow'?'selected':''}>🟨 Giallo</option>
+            <option value="red" ${type==='red'?'selected':''}>🟥 Rosso</option>
+        </select>`;
+        
+        const html = `
+            <select class="card-team">${getTeamOptions(defaultTeam)}</select>
+            <input type="text" class="card-name" placeholder="Nome Giocatore" value="${player}">
+            ${typeHtml}
+            <input type="number" class="card-min" placeholder="Min" value="${minute}" min="1" max="120">
+        `;
+        document.getElementById('cards-list').appendChild(createRow(html));
+    }
+
+    // --- SAVE LOGIC ---
+    function saveAllData() {
+        if (!match) return;
+
+        const newHomeScore = parseInt(document.getElementById('score-home').value) || 0;
+        const newAwayScore = parseInt(document.getElementById('score-away').value) || 0;
+
+        // 1. Aggiorna Classifica (Ricalcolo completo per semplicità e sicurezza)
+        // Se la partita era già giocata, prima sottraiamo i vecchi valori
+        if (match.played) {
+            updateStandings(match.home, match.homeScore, match.awayScore, true);
+            updateStandings(match.away, match.awayScore, match.homeScore, true);
+        }
+
+        // Imposta nuovi risultati
+        match.homeScore = newHomeScore;
+        match.awayScore = newAwayScore;
+        match.played = true;
+
+        // Aggiungi nuovi valori in classifica
+        updateStandings(match.home, newHomeScore, newAwayScore, false);
+        updateStandings(match.away, newAwayScore, newHomeScore, false);
+
+        // 2. Salva Statistiche
+        match.scorers = [];
+        document.querySelectorAll('#scorers-list .stat-row').forEach(row => {
+            const name = row.querySelector('.scorer-name').value.trim();
+            if (name) {
+                match.scorers.push({
+                    teamId: row.querySelector('.scorer-team').value,
+                    player: name,
+                    minute: row.querySelector('.scorer-min').value
+                });
+            }
+        });
+
+        match.assists = [];
+        document.querySelectorAll('#assists-list .stat-row').forEach(row => {
+            const name = row.querySelector('.assist-name').value.trim();
+            if (name) {
+                match.assists.push({
+                    teamId: row.querySelector('.assist-team').value,
+                    player: name,
+                    minute: row.querySelector('.assist-min').value
+                });
+            }
+        });
+
+        match.cards = [];
+        document.querySelectorAll('#cards-list .stat-row').forEach(row => {
+            const name = row.querySelector('.card-name').value.trim();
+            if (name) {
+                match.cards.push({
+                    teamId: row.querySelector('.card-team').value,
+                    player: name,
+                    type: row.querySelector('.card-type').value,
+                    minute: row.querySelector('.card-min').value
+                });
+            }
+        });
+
+        // Salvataggio Finale
+        const idx = competitions.findIndex(c => c.id === compId);
+        competitions[idx] = currentComp;
+        localStorage.setItem('fc27_competitions', JSON.stringify(competitions));
+
+        alert('Partita salvata con successo!');
+        window.history.back();
+    }
+
+    function updateStandings(teamId, gf, gs, isRollback) {
+        if (!teamId || !currentComp.standings || !currentComp.standings[teamId]) return;
+        const s = currentComp.standings[teamId];
+        const x = isRollback ? -1 : 1;
+        
+        s.played += x; 
+        s.gf += gf * x; 
+        s.gs += gs * x;
+        
+        if (gf > gs)      { s.wins += x;   s.points += 3 * x; }
+        else if (gf < gs) { s.losses += x; }
+        else              { s.draws += x;  s.points += x; }
+    }
+</script>
+</body>
+</html>

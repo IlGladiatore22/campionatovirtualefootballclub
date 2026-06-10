@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Competizione</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        .standings-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .standings-table th { text-align: center; color: var(--text-muted); font-weight: 600; padding: 10px 5px; border-bottom: 2px solid var(--border-color); }
+        .standings-table td { text-align: center; padding: 10px 5px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .standings-table td:first-child { text-align: left; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .standings-table tr:hover { background: rgba(255,255,255,0.03); }
+        
+        .team-logo-row { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: #333; }
+        .team-logo-placeholder { width: 24px; height: 24px; border-radius: 50%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--text-muted); }
+
+        .pos-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; background: #333; flex-shrink: 0; }
+        .pos-1, .pos-2, .pos-3, .pos-4 { background: var(--accent-gold); color: #000; }
+
+        .match-card { background: var(--bg-tertiary); border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border-color); }
+        .team-name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .score-box { background: #0d1117; padding: 8px 15px; border-radius: 6px; margin: 0 10px; min-width: 50px; text-align: center; font-weight: bold; color: var(--accent-gold); }
+
+        .stats-list { list-style: none; padding: 0; margin: 0; }
+        .stats-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .stats-list li:last-child { border-bottom: none; }
+        .player-info { display: flex; align-items: center; gap: 8px; }
+        .team-badge { font-size: 0.65rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); }
+
+        .matchday-header { background: var(--bg-secondary); padding: 12px 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .badge-live { background: #2ecc71; color: #000; font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: 800; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <a href="competizioni.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name" id="comp-name">Lega</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <!-- SIDEBAR OVERLAY -->
+        <div id="overlay" class="sidebar-overlay"></div>
+
+        <!-- SIDEBAR COMPLETA -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+                <button id="close-btn" class="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="competizioni.html" class="nav-link active"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="container" style="padding-top: 20px;">
+                <div class="tabs-container mb-4 animate-slideUp">
+                    <button class="tab-btn active" data-tab="classifica">Classifica</button>
+                    <button class="tab-btn" data-tab="calendario">Calendario</button>
+                    <button class="tab-btn" data-tab="statistiche">Statistiche</button>
+                </div>
+
+                <div id="tab-classifica" class="tab-content active">
+                    <div class="card animate-slideUp" style="overflow-x: auto;">
+                        <table class="standings-table">
+                            <thead><tr><th style="text-align: left;">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>GF</th><th>GS</th><th>DR</th></tr></thead>
+                            <tbody id="standings-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-calendario" class="tab-content" style="display: none;">
+                    <div id="matchdays-container"></div>
+                </div>
+
+                <div id="tab-statistiche" class="tab-content" style="display: none;">
+                    <div class="grid-2 gap-3">
+                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-futbol text-gold"></i> Marcatori</h4><ul id="stats-scorers" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-hands-helping text-blue"></i> Assist</h4><ul id="stats-assists" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-square text-red"></i> Cartellini</h4><ul id="stats-cards" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-medal text-gold"></i> MVP</h4><p class="text-muted" style="font-size: 0.85rem;">N/D</p></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // SIDEBAR CONTROLLI
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.getElementById('overlay');
+        const sidebar = document.getElementById('sidebar');
+
+        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        menuBtn.addEventListener('click', openSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+        // AUTENTICAZIONE E DATI
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const token = localStorage.getItem('auth_token');
+
+        if (!user || !token) {
+            window.location.href = '../accesso.html';
+        } else {
+            // Logica visibilità Admin/Staff
+            const adminNav = document.getElementById('admin-nav');
+            const guestAdminNav = document.getElementById('guest-admin-nav');
+
+            if (user.isAdmin) {
+                adminNav.style.display = 'block';
+                guestAdminNav.style.display = 'none';
+            } else {
+                adminNav.style.display = 'none';
+                guestAdminNav.style.display = 'block';
+            }
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            window.location.href = '../home-non-loggato.html';
+        });
+
+        // SETUP PAGINA
+        const urlParams = new URLSearchParams(window.location.search);
+        const cId = urlParams.get('id');
+        if (!cId) window.location.href = 'competizioni.html';
+
+        let competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
+        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+        let comp = competitions.find(c => c.id === cId);
+        if (!comp) window.location.href = 'competizioni.html';
+
+        document.getElementById('comp-name').textContent = comp.name;
+
+        // UI Events (Tabs)
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
+            };
+        });
+
+        // --- LOGICA CLASSIFICA ---
+        function renderStandings() {
+            const tbody = document.getElementById('standings-body');
+            tbody.innerHTML = '';
+            let registeredIds = comp.registeredClubs || [];
+            if (registeredIds.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-4">Nessuna squadra.</td></tr>'; return; }
+
+            let arr = registeredIds.map(teamId => {
+                let stats = (comp.standings && comp.standings[teamId]) ? comp.standings[teamId] : { points: 0, played: 0, wins: 0, draws: 0, losses: 0, gf: 0, gs: 0 };
+                return { id: teamId, ...stats };
+            });
+
+            arr.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                let dA = (a.gf || 0) - (a.gs || 0); let dB = (b.gf || 0) - (b.gs || 0);
+                if (dB !== dA) return dB - dA;
+                return (b.gf || 0) - (a.gf || 0);
+            });
+
+            arr.forEach((s, i) => {
+                const clubData = clubs.find(c => c.id === s.id);
+                const name = clubData ? clubData.name : 'Sconosciuta';
+                const logo = clubData && clubData.logo ? clubData.logo : null;
+                const gf = s.gf || 0; const gs = s.gs || 0; const dr = gf - gs;
+                let logoHtml = logo ? `<img src="${logo}" class="team-logo-row" onerror="this.outerHTML='<div class=\\'team-logo-placeholder\\'>'"></img>` : `<div class="team-logo-placeholder"></div>`;
+                
+                tbody.innerHTML += `<tr><td><span class="pos-badge pos-${i+1}">${i + 1}</span>${logoHtml}<span>${name}</span></td><td class="text-gold">${s.points || 0}</td><td>${s.played || 0}</td><td>${s.wins || 0}</td><td>${s.draws || 0}</td><td>${s.losses || 0}</td><td>${gf}</td><td>${gs}</td><td>${dr > 0 ? '+'+dr : dr}</td></tr>`;
+            });
+        }
+
+        // --- CALENDARIO (Progressivo) ---
+        function renderMatchdays() {
+            const container = document.getElementById('matchdays-container');
+            container.innerHTML = '';
+            if (!comp.matchdays || comp.matchdays.length === 0) { container.innerHTML = '<div class="card p-4 text-center text-muted">Calendario non generato.</div>'; return; }
+
+            let activeIndex = comp.matchdays.findIndex(md => !md.every(m => m.played));
+            if (activeIndex === -1) activeIndex = comp.matchdays.length;
+
+            comp.matchdays.forEach((md, idx) => {
+                if (idx > activeIndex) return; // Nascondi future
+                const allPlayed = md.every(m => m.played);
+                const isCurrent = (idx === activeIndex);
+                let headerContent = `Giornata ${idx + 1}`;
+                if (isCurrent && !allPlayed) headerContent += `<span class="badge-live">IN CORSO</span>`;
+                if (allPlayed) headerContent += `<span style="color:#2ecc71; font-size:0.8rem;"><i class="fas fa-check"></i></span>`;
+
+                let html = `<div class="card mb-3 animate-slideUp"><div class="matchday-header">${headerContent}</div><div style="padding: 15px;">`;
+                md.forEach(m => {
+                    if(!m.home || !m.away) return;
+                    const homeName = clubs.find(c => c.id === m.home)?.name || 'N/D';
+                    const awayName = clubs.find(c => c.id === m.away)?.name || 'N/D';
+                    html += `<div class="match-card"><div class="team-name text-right">${homeName}</div><div class="score-box">${m.homeScore !== null ? m.homeScore : '-'}</div><div class="score-box">${m.awayScore !== null ? m.awayScore : '-'}</div><div class="team-name">${awayName}</div></div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        // --- STATISTICHE ---
+        function renderStats() {
+            let scorersMap = {}; let assistsMap = {}; let cardsList = [];
+            if (comp.matchdays) {
+                comp.matchdays.forEach(md => { md.forEach(match => {
+                    (match.scorers || []).forEach(s => { const key = s.player + "_" + s.teamId; if (!scorersMap[key]) scorersMap[key] = { name: s.player, teamId: s.teamId, count: 0 }; scorersMap[key].count++; });
+                    (match.assists || []).forEach(a => { const key = a.player + "_" + a.teamId; if (!assistsMap[key]) assistsMap[key] = { name: a.player, teamId: a.teamId, count: 0 }; assistsMap[key].count++; });
+                    (match.cards || []).forEach(c => cardsList.push(c));
+                }); });
+            }
+            
+            const scorersList = document.getElementById('stats-scorers');
+            let sortedScorers = Object.values(scorersMap).sort((a, b) => b.count - a.count).slice(0, 10);
+            if (sortedScorers.length > 0) scorersList.innerHTML = sortedScorers.map(s => `<li><div class="player-info"><span>${s.name}</span><span class="team-badge">${clubs.find(c=>c.id===s.teamId)?.name||'N/D'}</span></div><strong>${s.count}</strong></li>`).join('');
+            else scorersList.innerHTML = '<li class="text-muted">Nessun dato</li>';
+
+            const assistsList = document.getElementById('stats-assists');
+            let sortedAssists = Object.values(assistsMap).sort((a, b) => b.count - a.count).slice(0, 10);
+            if (sortedAssists.length > 0) assistsList.innerHTML = sortedAssists.map(a => `<li><div class="player-info"><span>${a.name}</span><span class="team-badge">${clubs.find(c=>c.id===a.teamId)?.name||'N/D'}</span></div><strong>${a.count}</strong></li>`).join('');
+            else assistsList.innerHTML = '<li class="text-muted">Nessun dato</li>';
+
+            const cardsListEl = document.getElementById('stats-cards');
+            if (cardsList.length > 0) cardsListEl.innerHTML = cardsList.slice(-10).reverse().map(c => `<li><div class="player-info"><span>${c.type==='red'?'🟥':'🟨'} ${c.player}</span><span class="team-badge">${clubs.find(cl=>cl.id===c.teamId)?.name||'N/D'}</span></div><span class="text-muted">${c.minute||''}'</span></li>`).join('');
+            else cardsListEl.innerHTML = '<li class="text-muted">Nessun dato</li>';
+        }
+
+        // Init
+        renderStandings();
+        renderMatchdays();
+        renderStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Club</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        
+        .club-card { 
+            position: relative; 
+            transition: all 0.3s ease; 
+            border: 1px solid var(--border-color); 
+        }
+        .club-card.is-member { cursor: pointer; }
+        .club-card.is-member:hover { 
+            border-color: var(--accent-gold); 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(245, 166, 35, 0.15);
+        }
+        .club-card.not-member { 
+            opacity: 0.85; 
+            cursor: default; 
+        }
+        
+        .btn-captain { background: var(--accent-orange); color: white; border: none; }
+        .btn-member { background: var(--accent-green); color: white; border: none; }
+        .btn-pending { background: #666; color: white; border: none; }
+
+        .club-logo-display {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: bold; color: var(--accent-gold);
+            overflow: hidden; border: 2px solid var(--border-color);
+        }
+        .club-logo-display img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <!-- AGGIUNTO: Freccia per tornare indietro -->
+                <button onclick="window.location.href='../home.html'" class="header-btn" style="background: transparent; border: none; margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn" aria-label="Menu"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <div class="sidebar-overlay" id="overlay"></div>
+
+        <!-- SIDEBAR COMPLETA -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <button class="sidebar-close" id="close-btn" aria-label="Chiudi"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- Menu Principale -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                
+                <!-- Comunicazioni -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
+                <!-- Account -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+
+                <!-- Admin -->
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+
+                <!-- Staff -->
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+
+                <!-- Info -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <!-- AGGIUNTO: Link Segnalazioni -->
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <div class="flex justify-between items-center mb-4">
+                    <h1>Club</h1>
+                    <a href="../admin/crea-club.html" id="create-btn" class="btn btn-primary" style="display: none; background: var(--accent-orange);">
+                        <i class="fas fa-plus"></i> Crea Club
+                    </a>
+                </div>
+
+                <div class="grid-3" id="clubs-grid"></div>
+
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-users"></i></div>
+                    <h3 class="empty-state-title">Nessun Club</h3>
+                    <p class="empty-state-text">Non ci sono club disponibili al momento.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === SIDEBAR CONTROLLI ===
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.getElementById('overlay');
+        const sidebar = document.getElementById('sidebar');
+
+        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        menuBtn.addEventListener('click', openSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+        // === LOGOUT ===
+        document.getElementById('logout-btn').addEventListener('click', () => { 
+            localStorage.removeItem('user'); 
+            localStorage.removeItem('auth_token'); 
+            window.location.href = '../home-non-loggato.html'; 
+        });
+
+        // === CHECK UTENTE ===
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) window.location.href = '../accesso.html';
+
+        // === VISIBILITA ADMIN ===
+        if (user.isAdmin) {
+            document.getElementById('create-btn').style.display = 'inline-flex';
+            document.getElementById('admin-nav').style.display = 'block';
+            document.getElementById('guest-admin-nav').style.display = 'none';
+        }
+
+        // === CARICA CLUB ===
+        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+        const grid = document.getElementById('clubs-grid');
+        const empty = document.getElementById('empty-state');
+
+        if (clubs.length > 0) {
+            empty.style.display = 'none';
+            const uid = String(user.id);
+
+            clubs.forEach(c => {
+                const capId = String(c.captain);
+                const members = (c.members || []).map(m => String(m));
+                let isCaptain = (uid === capId);
+                let isMember = members.includes(uid);
+
+                // Fix automatico se il capitano non è nei membri
+                if (isCaptain && !isMember) {
+                    if (!c.members) c.members = [];
+                    c.members.push(user.id);
+                    localStorage.setItem('fc27_clubs', JSON.stringify(clubs));
+                    isMember = true;
+                }
+
+                let btnHtml = '';
+                let cardClass = 'not-member';
+
+                if (isCaptain) {
+                    btnHtml = '<button class="btn btn-small btn-captain"><i class="fas fa-crown"></i> Capitano</button>';
+                    cardClass = 'is-member';
+                } else if (isMember) {
+                    btnHtml = '<button class="btn btn-small btn-member"><i class="fas fa-check"></i> Membro</button>';
+                    cardClass = 'is-member';
+                } else {
+                    const hasReq = (c.requests || []).some(r => String(r.userId) === uid && r.status === 'pending');
+                    if (hasReq) btnHtml = '<button class="btn btn-small btn-pending"><i class="fas fa-clock"></i> In Attesa</button>';
+                    else btnHtml = '<button class="btn btn-small btn-primary" onclick="event.stopPropagation(); requestJoin(\'' + c.id + '\')">Richiedi</button>';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'card club-card animate-slideUp ' + cardClass;
+                
+                let logoHtml = c.logo ? '<img src="' + c.logo + '" style="width:100%;height:100%;object-fit:cover;">' : c.name.substring(0, 2).toUpperCase();
+
+                card.innerHTML = 
+                    '<div class="club-logo-display">' + logoHtml + '</div>' +
+                    '<h4 class="card-title" style="margin-top: 15px;">' + c.name + '</h4>' +
+                    '<p class="card-description">' + (c.description || '-') + '</p>' +
+                    '<div class="flex justify-between mt-2 items-center">' +
+                        '<span class="text-muted"><i class="fas fa-user"></i> ' + members.length + '</span>' +
+                        btnHtml +
+                    '</div>';
+
+                if (isMember || isCaptain) {
+                    card.onclick = () => window.location.href = 'club-info.html?id=' + c.id;
+                } else {
+                    card.onclick = () => alert('Devi essere un membro per vedere formazione e tattiche. Invia una richiesta!');
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        // === RICHIEDI ENTRATA ===
+        window.requestJoin = function(clubId) {
+            const idx = clubs.findIndex(c => c.id === clubId);
+            if (idx === -1) return;
+            const club = clubs[idx];
+            if (!club.requests) club.requests = [];
+            club.requests.push({ id: 'req_' + Date.now(), userId: user.id, userName: user.nomeEA, userTag: user.gamertag, status: 'pending' });
+            
+            // Notifica il capitano
+            if (club.captain) {
+                const notifs = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
+                notifs.push({ id: Date.now(), userId: club.captain, title: 'Richiesta: ' + club.name, message: user.nomeEA + ' vuole entrare nel club.', read: false, type: 'join_request', clubId: clubId });
+                localStorage.setItem('fc27_notifications', JSON.stringify(notifs));
+            }
+            localStorage.setItem('fc27_clubs', JSON.stringify(clubs));
+            alert('Richiesta inviata!');
+            location.reload();
+        };
+    </script>
+</body>
+</html>

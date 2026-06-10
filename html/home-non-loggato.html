@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Home</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="../estetica/style.css">
+    <link rel="stylesheet" href="../estetica/animations.css">
+    <link rel="stylesheet" href="../estetica/components.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header" id="header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+                <button class="sidebar-close" onclick="FC27.Sidebar.close()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Informazioni</div>
+                    <a href="regolamento.html" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        <span>Regolamento</span>
+                    </a>
+                    <a href="faq.html" class="nav-link">
+                        <i class="fas fa-question-circle"></i>
+                        <span>FAQ</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container" style="padding-top: 40px;">
+                <!-- Hero Section -->
+                <section class="text-center mb-4 animate-slideUp">
+                    <div class="logo" style="width: 80px; height: 80px; font-size: 1.8rem; margin: 0 auto 24px;">
+                        FC
+                    </div>
+                    <h1>Benvenuto in FC27</h1>
+                    <p class="mt-2" style="max-width: 600px; margin: 0 auto;">
+                        La piattaforma completa per tornei, competizioni e club di FC27. 
+                        Registrati per iniziare a competere!
+                    </p>
+                </section>
+
+                <!-- Auth Buttons -->
+                <section class="flex gap-2 justify-center mb-4 animate-slideUp stagger-1" style="max-width: 400px; margin: 0 auto;">
+                    <a href="registrazione.html" class="btn btn-primary btn-large" style="flex: 1;">
+                        <i class="fas fa-user-plus"></i> Registrati
+                    </a>
+                    <a href="accesso.html" class="btn btn-secondary btn-large" style="flex: 1;">
+                        <i class="fas fa-sign-in-alt"></i> Accedi
+                    </a>
+                </section>
+
+                <!-- Stats REALI -->
+                <section class="stats-grid animate-slideUp stagger-2" style="max-width: 600px; margin: 40px auto 0;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-clubs">0</div>
+                        <div class="stat-label">Club Creati</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-players">0</div>
+                        <div class="stat-label">Giocatori Iscritti</div>
+                    </div>
+                </section>
+
+                <!-- Features -->
+                <section class="mt-4">
+                    <h2 class="text-center mb-3">Cosa puoi fare</h2>
+                    <div class="grid-3">
+                        <div class="card animate-slideUp stagger-3">
+                            <div class="card-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <h4 class="card-title">Competizioni</h4>
+                            <p class="card-description">
+                                Partecipa a competizioni ufficiali e vinci premi esclusivi
+                            </p>
+                        </div>
+                        <div class="card animate-slideUp stagger-4">
+                            <div class="card-icon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <h4 class="card-title">Tornei</h4>
+                            <p class="card-description">
+                                Unisciti ai tornei settimanali e mensili della community
+                            </p>
+                        </div>
+                        <div class="card animate-slideUp stagger-5">
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4 class="card-title">Club</h4>
+                            <p class="card-description">
+                                Crea o unisciti a un club e competi insieme ai tuoi amici
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../script/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Carica statistiche REALI
+            loadRealStats();
+        });
+
+        function loadRealStats() {
+            // Ottieni statistiche dal localStorage
+            const stats = getGlobalStats();
+            
+            // Aggiorna UI
+            document.getElementById('stat-clubs').textContent = stats.totalClubs;
+            document.getElementById('stat-players').textContent = stats.totalPlayers;
+        }
+
+        function getGlobalStats() {
+            // Leggi tutti gli utenti registrati
+            const users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
+            
+            // Leggi tutti i club creati
+            const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+            
+            return {
+                totalPlayers: users.length,
+                totalClubs: clubs.length
+            };
+        }
+    </script>
+</body>
+</html>

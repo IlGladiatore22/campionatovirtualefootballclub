@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Notifiche</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../estetica/style.css">
+    <link rel="stylesheet" href="../estetica/animations.css">
+    <link rel="stylesheet" href="../estetica/components.css">
+    <style>html, body { height: auto; min-height: 100vh; overflow-y: auto; }</style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <!-- TASTO INDIETRO -->
+                <button onclick="history.back()" class="header-btn" style="background: transparent; border: none; margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <!-- SIDEBAR OVERLAY -->
+        <div class="sidebar-overlay" id="overlay"></div>
+
+        <!-- SIDEBAR COMPLETA -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- Menu Principale -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                
+                <!-- Comunicazioni -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="notifiche.html" class="nav-link active"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
+                <!-- Account -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                
+                <!-- Admin (Visibile solo se isAdmin = true) -->
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                
+                <!-- Staff (Link accesso admin per utenti non admin) -->
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+                
+                <!-- Info -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <div class="flex justify-between items-center mb-3">
+                    <h1>Notifiche</h1>
+                    <button id="mark-read" class="btn btn-secondary btn-small">
+                        <i class="fas fa-check-double"></i> Tutte lette
+                    </button>
+                </div>
+                
+                <div id="notifications-list"></div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon"><i class="fas fa-bell-slash"></i></div>
+                    <h3 class="empty-state-title">Nessuna notifica</h3>
+                    <p class="empty-state-text">Non hai notifiche al momento</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Controls
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.getElementById('overlay');
+        const sidebar = document.getElementById('sidebar');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        });
+        
+        const closeSidebar = () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        };
+        
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        // Auth & Admin Check
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) window.location.href = 'accesso.html';
+        
+        // Logica visibilità Admin/Staff
+        const adminNav = document.getElementById('admin-nav');
+        const guestAdminNav = document.getElementById('guest-admin-nav');
+
+        if (user.isAdmin) {
+            adminNav.style.display = 'block';
+            guestAdminNav.style.display = 'none';
+        } else {
+            adminNav.style.display = 'none';
+            guestAdminNav.style.display = 'block';
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            window.location.href = 'home-non-loggato.html';
+        });
+
+        // Load Notifications
+        const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
+        const userNotifications = notifications.filter(n => n.userId === user.id);
+        const list = document.getElementById('notifications-list');
+        const emptyState = document.getElementById('empty-state');
+
+        if (userNotifications.length === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            userNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            userNotifications.forEach((notif, index) => {
+                const item = document.createElement('div');
+                item.className = 'notification-item animate-slideUp' + (notif.read ? '' : ' unread');
+                
+                let icon = 'fa-bell';
+                if (notif.title.includes('Benvenuto')) icon = 'fa-hand-wave';
+                if (notif.title.includes('Competizione')) icon = 'fa-trophy';
+                if (notif.title.includes('Torneo')) icon = 'fa-medal';
+                
+                item.innerHTML = `
+                    <div class="notification-icon"><i class="fas ${icon}"></i></div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title}</div>
+                        <p class="notification-text">${notif.message}</p>
+                        <span class="notification-time">${new Date(notif.createdAt).toLocaleString('it-IT')}</span>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    const idx = notifications.findIndex(n => n.id === notif.id);
+                    if (idx !== -1) {
+                        notifications[idx].read = true;
+                        localStorage.setItem('fc27_notifications', JSON.stringify(notifications));
+                        item.classList.remove('unread');
+                    }
+                });
+                
+                list.appendChild(item);
+            });
+        }
+
+        // Mark all read
+        document.getElementById('mark-read').addEventListener('click', () => {
+            notifications.forEach(n => { if(n.userId === user.id) n.read = true; });
+            localStorage.setItem('fc27_notifications', JSON.stringify(notifications));
+            document.querySelectorAll('.notification-item').forEach(item => item.classList.remove('unread'));
+        });
+    </script>
+</body>
+</html>

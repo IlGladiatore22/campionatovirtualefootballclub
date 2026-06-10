@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Info Torneo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/animations.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>html, body { height: auto; min-height: 100vh; overflow-y: auto; }</style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <span class="user-greeting">Benvenuto, <span id="username-display">Utente</span></span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" onclick="window.location.href='../notifiche.html'"><i class="fas fa-bell"></i><span class="badge" id="notif-badge" style="display: none;">0</span></button>
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <div class="sidebar-overlay" id="overlay"></div>
+
+        <!-- Sidebar Completa -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+                <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <!-- Menu Principale -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="tornei.html" class="nav-link active"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                
+                <!-- Comunicazioni -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
+                <!-- Account -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                
+                <!-- Admin -->
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                
+                <!-- Staff -->
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+                
+                <!-- Info -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <div class="card animate-slideUp text-center" style="padding: 40px;">
+                    <div style="width: 80px; height: 80px; background: var(--bg-tertiary); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-medal" style="font-size: 2rem; color: var(--accent-gold);"></i>
+                    </div>
+                    <h1 id="t-name">Caricamento...</h1>
+                    <p class="text-muted mt-1" id="t-desc"></p>
+                </div>
+                <div class="grid-2 mt-4">
+                    <div class="card animate-slideUp stagger-1"><h4 class="mb-2"><i class="fas fa-info-circle text-gold"></i> Info</h4><div id="t-info"></div></div>
+                    <div class="card animate-slideUp stagger-2"><h4 class="mb-2"><i class="fas fa-gift text-gold"></i> Premi</h4><div id="t-prizes"></div></div>
+                </div>
+                <div class="mt-4 animate-slideUp stagger-3">
+                    <button id="sub-btn" class="btn btn-primary btn-block btn-large">Iscriviti</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === SIDEBAR & AUTH STANDARD ===
+        const menuBtn = document.getElementById('menu-btn'); 
+        const closeBtn = document.getElementById('close-btn'); 
+        const overlay = document.getElementById('overlay'); 
+        const sidebar = document.getElementById('sidebar');
+        
+        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+        
+        menuBtn.addEventListener('click', openSidebar); 
+        closeBtn.addEventListener('click', closeSidebar); 
+        overlay.addEventListener('click', closeSidebar);
+        
+        document.getElementById('logout-btn').addEventListener('click', () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; });
+
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) window.location.href = '../accesso.html';
+        
+        document.getElementById('username-display').textContent = user.nomeEA;
+        
+        // Logica visibilità Admin/Staff
+        const adminNav = document.getElementById('admin-nav');
+        const guestAdminNav = document.getElementById('guest-admin-nav');
+        if (user.isAdmin) {
+            adminNav.style.display = 'block';
+            guestAdminNav.style.display = 'none';
+        } else {
+            adminNav.style.display = 'none';
+            guestAdminNav.style.display = 'block';
+        }
+
+        // Notifiche
+        const notifs = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
+        const unread = notifs.filter(n => n.userId === user.id && !n.read).length;
+        if (unread > 0) { document.getElementById('notif-badge').style.display = 'flex'; document.getElementById('notif-badge').textContent = unread; }
+
+        // === LOAD DATA ===
+        const urlParams = new URLSearchParams(window.location.search);
+        const tId = urlParams.get('id');
+        if (!tId) window.location.href = 'tornei.html';
+
+        const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
+        const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+        const t = tournaments.find(x => x.id === tId);
+        if (!t) { alert('Torneo non trovato'); window.location.href = 'tornei.html'; }
+
+        document.getElementById('t-name').textContent = t.name;
+        document.getElementById('t-desc').textContent = t.description || 'Torneo FC27';
+        document.getElementById('t-info').innerHTML = `<p><strong>Data:</strong> ${t.startDate || 'TBD'}</p><p><strong>Costo:</strong> ${t.cost > 0 ? t.cost + ' Crediti' : 'Gratuito'}</p>`;
+        document.getElementById('t-prizes').innerHTML = t.prizes ? t.prizes.replace(/\n/g, '<br>') : 'Nessun premio';
+
+        // === LOGICA ISCRIZIONE / ENTRA ===
+        const subBtn = document.getElementById('sub-btn');
+        const userClub = clubs.find(c => c.members && c.members.includes(user.id));
+        const isRegistered = t.registeredClubs && userClub && t.registeredClubs.includes(userClub.id);
+
+        if (isRegistered) {
+            subBtn.innerHTML = '<i class="fas fa-door-open"></i> Entra all\'Interno del Torneo';
+            subBtn.onclick = function() {
+                window.location.href = 'torneo-interno.html?id=' + tId;
+            };
+        } else {
+            subBtn.addEventListener('click', function() {
+                if (!userClub) { alert('Devi essere in un club per iscriverti!'); window.location.href = '../club/club.html'; return; }
+                if (t.status !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
+
+                const idx = tournaments.findIndex(x => x.id === tId);
+                if (!tournaments[idx].registeredClubs) tournaments[idx].registeredClubs = [];
+                
+                if (tournaments[idx].registeredClubs.includes(userClub.id)) {
+                    alert('Sei già iscritto!');
+                } else {
+                    tournaments[idx].registeredClubs.push(userClub.id);
+                    localStorage.setItem('fc27_tournaments', JSON.stringify(tournaments));
+                    alert('Iscritto con successo!');
+                    location.reload(); 
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Competizione</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Corretto -->
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/animations.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>html, body { height: auto; min-height: 100vh; overflow-y: auto; }</style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <!-- Corretto: link locale -->
+                <a href="competizioni-info.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name">Champions League</span>
+            </div>
+            <div class="header-right"><button class="header-btn" id="menu-toggle"><i class="fas fa-bars"></i></button></div>
+        </header>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button class="sidebar-close" id="sidebar-close"><i class="fas fa-times"></i></button></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <div class="tabs-container mb-4 animate-slideUp">
+                    <button class="tab-btn active" data-tab="classifica">Classifica</button>
+                    <button class="tab-btn" data-tab="partite">Partite</button>
+                    <button class="tab-btn" data-tab="squadre">Squadre</button>
+                </div>
+
+                <div class="tab-content active" id="tab-classifica">
+                    <div class="card animate-slideUp">
+                        <table class="classifica-table"><thead><tr><th>#</th><th>Squadra</th><th>P</th><th>V</th><th>S</th><th>PT</th></tr></thead>
+                            <tbody>
+                                <tr><td><div class="classifica-position first">1</div></td><td><strong>FC Warriors</strong></td><td>5</td><td>4</td><td>1</td><td class="text-gold">12</td></tr>
+                                <tr><td><div class="classifica-position second">2</div></td><td><strong>Real Gamers FC</strong></td><td>5</td><td>3</td><td>2</td><td class="text-gold">9</td></tr>
+                                <tr><td><div class="classifica-position third">3</div></td><td><strong>Pro Players</strong></td><td>5</td><td>3</td><td>2</td><td class="text-gold">9</td></tr>
+                                <tr><td><div class="classifica-position">4</div></td><td><strong>Elite Club</strong></td><td>5</td><td>2</td><td>3</td><td>6</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-partite" style="display: none;">
+                    <div class="card animate-slideUp mb-2">
+                        <div class="flex justify-between items-center">
+                            <div class="text-center" style="flex: 1;"><strong>FC Warriors</strong></div>
+                            <div style="padding: 10px 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);"><span class="text-gold" style="font-size: 1.2rem; font-weight: 700;">3 - 1</span></div>
+                            <div class="text-center" style="flex: 1;"><strong>Elite Club</strong></div>
+                        </div>
+                        <p class="text-muted text-center mt-2" style="font-size: 0.8rem;">Giornata 5 - 14 Gen</p>
+                    </div>
+                    <div class="card animate-slideUp stagger-1 mb-2">
+                        <div class="flex justify-between items-center">
+                            <div class="text-center" style="flex: 1;"><strong>Real Gamers</strong></div>
+                            <div style="padding: 10px 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);"><span class="text-gold" style="font-size: 1.2rem; font-weight: 700;">2 - 2</span></div>
+                            <div class="text-center" style="flex: 1;"><strong>Pro Players</strong></div>
+                        </div>
+                        <p class="text-muted text-center mt-2" style="font-size: 0.8rem;">Giornata 5 - 14 Gen</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-squadre" style="display: none;">
+                    <div class="grid-2">
+                        <div class="card animate-slideUp" style="text-align: center;">
+                            <div style="width: 60px; height: 60px; background: var(--bg-tertiary); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-shield-alt" style="font-size: 1.5rem; color: var(--accent-gold);"></i></div>
+                            <h4>FC Warriors</h4><p class="text-muted">Capitano: AlexPro</p>
+                        </div>
+                        <div class="card animate-slideUp stagger-1" style="text-align: center;">
+                            <div style="width: 60px; height: 60px; background: var(--bg-tertiary); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-shield-alt" style="font-size: 1.5rem; color: var(--accent-gold);"></i></div>
+                            <h4>Real Gamers FC</h4><p class="text-muted">Capitano: MaxGamer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const closeBtn = document.getElementById('sidebar-close');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+
+        // Tabs
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active');
+                tabContents.forEach(content => { content.style.display = content.id === 'tab-' + tabId ? 'block' : 'none'; });
+            });
+        });
+    </script>
+</body>
+</html>

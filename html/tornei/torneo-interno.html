@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Torneo Interno</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        
+        /* FIX: Sidebar trasparente - Forziamo lo sfondo scuro */
+        .sidebar {
+            background-color: #1a1a24 !important; /* O usa var(--bg-secondary) se definito */
+        }
+
+        /* Stili per i button dei gironi */
+        .group-btn { padding: 8px 16px; border-radius: 6px; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; margin-right: 5px; }
+        .group-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
+        
+        /* Stili Bracket */
+        .match-bracket { display: flex; flex-direction: column; gap: 10px; }
+        .bracket-match { background: var(--bg-tertiary); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .bracket-team { flex: 1; text-align: center; }
+        .bracket-score { font-weight: bold; color: var(--accent-gold); margin: 0 10px; }
+
+        /* --- STILI LISTA SQUADRE (COPIATI DA COMPETIZIONI) --- */
+        .teams-container-list {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .teams-container-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 20px;
+        }
+        .team-list-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .team-list-item:last-child { border-bottom: none; }
+
+        .team-logo-wrapper {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            opacity: 0.9;
+        }
+        .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
+        
+        .team-name-text {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <a href="tornei.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <span class="user-greeting">Benvenuto, <span id="username-display">Utente</span></span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" onclick="window.location.href='../notifiche.html'"><i class="fas fa-bell"></i><span class="badge" id="notif-badge" style="display: none;">0</span></button>
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <div class="sidebar-overlay" id="overlay"></div>
+        
+        <!-- SIDEBAR COMPLETA -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="tornei.html" class="nav-link active"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 20px;">
+                <h1 id="t-name" class="mb-2">Torneo</h1>
+                
+                <!-- Tabs -->
+                <div class="tabs-container mb-4">
+                    <button class="tab-btn active" data-tab="panoramica">Panoramica</button>
+                    <button class="tab-btn" data-tab="gironi">Gironi</button>
+                    <button class="tab-btn" data-tab="knockout">Knockout</button>
+                    <button class="tab-btn" data-tab="statistiche">Statistiche</button>
+                    <button class="tab-btn" data-tab="regole">Regole</button>
+                    <button class="tab-btn" id="admin-tab-btn" style="display:none" data-tab="admin-panel">Admin</button>
+                    <button class="tab-btn" data-tab="storico">Storico</button>
+                </div>
+
+                <!-- Panoramica -->
+                <div id="tab-panoramica" class="tab-content active">
+                    <div class="card animate-slideUp">
+                        <h3 style="margin-bottom:15px;"><i class="fas fa-users text-gold"></i> Squadre Iscritte (<span id="count-teams">0</span>)</h3>
+                        <div id="teams-list"></div>
+                    </div>
+                </div>
+
+                <!-- Gironi -->
+                <div id="tab-gironi" class="tab-content" style="display:none;">
+                    <div class="card">
+                        <h3>Fase a Gironi</h3>
+                        <div id="group-buttons" class="mb-3"></div>
+                        <div id="group-standings"></div>
+                    </div>
+                </div>
+
+                <!-- Knockout -->
+                <div id="tab-knockout" class="tab-content" style="display:none;">
+                    <div class="card"><h3>Fase ad Eliminazione Diretta</h3><div id="brackets-container"></div></div>
+                </div>
+
+                <!-- Statistiche -->
+                <div id="tab-statistiche" class="tab-content" style="display:none;">
+                    <div class="grid-2">
+                        <div class="card"><h4><i class="fas fa-futbol text-gold"></i> Marcatori</h4><ul id="stat-scorers" class="mt-2"></ul></div>
+                        <div class="card"><h4><i class="fas fa-hands-helping text-blue"></i> Assist</h4><ul id="stat-assists" class="mt-2"></ul></div>
+                    </div>
+                </div>
+
+                <!-- Regole -->
+                <div id="tab-regole" class="tab-content" style="display:none;">
+                    <div class="card"><h3>Regolamento e Premi</h3><div id="rules-content"></div></div>
+                </div>
+
+                <!-- Admin -->
+                <div id="tab-admin-panel" class="tab-content" style="display:none;">
+                    <div class="card" style="border-color: var(--accent-orange);">
+                        <h3 style="color: var(--accent-orange);">Gestione Torneo</h3>
+                        <div class="mt-2">
+                            <button class="btn btn-secondary" onclick="generateGroups()">Genera Gironi</button>
+                            <button class="btn btn-secondary" onclick="advancePhase()">Avanza Fase</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storico -->
+                <div id="tab-storico" class="tab-content" style="display:none;">
+                    <div class="card"><h3>Storico Edizioni</h3><p class="text-muted">Nessuna edizione precedente registrata.</p></div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === STANDARD INIT ===
+        const menuBtn = document.getElementById('menu-btn'); const closeBtn = document.getElementById('close-btn'); const overlay = document.getElementById('overlay'); const sidebar = document.getElementById('sidebar');
+        
+        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        menuBtn.onclick = openSidebar; 
+        closeBtn.onclick = closeSidebar; 
+        overlay.onclick = closeSidebar;
+        
+        document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
+
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if(!user) window.location.href = '../accesso.html';
+        
+        document.getElementById('username-display').textContent = user.nomeEA;
+
+        // Logica visibilità Admin/Staff
+        const adminNav = document.getElementById('admin-nav');
+        const guestAdminNav = document.getElementById('guest-admin-nav');
+
+        if(user.isAdmin) {
+            adminNav.style.display = 'block';
+            guestAdminNav.style.display = 'none';
+            document.getElementById('admin-tab-btn').style.display = 'block'; // Mostra tab admin
+        } else {
+            adminNav.style.display = 'none';
+            guestAdminNav.style.display = 'block';
+        }
+
+        // === TABS LOGIC ===
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
+            };
+        });
+
+        // === LOAD DATA ===
+        const urlP = new URLSearchParams(window.location.search);
+        const tId = urlP.get('id');
+        if(!tId) window.location.href = 'tornei.html';
+
+        let tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
+        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+        let t = tournaments.find(x => x.id === tId);
+        if(!t) { alert('Errore'); window.location.href = 'tornei.html'; }
+
+        document.getElementById('t-name').textContent = t.name;
+
+        // --- RENDER PANORAMICA (MODIFICATO) ---
+        const teamsListDiv = document.getElementById('teams-list');
+        const registeredCount = t.registeredClubs ? t.registeredClubs.length : 0;
+        document.getElementById('count-teams').textContent = registeredCount;
+
+        if (registeredCount > 0) {
+            // Logica griglia: se >= 5 usa due colonne
+            const containerClass = registeredCount >= 5 ? 'teams-container-grid' : 'teams-container-list';
+            let html = '<div class="' + containerClass + '">';
+
+            t.registeredClubs.forEach(cid => {
+                const c = clubs.find(x => x.id === cid);
+                if(c) {
+                    let logoContent = '';
+                    if (c.logo) {
+                        logoContent = '<img src="' + c.logo + '" alt="Logo">';
+                    } else {
+                        logoContent = '<i class="fas fa-shield-alt"></i>';
+                    }
+                    html += `
+                        <div class="team-list-item">
+                            <div class="team-logo-wrapper">${logoContent}</div>
+                            <div class="team-name-text">${c.name}</div>
+                        </div>
+                    `;
+                }
+            });
+            html += '</div>';
+            teamsListDiv.innerHTML = html;
+        } else {
+            teamsListDiv.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>';
+        }
+
+        // Render Gironi
+        if(t.groups) {
+            let btns = '';
+            Object.keys(t.groups).forEach(g => {
+                btns += `<button class="group-btn" onclick="showGroup('${g}')">${g.toUpperCase()}</button>`;
+            });
+            document.getElementById('group-buttons').innerHTML = btns;
+        }
+        
+        window.showGroup = function(groupName) {
+            const groupData = t.groups[groupName];
+            if(!groupData) return;
+            groupData.sort((a,b) => b.points - a.points);
+            let html = `<table class="standings-table"><thead><tr><th>Squadra</th><th>Pt</th><th>G</th></tr></thead><tbody>`;
+            groupData.forEach(team => {
+                const c = clubs.find(x => x.id === team.id);
+                html += `<tr><td>${c ? c.name : 'N/A'}</td><td>${team.points}</td><td>${team.played}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('group-standings').innerHTML = html;
+            document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+
+        // Render Admin Functions
+        window.generateGroups = function() {
+            if(!t.registeredClubs || t.registeredClubs.length < 4) { alert('Servono almeno 4 squadre.'); return; }
+            let groups = { 'A': [], 'B': [] };
+            t.registeredClubs.forEach((cid, i) => {
+                const group = i % 2 === 0 ? 'A' : 'B';
+                groups[group].push({ id: cid, points: 0, played: 0 });
+            });
+            t.groups = groups;
+            localStorage.setItem('fc27_tournaments', JSON.stringify(tournaments));
+            alert('Gironi generati! Ricarica.');
+            location.reload();
+        };
+
+        // Render Rules
+        document.getElementById('rules-content').innerHTML = `<p>${t.rules || 'Regolamento standard FC27.'}</p><h4 class="mt-2">Premi</h4><p>${t.prizes || 'Nessun premio'}</p>`;
+
+    </script>
+</body>
+</html>

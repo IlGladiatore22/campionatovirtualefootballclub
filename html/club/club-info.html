@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Gestione Club</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: #0d1117; color: #e0e0e0; }
+        
+        /* Hero Section */
+        .club-hero { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 12px; border: 1px solid #30363d; }
+        .club-logo { width: 60px; height: 60px; border-radius: 50%; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid var(--accent-gold); flex-shrink: 0; overflow: hidden; }
+        .club-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        
+        /* Layout */
+        .main-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+        
+        /* Field */
+        .pitch-box { background: #0d1117; border-radius: 12px; padding: 10px; border: 1px solid #30363d; }
+        .pitch-field { background: #1d5c2f; position: relative; width: 100%; padding-bottom: 105%; border-radius: 8px; border: 3px solid #2d7d45; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
+        
+        .pitch-markings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .pitch-markings::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.4); transform: translateY(-50%); }
+        .pitch-markings::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18%; height: 13.8%; border: 3px solid rgba(255,255,255,0.4); border-radius: 50%; transform: translate(-50%, -50%); }
+        .pitch-area-top { position: absolute; top: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-top: none; transform: translateX(-50%); }
+        .pitch-area-bottom { position: absolute; bottom: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-bottom: none; transform: translateX(-50%); }
+
+        /* Players */
+        .player-slot { position: absolute; width: 90px; height: auto; z-index: 10; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
+        .player-slot.drag-over { transform: translate(-50%, -50%) scale(1.1); }
+        .role-badge { background: rgba(0,0,0,0.9); color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; padding: 3px 10px; border-radius: 4px; font-size: 0.7rem; margin-bottom: 5px; z-index: 2; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .slot-card { width: 70px; height: 70px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .slot-info { margin-top: 5px; text-align: center; width: 100%; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; }
+        .slot-player-name { font-size: 0.7rem; font-weight: 700; color: #fff; text-transform: uppercase; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .slot-role-real { font-size: 0.55rem; color: var(--accent-gold); font-style: italic; }
+        
+        .player-slot.no-number .slot-card { outline: 2px dashed #f5a623; border-radius: 8px; }
+        .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 65px; background: rgba(0,0,0,0.1); }
+        .player-slot.empty .slot-info { display: none; }
+        .player-slot.empty .role-badge { opacity: 0.5; }
+        .player-slot.empty::after { content: '+'; font-size: 1.8rem; color: rgba(255,255,255,0.2); position: absolute; top: 32px; left: 50%; transform: translate(-50%, -50%); }
+        
+        .jersey-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+
+        /* Sidebar Panel */
+        .sidebar-panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
+        .sidebar-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; margin-bottom: 15px; color: var(--accent-gold); text-transform: uppercase; }
+        
+        .formation-selector { margin-bottom: 15px; }
+        .formation-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #21262d; color: white; border: 1px solid #30363d; cursor: pointer; font-family: 'Orbitron', sans-serif; }
+        
+        .roster-section { margin-bottom: 15px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        .roster-section:last-child { border-bottom: none; }
+        .section-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .roster-list-small { max-height: 120px; overflow-y: auto; }
+        .roster-item { display: flex; align-items: center; justify-content: space-between; background: #21262d; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #30363d; cursor: grab; transition: all 0.2s; font-size: 0.8rem; }
+        .roster-item:hover { background: #30363d; border-color: var(--accent-gold); }
+        .roster-item .r-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .roster-item .r-num { opacity: 0.6; font-family: 'Orbitron', sans-serif; margin: 0 5px; }
+        .roster-item .r-num.missing { color: #f5a623; opacity: 1; }
+        .btn-remove-player { background: rgba(231, 76, 60, 0.2); border: none; color: #e74c3c; width: 20px; height: 20px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+        .btn-remove-player:hover { background: #e74c3c; color: white; }
+        
+        .captain-tools { margin-top: auto; padding-top: 15px; border-top: 1px solid #30363d; display: flex; flex-direction: column; gap: 8px; }
+        .number-warning { background: rgba(245,166,35,0.15); border: 1px solid #f5a623; border-radius: 6px; padding: 8px 10px; font-size: 0.75rem; color: #f5a623; display: none; margin-bottom: 8px; }
+        .number-warning.visible { display: block; }
+        
+        .bench-box { background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 8px; padding: 10px; min-height: 50px; }
+        .bench-box.drag-over { border-color: var(--accent-gold); background: rgba(245, 166, 35, 0.1); }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <button onclick="history.back()" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></button>
+                <span class="site-name">Club</span>
+            </div>
+            <div class="header-right"><button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button></div>
+        </header>
+        
+        <div class="sidebar-overlay" id="overlay"></div>
+        
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="../tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="../club/club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="container">
+                <div class="club-hero animate-slideUp">
+                    <div class="club-logo" id="club-logo">?</div>
+                    <div class="club-info">
+                        <h1 id="club-name">Nome</h1>
+                        <p id="club-info">Capitano: -</p>
+                    </div>
+                </div>
+
+                <div id="member-panel" style="display:none;">
+                    <div class="tabs-container mb-3">
+                        <button class="tab-btn active" data-tab="formation">Formazione</button>
+                        <button class="tab-btn" data-tab="tactics">Tattiche</button>
+                        <button class="tab-btn" id="req-tab" style="display:none;" data-tab="requests">Richieste</button>
+                    </div>
+
+                    <div id="tab-formation" class="tab-content active">
+                        <div class="main-layout">
+                            <div class="pitch-box">
+                                <div class="pitch-field" id="pitch"><div class="pitch-markings"><div class="pitch-area-top"></div><div class="pitch-area-bottom"></div></div></div>
+                            </div>
+                            <div class="sidebar-panel">
+                                <div class="sidebar-title">Gestione Squadra</div>
+                                <div class="formation-selector" id="formation-box" style="display:none;">
+                                    <label style="font-size: 0.8rem; color: var(--text-muted); display:block; margin-bottom:5px;">Modulo</label>
+                                    <select id="formation-select" onchange="changeFormation(this.value)">
+                                        <option value="4-3-3">4-3-3</option>
+                                        <option value="4-4-2">4-4-2</option>
+                                        <option value="4-2-3-1">4-2-3-1</option>
+                                        <option value="4-1-2-1-2">4-1-2-1-2 (Rombo)</option>
+                                        <option value="4-3-2-1">4-3-2-1 (Albero di Natale)</option>
+                                        <option value="4-5-1">4-5-1</option>
+                                        <option value="4-4-1-1">4-4-1-1</option>
+                                        <option value="3-5-2">3-5-2</option>
+                                        <option value="3-4-2-1">3-4-2-1</option>
+                                        <option value="3-4-1-2">3-4-1-2</option>
+                                        <option value="3-4-3">3-4-3</option>
+                                        <option value="5-3-2">5-3-2</option>
+                                        <option value="5-2-2-1">5-2-2-1</option>
+                                        <option value="5-2-1-2">5-2-1-2</option>
+                                    </select>
+                                </div>
+                                <div class="roster-section">
+                                    <div class="section-header"><span>Panchina</span></div>
+                                    <div class="bench-box" id="bench-list" ondragover="handleDragOver(event)" ondrop="handleDropBench(event)"></div>
+                                </div>
+                                <div class="roster-section">
+                                    <div class="section-header"><span>Rosa</span></div>
+                                    <div class="roster-list-small" id="roster-list"></div>
+                                </div>
+                                <div class="captain-tools" id="captain-tools" style="display:none;">
+                                    <div class="number-warning" id="number-warning"><i class="fas fa-exclamation-triangle"></i> Assegna un numero a tutti i titolari.</div>
+                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva</button>
+                                    <a href="#" id="manage-numbers-link" class="btn btn-secondary btn-block"><i class="fas fa-hashtag"></i> Gestione Numeri</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-tactics" class="tab-content" style="display:none;"><div class="card"><h3>Tattiche</h3><p>Sezione in sviluppo.</p></div></div>
+                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste</h3><div id="req-list"></div></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === SETUP INIZIALE ===
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const urlP = new URLSearchParams(window.location.search);
+        const cId = urlP.get('id');
+
+        if (!user || !cId) window.location.href = '../accesso.html';
+        
+        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
+        let users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
+        let club = clubs.find(c => c.id === cId);
+        if (!club) window.location.href = 'club.html';
+
+        const uid = String(user.id);
+        const capId = String(club.captain);
+        const members = (club.members || []).map(m => String(m));
+        const isCaptain = (uid === capId);
+        const isMember = members.includes(uid);
+
+        // === EVENTI UI ===
+        document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
+        document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+        document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+        document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
+        
+        if (user && user.isAdmin) document.getElementById('admin-nav').style.display = 'block';
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
+            };
+        });
+
+        // Render Info Base
+        document.getElementById('club-name').textContent = club.name;
+        document.getElementById('club-info').textContent = 'Capitano: ' + (users.find(u => String(u.id) === capId)?.nomeEA || 'N/D');
+        if (club.logo) document.getElementById('club-logo').innerHTML = '<img src="' + club.logo + '">';
+
+        // === CONTROLLO ACCESSI ===
+        if (!isMember && !isCaptain) {
+            document.getElementById('member-panel').style.display = 'none';
+            alert('Accesso riservato ai membri del club.');
+        } else {
+            document.getElementById('member-panel').style.display = 'block';
+            if (isCaptain) {
+                document.getElementById('req-tab').style.display = 'block';
+                document.getElementById('captain-tools').style.display = 'flex'; 
+                document.getElementById('formation-box').style.display = 'block';
+                document.getElementById('manage-numbers-link').href = 'gestione-numeri.html?id=' + cId;
+                renderRequests();
+            }
+            initUI();
+        }
+
+        // === FUNZIONI GRAFICHE ===
+        function generateRealisticJersey(c1, c2, playerName, playerNum) {
+            const numColor = isLightColor(c1) ? '#000' : '#fff';
+            const numDisplay = playerNum ? playerNum : '?';
+            const numOpacity = playerNum ? '1' : '0.35';
+            return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${adjustColor(c1, -10)}" /><stop offset="50%" style="stop-color:${c1}" /><stop offset="100%" style="stop-color:${adjustColor(c1, -15)}" /></linearGradient></defs>
+                <ellipse cx="50" cy="130" rx="25" ry="5" fill="rgba(0,0,0,0.35)" />
+                <path d="M18,32 Q6,48 18,68 L28,62 L28,42 Z" fill="#1a1a24" stroke="${c2}" stroke-width="1.5"/>
+                <path d="M82,32 Q94,48 82,68 L72,62 L72,42 Z" fill="#1a1a24" stroke="${c2}" stroke-width="1.5"/>
+                <path d="M28,42 L28,105 Q28,115 38,115 L62,115 Q72,115 72,105 L72,42 L82,32 Q60,22 50,22 Q40,22 18,32 Z" fill="url(#bodyGrad)" stroke="${c2}" stroke-width="2"/>
+                <text x="50" y="82" font-family="'Orbitron', sans-serif" font-size="28" font-weight="bold" fill="${numColor}" fill-opacity="${numOpacity}" text-anchor="middle" dominant-baseline="middle">${numDisplay}</text>
+            </svg>`;
+        }
+
+        function isLightColor(hex) { const c = hex.substring(1); const rgb = parseInt(c, 16); const r = (rgb >> 16) & 0xff; const g = (rgb >> 8) & 0xff; const b = (rgb >> 0) & 0xff; return 0.2126 * r + 0.7152 * g + 0.0722 * b > 127.5; }
+        function adjustColor(hex, amount) { let usePound = false; if (hex[0] == "#") { hex = hex.slice(1); usePound = true; } let num = parseInt(hex, 16); let r = (num >> 16) + amount; if (r > 255) r = 255; else if (r < 0) r = 0; let b = ((num >> 8) & 0x00FF) + amount; if (b > 255) b = 255; else if (b < 0) b = 0; let g = (num & 0x0000FF) + amount; if (g > 255) g = 255; else if (g < 0) g = 0; return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16); }
+
+        function checkMissingNumbers() {
+            if (!isCaptain) return;
+            const lineup = club.lineup || {};
+            const missing = Object.keys(lineup).some(k => !lineup[k].num || lineup[k].num === '');
+            const warn = document.getElementById('number-warning');
+            const saveBtn = document.getElementById('save-form-btn');
+            if (missing && Object.keys(lineup).length > 0) { warn.classList.add('visible'); saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; } 
+            else { warn.classList.remove('visible'); saveBtn.disabled = false; saveBtn.style.opacity = '1'; }
+        }
+
+        function initUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
+        function changeFormation(val) { club.formation = val; localStorage.setItem('fc27_clubs', JSON.stringify(clubs)); renderPitch(); renderRoster(); checkMissingNumbers(); }
+
+        // === GESTIONE ROSA ===
+        function renderRoster() {
+            const rosterList = document.getElementById('roster-list');
+            const benchList = document.getElementById('bench-list');
+            rosterList.innerHTML = ''; benchList.innerHTML = '';
+            if (!club.bench) club.bench = [];
+
+            members.forEach(mId => {
+                const u = users.find(x => String(x.id) === mId); if(!u) return;
+                let isInLineup = false; let num = null;
+                if(club.lineup) { Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === mId) { isInLineup = true; num = club.lineup[k].num || null; } }); }
+                const isInBench = club.bench.includes(mId);
+                
+                const div = document.createElement('div');
+                div.className = 'roster-item';
+                div.setAttribute('draggable', isCaptain ? 'true' : 'false');
+                div.dataset.id = u.id; div.dataset.name = u.nomeEA;
+                div.innerHTML = `<span class="r-name">${u.nomeEA}</span>` + (num ? `<span class="r-num">${num}</span>` : (isInLineup ? `<span class="r-num missing">⚠</span>` : `<span class="r-num">-</span>`));
+                
+                if(isCaptain) {
+                    const btnRem = document.createElement('button');
+                    btnRem.className = 'btn-remove-player';
+                    btnRem.innerHTML = '<i class="fas fa-times"></i>';
+                    btnRem.onclick = (e) => { e.stopPropagation(); removePlayerFromClub(u.id); };
+                    div.appendChild(btnRem);
+                }
+                
+                div.ondragstart = function(e) { e.dataTransfer.setData('text/plain', this.dataset.id); };
+                
+                if (isInLineup) { 
+                    div.style.opacity = '0.4'; div.style.borderStyle = 'dashed'; rosterList.appendChild(div); 
+                } else if (isInBench) { 
+                    const benchDiv = div.cloneNode(true); 
+                    benchDiv.style.opacity = '1'; benchDiv.style.borderStyle = 'solid'; 
+                    benchDiv.ondragstart = function(e) { e.dataTransfer.setData('text/plain', this.dataset.id); }; 
+                    benchList.appendChild(benchDiv); 
+                } else { 
+                    rosterList.appendChild(div); 
+                }
+            });
+        }
+
+        window.handleDropBench = function(e) { 
+            e.preventDefault(); 
+            document.getElementById('bench-list').classList.remove('drag-over'); 
+            const droppedId = e.dataTransfer.getData('text/plain'); 
+            if (!club.bench) club.bench = []; 
+            if (!club.bench.includes(droppedId)) { 
+                if(club.lineup) Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === droppedId) delete club.lineup[k]; }); 
+                club.bench.push(droppedId); 
+                saveAndRender(); 
+            } 
+        }
+        window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        
+        function removePlayerFromClub(pId) { 
+            if(confirm('Rimuovere questo giocatore dal club?')) { 
+                club.members = club.members.filter(m => String(m) !== String(pId)); 
+                if(club.lineup) Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === pId) delete club.lineup[k]; }); 
+                if(club.bench) club.bench = club.bench.filter(id => id !== pId); 
+                saveAndRender(); 
+            } 
+        }
+
+        // === RENDER CAMPO ===
+        function renderPitch() {
+            const pitch = document.getElementById('pitch');
+            const marks = pitch.querySelector('.pitch-markings');
+            pitch.innerHTML = ''; pitch.appendChild(marks);
+            
+            const formationName = club.formation || '4-3-3';
+            document.getElementById('formation-select').value = formationName;
+            const positions = getFormationCoords(formationName);
+            const c1 = club.colors?.primary || '#f5a623';
+            const c2 = club.colors?.secondary || '#1a1a24';
+            
+            positions.forEach((pt, i) => {
+                const slot = document.createElement('div');
+                slot.className = 'player-slot';
+                if(!isCaptain) slot.style.pointerEvents = 'none';
+                slot.style.left = pt.x + '%'; slot.style.top = pt.y + '%';
+                slot.dataset.index = i;
+                
+                const data = club.lineup && club.lineup[i];
+                let content = '';
+                
+                if (data) {
+                    const pUser = users.find(u => String(u.id) === String(data.id));
+                    const pName = pUser ? pUser.nomeEA : data.name;
+                    const pNum = data.num || '';
+                    const hasNumber = pNum !== '';
+                    content = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card">${generateRealisticJersey(c1, c2, pName, pNum)}</div><div class="slot-info"><div class="slot-player-name">${pName}</div><div class="slot-role-real">${pt.role}</div></div>`;
+                    slot.classList.remove('empty');
+                    if (!hasNumber) slot.classList.add('no-number');
+                    slot.draggable = true;
+                    slot.ondragstart = function(e) { e.dataTransfer.setData('text/plain', String(data.id)); e.stopPropagation(); };
+                } else {
+                    content = `<div class="role-badge" style="opacity: 0.6">${pt.abbrev}</div><div class="slot-card"></div>`;
+                    slot.classList.add('empty'); slot.draggable = false;
+                }
+                
+                slot.innerHTML = content;
+                slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('drag-over'); };
+                slot.ondragleave = () => slot.classList.remove('drag-over');
+                slot.ondrop = (e) => {
+                    e.preventDefault(); slot.classList.remove('drag-over');
+                    const droppedId = e.dataTransfer.getData('text/plain'); if (!droppedId) return;
+                    const rosterItem = document.querySelector(`.roster-item[data-id="${droppedId}"]`);
+                    const pName = rosterItem ? rosterItem.dataset.name : '?';
+                    let pNum = '';
+                    if (club.lineup) { Object.keys(club.lineup).forEach(k => { if (String(club.lineup[k].id) === droppedId) { pNum = club.lineup[k].num || ''; delete club.lineup[k]; } }); }
+                    if(club.bench) club.bench = club.bench.filter(id => id !== droppedId);
+                    if(!club.lineup) club.lineup = {};
+                    club.lineup[i] = { id: droppedId, name: pName, num: pNum };
+                    saveAndRender();
+                };
+                pitch.appendChild(slot);
+            });
+        }
+
+        // === DATABASE MODULI FC27 (CORRETTO) ===
+        function getFormationCoords(f) {
+            const formations = {
+                "4-3-3": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:18, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:82, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:28, y:52, abbrev:"CC", role:"Centrocampista"}, {x:50, y:58, abbrev:"REG", role:"Regista"}, {x:72, y:52, abbrev:"CC", role:"Centrocampista"},
+                    {x:20, y:22, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:18, abbrev:"AT", role:"Prima Punta"}, {x:80, y:22, abbrev:"AD", role:"Ala Destra"}
+                ],
+                "4-4-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:15, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:38, y:55, abbrev:"CC", role:"Centrocampista"}, {x:62, y:55, abbrev:"CC", role:"Centrocampista"}, {x:85, y:50, abbrev:"ED", role:"Esterno Destro"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
+                ],
+                "4-2-3-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
+                    {x:15, y:40, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:38, abbrev:"TQ", role:"Trequartista"}, {x:85, y:40, abbrev:"AD", role:"Ala Destra"},
+                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "4-1-2-1-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:50, y:65, abbrev:"MDC", role:"Mediano"},
+                    {x:35, y:52, abbrev:"CC", role:"Centrocampista"}, {x:65, y:52, abbrev:"CC", role:"Centrocampista"},
+                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
+                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "4-3-2-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:35, y:60, abbrev:"CC", role:"Centrocampista"}, {x:50, y:65, abbrev:"REG", role:"Regista"}, {x:65, y:60, abbrev:"CC", role:"Centrocampista"},
+                    {x:35, y:38, abbrev:"TQ", role:"Trequartista"}, {x:65, y:38, abbrev:"TQ", role:"Trequartista"},
+                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "4-5-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:15, y:48, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:50, y:62, abbrev:"REG", role:"Regista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:85, y:48, abbrev:"ED", role:"Esterno Destro"},
+                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "4-4-1-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:15, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:38, y:55, abbrev:"CC", role:"Centrocampista"}, {x:62, y:55, abbrev:"CC", role:"Centrocampista"}, {x:85, y:50, abbrev:"ED", role:"Esterno Destro"},
+                    {x:50, y:32, abbrev:"TQ", role:"Trequartista"},
+                    {x:50, y:15, abbrev:"AT", role:"Attaccante"}
+                ],
+                // CORREZIONE: Alzato la linea dei 3 difensori (y: 74/76 invece di 80/82)
+                "3-5-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
+                    {x:10, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:32, y:55, abbrev:"CC", role:"Centrocampista"}, {x:50, y:60, abbrev:"REG", role:"Regista"}, {x:68, y:55, abbrev:"CC", role:"Centrocampista"}, {x:90, y:50, abbrev:"ED", role:"Esterno Destro"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
+                ],
+                "3-4-2-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
+                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
+                    {x:35, y:32, abbrev:"TQ", role:"Trequartista"}, {x:65, y:32, abbrev:"TQ", role:"Trequartista"},
+                    {x:50, y:15, abbrev:"AT", role:"Attaccante"}
+                ],
+                "3-4-1-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
+                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
+                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
+                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "3-4-3": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
+                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
+                    {x:20, y:22, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:18, abbrev:"AT", role:"Prima Punta"}, {x:80, y:22, abbrev:"AD", role:"Ala Destra"}
+                ],
+                // CORREZIONE: Alzato anche i DC centrali nei 5 difensori
+                "5-3-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
+                    {x:30, y:52, abbrev:"CC", role:"Centrocampista"}, {x:50, y:58, abbrev:"REG", role:"Regista"}, {x:70, y:52, abbrev:"CC", role:"Centrocampista"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
+                ],
+                "5-2-2-1": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
+                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
+                    {x:20, y:38, abbrev:"AS", role:"Ala Sinistra"}, {x:80, y:38, abbrev:"AD", role:"Ala Destra"},
+                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
+                ],
+                "5-2-1-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
+                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
+                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
+                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
+                ]
+            };
+            return formations[f] || formations["4-3-3"];
+        }
+
+        function saveAndRender() { localStorage.setItem('fc27_clubs', JSON.stringify(clubs)); renderUI(); }
+        function renderUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
+
+        document.getElementById('save-form-btn').onclick = () => {
+            const lineup = club.lineup || {};
+            const missing = Object.keys(lineup).some(k => !lineup[k].num || lineup[k].num === '');
+            if (missing) { alert('Assegna un numero di maglia a tutti i titolari.'); return; }
+            saveAndRender();
+            alert('Formazione salvata con successo!');
+        };
+
+        // === RICHIESTE ===
+        function renderRequests() {
+            const list = document.getElementById('req-list');
+            const pending = (club.requests || []).filter(r => r.status === 'pending');
+            if (pending.length === 0) { list.innerHTML = '<p style="padding:10px; opacity:0.5">Nessuna richiesta in sospeso.</p>'; return; }
+            list.innerHTML = '';
+            pending.forEach(r => { list.innerHTML += `<div style="background:#21262d; padding:10px; margin-bottom:5px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">${r.userName} <div><button onclick="decide('${r.id}', true)" class="btn btn-secondary" style="padding:5px 10px;">Accetta</button> <button onclick="decide('${r.id}', false)" class="btn btn-secondary" style="padding:5px 10px; background:#333;">Rifiuta</button></div></div>`; });
+        }
+        
+        window.decide = (id, approve) => {
+            const idx = club.requests.findIndex(r => r.id === id);
+            if (idx === -1) return;
+            const req = club.requests[idx];
+            if (approve) { if (!club.members) club.members = []; club.members.push(req.userId); }
+            club.requests.splice(idx, 1);
+            saveAndRender(); location.reload();
+        };
+    </script>
+</body>
+</html>

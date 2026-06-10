@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestione Tornei</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/animations.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        /* Stili specifici per la pagina */
+        .manage-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .manage-info h4 { margin: 0 0 5px 0; color: var(--text-primary); }
+        .manage-info p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+        .manage-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-open { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
+        .status-closed { background: rgba(231, 76, 60, 0.2); color: var(--accent-red); }
+        .status-progress { background: rgba(245, 166, 35, 0.2); color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header Admin -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <div class="logo" style="background: var(--accent-orange);">FC</div>
+                    <span class="site-name" style="color: var(--accent-orange);">Gestione Tornei</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 8px 15px;">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <button class="header-btn" id="logout-btn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container" style="padding: 30px 20px;">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h1>I Tuoi Tornei</h1>
+                    <a href="crea-torneo.html" class="btn btn-primary" style="background: var(--accent-orange);">
+                        <i class="fas fa-plus"></i> Crea Nuovo
+                    </a>
+                </div>
+
+                <!-- Lista Tornei -->
+                <div id="tournaments-list">
+                    <!-- I tornei verranno inseriti qui via JS -->
+                </div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon"><i class="fas fa-medal"></i></div>
+                    <h3 class="empty-state-title">Nessun torneo</h3>
+                    <p class="empty-state-text">Non hai creato nessun torneo. Clicca su "Crea Nuovo" per iniziare.</p>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // =============================================
+        // 1. CONTROLLO SESSIONE ROBUSTO
+        // =============================================
+        const adminSession = JSON.parse(localStorage.getItem('admin') || 'null');
+        const userSession = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        let currentSession = null;
+
+        if (adminSession && adminSession.isAdmin) {
+            currentSession = adminSession;
+        } else if (userSession && userSession.isAdmin) {
+            currentSession = userSession;
+        }
+
+        if (!currentSession) {
+            window.location.href = 'accesso-admin.html';
+            throw new Error("Accesso negato");
+        }
+
+        // =============================================
+        // 2. CARICAMENTO E RENDER TORNEI
+        // =============================================
+        const listContainer = document.getElementById('tournaments-list');
+        const emptyState = document.getElementById('empty-state');
+        let tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
+
+        function renderTournaments() {
+            listContainer.innerHTML = '';
+            
+            if (tournaments.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+
+            tournaments.forEach((t, index) => {
+                const card = document.createElement('div');
+                card.className = 'manage-card animate-slideUp';
+                card.style.animationDelay = (index * 0.05) + 's';
+
+                // Determina classe stato
+                let statusClass = 'status-progress';
+                let statusText = 'In Corso';
+                if (t.status === 'aperta') { statusClass = 'status-open'; statusText = 'Aperto'; }
+                if (t.status === 'chiusa') { statusClass = 'status-closed'; statusText = 'Chiuso'; }
+
+                card.innerHTML = `
+                    <div class="manage-info">
+                        <h4>${t.name}</h4>
+                        <p>
+                            <span class="status-badge ${statusClass}">${statusText}</span> • 
+                            <i class="fas fa-users"></i> ${t.registeredClubs ? t.registeredClubs.length : 0} Squadre
+                        </p>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn btn-secondary" onclick="toggleStatus(${index})" title="Cambia Stato">
+                            <i class="fas ${t.status === 'aperta' ? 'fa-lock' : 'fa-lock-open'}"></i>
+                        </button>
+                        <a href="../tornei/torneo-interna.html?id=${t.id}&admin=true" class="btn btn-primary" style="background: var(--accent-gold); color: #000;">
+                            <i class="fas fa-cogs"></i> Gestisci
+                        </a>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // =============================================
+        // 3. FUNZIONI DI GESTIONE
+        // =============================================
+        
+        window.toggleStatus = function(index) {
+            if (tournaments[index].status === 'aperta') {
+                tournaments[index].status = 'chiusa';
+            } else if (tournaments[index].status === 'chiusa') {
+                tournaments[index].status = 'aperta';
+            } else {
+                tournaments[index].status = 'aperta'; // Default se era in corso
+            }
+            
+            localStorage.setItem('fc27_tournaments', JSON.stringify(tournaments));
+            renderTournaments();
+        };
+
+        // =============================================
+        // 4. LOGOUT
+        // =============================================
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('admin');
+            localStorage.removeItem('auth_token');
+            window.location.href = 'accesso-admin.html';
+        });
+
+        // Init
+        renderTournaments();
+
+    </script>
+</body>
+</html>

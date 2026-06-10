@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - FAQ</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../estetica/style.css">
+    <link rel="stylesheet" href="../estetica/animations.css">
+    <link rel="stylesheet" href="../estetica/components.css">
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        .faq-item { border-bottom: 1px solid var(--border-color); }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-question { width: 100%; background: none; border: none; padding: 20px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; }
+        .faq-question h4 { margin: 0; color: var(--text-primary); }
+        .faq-question i { color: var(--accent-gold); transition: transform 0.3s; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
+        .faq-answer.open { max-height: 500px; padding-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="overlay"></div>
+
+        <!-- Sidebar Completa -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
+                <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu Principale</div>
+                    <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="faq.html" class="nav-link active"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <h1 class="mb-3">Domande Frequenti</h1>
+
+                <div class="card animate-slideUp">
+                    <!-- FAQ 1 -->
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <h4>Come mi iscrivo a una competizione?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="text-muted">Per iscriverti, devi prima far parte di un Club. Vai nella sezione "Club", unisciti o creane uno, poi visita la pagina della competizione e clicca su "Iscrivi il Tuo Club". Se la competizione è a pagamento, verrà inviata una richiesta agli amministratori.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <h4>Come funzionano i crediti?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="text-muted">I crediti sono la valuta virtuale di FC27. Vengono utilizzati per pagare le iscrizioni alle competizioni premium. Puoi ricevere crediti vincendo tornei o competizioni.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <h4>Come creo un Club?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="text-muted">Attualmente, solo gli Amministratori possono creare nuovi Club. Se desideri fondare un team, contatta un admin tramite la sezione Messaggi.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <h4>Come ricevo i messaggi su Discord?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="text-muted">Assicurati di aver inserito il tuo Discord ID corretto nel profilo. Quando qualcuno ti invia un messaggio tramite il sito, riceverai una notifica direttamente sul tuo Discord (se il sistema webhook è attivo).</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <h4>Posso cambiare la mia piattaforma (PC/PS/XBOX)?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="text-muted">La piattaforma viene impostata durante la registrazione. Per cambiarla, è necessario contattare un Amministratore per evitare conflitti nelle competizioni dedicate a specifiche console.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Logic
+        document.getElementById('menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); });
+        document.getElementById('close-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
+        document.getElementById('overlay').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
+
+        // FAQ Toggle
+        function toggleFaq(btn) {
+            const answer = btn.nextElementSibling;
+            const icon = btn.querySelector('i');
+            
+            // Close others
+            document.querySelectorAll('.faq-answer').forEach(a => {
+                if (a !== answer) {
+                    a.classList.remove('open');
+                    a.previousElementSibling.querySelector('i').style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Toggle current
+            answer.classList.toggle('open');
+            if (answer.classList.contains('open')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    </script>
+</body>
+</html>
