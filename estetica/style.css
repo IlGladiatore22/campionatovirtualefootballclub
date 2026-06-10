@@ -203,11 +203,13 @@ a:hover {
     gap: 12px;
 }
 
+/* === MODIFICA LOGO ROtondo === */
 .logo {
     width: 45px;
     height: 45px;
     background: var(--gradient-gold);
-    border-radius: 10px;
+    border-radius: 50%; /* Cambiato da 10px a 50% per renderlo rotondo */
+    overflow: hidden;   /* Aggiunto per contenere eventuali immagini */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -739,11 +741,12 @@ a:hover {
     z-index: 9999;
 }
 
+/* === MODIFICA LOADING LOGO ROtondo === */
 .loading-logo {
     width: 120px;
     height: 120px;
     background: var(--gradient-gold);
-    border-radius: 24px;
+    border-radius: 50%; /* Cambiato da 24px a 50% per renderlo rotondo */
     display: flex;
     align-items: center;
     justify-content: center;
