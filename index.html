@@ -3,29 +3,34 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TITOLO - Caricamento</title>
+        <title>CVFC - Caricamento</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        <link rel="stylesheet" href="estetica/style.css">
-        <link rel="stylesheet" href="estetica/animations.css">
+        <!-- Aggiunto ?v=2 per forzare l'aggiornamento del CSS Rosso -->
+        <link rel="stylesheet" href="estetica/style.css?v=2">
+        <link rel="stylesheet" href="estetica/animations.css?v=2">
+        
+        <style>
+            /* Forzatura aggiuntiva per sicurezza */
+            .loading-logo {
+                background: none !important;
+                box-shadow: none !important;
+            }
+        </style>
     </head>
     <body>
         
         <div id="loading-screen" class="loading-screen">
-            <!-- 
-                MODIFICA CHIAVE: 
-                Aggiunto style="background: none; box-shadow: none;" per togliere il quadrato arancione.
-                L'immagine logsito.png deve essere nella cartella 'estetica'.
-            -->
-            <div class="loading-logo animate-pulse" style="background: none; box-shadow: none; border-radius: 50%; overflow: hidden;">
+            <!-- MODIFICA CHIAVE: Rimuovo lo sfondo azzurro/arancione forzatamente -->
+            <div class="loading-logo animate-pulse" style="background: none !important; box-shadow: none !important; border-radius: 50%; overflow: hidden;">
                 <img src="estetica/logosito.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             
-            <h1 class="loading-title">TITOLO</h1>
+            <h1 class="loading-title">Campionato Virtuale Football Club</h1>
 
             <div class="progress-container">
                 <div class="progress-bar">
@@ -36,13 +41,7 @@
             <p class="loading-status" id="loading-status">Inizializzazione...</p>
         </div>
 
-        <!-- 
-            HO DISATTIVATO TEMPORANEAMENTE MAIN.JS 
-            Perché dà errore "LoadingScreen is not defined". 
-            Se il sito non funziona senza, dobbiamo correggere main.js.
-        -->
-        <!-- <script src="script/main.js"></script> -->
-
+        <script src="script/main.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', async () => {
                 const loadingScreen = document.getElementById('loading-screen');
@@ -69,6 +68,7 @@
                 loadingScreen.style.opacity = '0';
                 
                 setTimeout(() => {
+
                     const tutorialCompleted = localStorage.getItem('tutorial_completed');
 
                     if (tutorialCompleted) {
