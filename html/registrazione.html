@@ -10,42 +10,6 @@
     <link rel="stylesheet" href="../estetica/components.css?v=2">
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
-        
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 15, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        .success-content {
-            text-align: center;
-            animation: scaleIn 0.4s ease;
-            background: var(--bg-secondary);
-            padding: 40px;
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-            max-width: 400px;
-        }
-        
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            margin: 0 auto 20px;
-        }
     </style>
 </head>
 <body>
@@ -79,7 +43,6 @@
                     </div>
 
                     <form id="register-form">
-                        <!-- I campi del form sono invariati, li riporto brevemente per completezza -->
                         <div class="input-group">
                             <label class="input-label" for="nomeEA"><i class="fas fa-user"></i> Nome EA *</label>
                             <input type="text" id="nomeEA" class="input-field" placeholder="Il tuo nome EA" autocomplete="off" required>
@@ -134,30 +97,11 @@
         </main>
     </div>
 
-    <!-- Success Overlay MODIFICATO -->
-    <div id="success-overlay" class="success-overlay">
-        <div class="success-content">
-            <div class="success-icon">
-                <i class="fas fa-check"></i>
-            </div>
-            <h2 style="margin-bottom: 10px;">Registrazione completata!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">
-                L'utente è stato salvato nel browser.<br>
-                Clicca il pulsante sotto per scaricare il file per GitHub.
-            </p>
-            
-            <!-- PULSANTE DOWNLOAD AGGIUNTO -->
-            <button id="download-btn" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 15px;">
-                <i class="fas fa-download"></i> Scarica Database (JSON)
-            </button>
-
-            <a href="accesso.html" class="btn btn-secondary" style="width: 100%;">
-                Vai al Login
-            </a>
-        </div>
-    </div>
-
     <script>
+        // --- CONFIGURAZIONE JSONBIN ---
+        const BIN_ID = '6a2ae33cda38895dfeaee508';
+        const API_KEY = '$2a$10$jodFDcNDs2ScJVNFm.jvc.JiM7BJCXerh/fXTfuEXyYYiiG4L8ctO';
+
         let selectedPlatform = null;
 
         // Platform selection
@@ -185,7 +129,7 @@
         });
 
         // Form submit
-        document.getElementById('register-form').addEventListener('submit', function(e) {
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const nomeEA = document.getElementById('nomeEA').value.trim();
@@ -198,80 +142,68 @@
 
             errorMsg.style.display = 'none';
 
-            if (!nomeEA || !gamertag || !password) {
-                errorText.textContent = 'Compila tutti i campi obbligatori';
-                errorMsg.style.display = 'block';
-                return;
-            }
+            // Validazioni
+            if (!nomeEA || !gamertag || !password) { errorText.textContent = 'Compila tutti i campi obbligatori'; errorMsg.style.display = 'block'; return; }
             if (gamertag.length < 3) { errorText.textContent = 'Il gamertag deve avere almeno 3 caratteri'; errorMsg.style.display = 'block'; return; }
             if (!selectedPlatform) { errorText.textContent = 'Seleziona una piattaforma'; errorMsg.style.display = 'block'; return; }
             if (password.length < 6) { errorText.textContent = 'La password deve avere almeno 6 caratteri'; errorMsg.style.display = 'block'; return; }
             if (password !== confirmPassword) { errorText.textContent = 'Le password non coincidono'; errorMsg.style.display = 'block'; return; }
 
-            let users = [];
             try {
-                const stored = localStorage.getItem('fc27_users');
-                users = stored ? JSON.parse(stored) : [];
-            } catch (e) {
-                users = [];
-            }
+                // 1. Leggi i dati attuali dal database
+                const readResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const data = await readResponse.json();
+                
+                // Prendi la lista utenti (se non esiste, creala vuota)
+                let users = data.record.users || [];
 
-            const exists = users.find(u => u.gamertag && u.gamertag.toLowerCase() === gamertag.toLowerCase());
-            if (exists) {
-                errorText.textContent = 'Questo gamertag è già registrato';
+                // 2. Controlla se l'utente esiste già
+                const exists = users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase());
+                if (exists) {
+                    errorText.textContent = 'Questo gamertag è già registrato';
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                // 3. Crea il nuovo utente
+                const newUser = {
+                    id: 'user_' + Date.now(),
+                    nomeEA: nomeEA,
+                    gamertag: gamertag,
+                    discordId: discordId || '',
+                    piattaforma: selectedPlatform,
+                    password: password,
+                    isAdmin: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                users.push(newUser);
+
+                // 4. Aggiorna il database su JSONBin
+                const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ "users": users }) // Salviamo l'oggetto con la lista aggiornata
+                });
+
+                if (updateResponse.ok) {
+                    alert('Registrazione completata con successo!');
+                    window.location.href = 'accesso.html?registered=true';
+                } else {
+                    throw new Error('Errore nel salvataggio');
+                }
+
+            } catch (error) {
+                console.error("Errore:", error);
+                errorText.textContent = 'Errore di connessione al database. Riprova.';
                 errorMsg.style.display = 'block';
-                return;
             }
-
-            const newUser = {
-                id: 'user_' + Date.now(),
-                nomeEA: nomeEA,
-                gamertag: gamertag,
-                discordId: discordId || '',
-                piattaforma: selectedPlatform,
-                password: password,
-                isAdmin: false,
-                createdAt: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            localStorage.setItem('fc27_users', JSON.stringify(users));
-
-            // Notifica benvenuto
-            const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
-            notifications.push({
-                id: 'notif_' + Date.now(),
-                userId: newUser.id,
-                title: 'Benvenuto in FC27!',
-                message: 'Ciao ' + nomeEA + '! Grazie per esserti registrato.',
-                read: false,
-                createdAt: new Date().toISOString()
-            });
-            localStorage.setItem('fc27_notifications', JSON.stringify(notifications));
-
-            // MOSTRA OVERLAY SENZA REINDIRIZZAMENTO AUTOMATICO
-            document.getElementById('success-overlay').style.display = 'flex';
-            
-            // Prepara il tasto download
-            document.getElementById('download-btn').onclick = function() {
-                downloadJSONFile(users);
-                // Dopo il download, cambio il testo del bottone per conferma
-                this.innerHTML = '<i class="fas fa-check"></i> Scaricato!';
-                this.style.background = 'var(--accent-green)';
-            };
         });
-
-        // Funzione per scaricare il file
-        function downloadJSONFile(data) {
-            const jsonString = JSON.stringify(data, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "registrazioni.json";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
     </script>
 </body>
 </html>
