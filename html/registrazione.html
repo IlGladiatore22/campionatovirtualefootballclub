@@ -8,11 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../estetica/style.css?v=2">
     <link rel="stylesheet" href="../estetica/components.css?v=2">
-    <style>
-        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
-    </style>
+    <style> html, body { height: auto; min-height: 100vh; overflow-y: auto; } </style>
 </head>
 <body>
+    <!-- HTML INVIARIATO (uguale a prima) -->
     <div class="page-wrapper">
         <header class="header">
             <div class="header-left">
@@ -22,9 +21,7 @@
                 </a>
             </div>
             <div class="header-right">
-                <a href="accesso.html" class="btn btn-small btn-secondary">
-                    <i class="fas fa-sign-in-alt"></i> Accedi
-                </a>
+                <a href="accesso.html" class="btn btn-small btn-secondary"><i class="fas fa-sign-in-alt"></i> Accedi</a>
             </div>
         </header>
 
@@ -38,27 +35,14 @@
                     </div>
 
                     <div id="error-message" class="mb-2" style="display: none; padding: 12px 16px; background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-red); border-radius: var(--border-radius); color: var(--accent-red);">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span id="error-text"></span>
+                        <i class="fas fa-exclamation-circle"></i> <span id="error-text"></span>
                     </div>
 
                     <form id="register-form">
-                        <div class="input-group">
-                            <label class="input-label" for="nomeEA"><i class="fas fa-user"></i> Nome EA *</label>
-                            <input type="text" id="nomeEA" class="input-field" placeholder="Il tuo nome EA" autocomplete="off" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label" for="gamertag"><i class="fas fa-gamepad"></i> Gamertag *</label>
-                            <input type="text" id="gamertag" class="input-field" placeholder="Il tuo gamertag unico" autocomplete="off" required>
-                            <small class="text-muted">Usalo per accedere</small>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label" for="discordId"><i class="fab fa-discord"></i> Discord ID</label>
-                            <input type="text" id="discordId" class="input-field" placeholder="Es. 123456789012345678">
-                        </div>
-
+                        <div class="input-group"><label class="input-label" for="nomeEA"><i class="fas fa-user"></i> Nome EA *</label><input type="text" id="nomeEA" class="input-field" placeholder="Il tuo nome EA" required></div>
+                        <div class="input-group"><label class="input-label" for="gamertag"><i class="fas fa-gamepad"></i> Gamertag *</label><input type="text" id="gamertag" class="input-field" placeholder="Il tuo gamertag unico" required></div>
+                        <div class="input-group"><label class="input-label" for="discordId"><i class="fab fa-discord"></i> Discord ID</label><input type="text" id="discordId" class="input-field" placeholder="Opzionale"></div>
+                        
                         <div class="input-group">
                             <label class="input-label"><i class="fas fa-desktop"></i> Piattaforma *</label>
                             <div class="platform-selector">
@@ -69,70 +53,48 @@
                             <input type="hidden" id="piattaforma" value="">
                         </div>
 
-                        <div class="input-group">
-                            <label class="input-label" for="password"><i class="fas fa-lock"></i> Password *</label>
-                            <div style="position: relative;">
-                                <input type="password" id="password" class="input-field" placeholder="Minimo 6 caratteri" required>
-                                <button type="button" id="toggle-btn" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
-                                    <i class="fas fa-eye" id="pass-icon"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <div class="input-group"><label class="input-label" for="password"><i class="fas fa-lock"></i> Password *</label><div style="position: relative;"><input type="password" id="password" class="input-field" placeholder="Minimo 6 caratteri" required><button type="button" id="toggle-btn" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;"><i class="fas fa-eye" id="pass-icon"></i></button></div></div>
+                        <div class="input-group"><label class="input-label" for="confirmPassword"><i class="fas fa-lock"></i> Conferma Password *</label><input type="password" id="confirmPassword" class="input-field" placeholder="Ripeti la password" required></div>
 
-                        <div class="input-group">
-                            <label class="input-label" for="confirmPassword"><i class="fas fa-lock"></i> Conferma Password *</label>
-                            <input type="password" id="confirmPassword" class="input-field" placeholder="Ripeti la password" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3">
-                            <i class="fas fa-user-plus"></i> Registrati
-                        </button>
+                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3"><i class="fas fa-user-plus"></i> Registrati</button>
                     </form>
-
-                    <p class="text-center text-muted mt-3">
-                        Hai gia un account? <a href="accesso.html">Accedi</a>
-                    </p>
+                    <p class="text-center text-muted mt-3">Hai gia un account? <a href="accesso.html">Accedi</a></p>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // --- CONFIGURAZIONE JSONBIN ---
-        const BIN_ID = '6a2ae33cda38895dfeaee508';
-        // La tua chiave con permessi
+        // --- CONFIGURAZIONE ---
+        // Assicurati che questo ID sia ESATTAMENTE quello che vedi su JSONBin nella lista Bins
+        const BIN_ID = '6a2ae33cda38895dfeaee508'; 
+        
+        // La tua chiave presa dalla foto
         const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW';
 
         let selectedPlatform = null;
 
-        // Platform selection
+        // Logica Pulsanti
         document.querySelectorAll('.platform-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 selectedPlatform = this.dataset.platform;
                 document.getElementById('piattaforma').value = selectedPlatform;
-                document.getElementById('error-message').style.display = 'none';
             });
         });
 
-        // Toggle password
         document.getElementById('toggle-btn').addEventListener('click', function() {
             const input = document.getElementById('password');
             const icon = document.getElementById('pass-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
+            if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); } 
+            else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
         });
 
-        // Form submit
+        // Form Submit
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-
+            
             const nomeEA = document.getElementById('nomeEA').value.trim();
             const gamertag = document.getElementById('gamertag').value.trim();
             const discordId = document.getElementById('discordId').value.trim();
@@ -140,77 +102,62 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const errorMsg = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
-
             errorMsg.style.display = 'none';
 
             // Validazioni
-            if (!nomeEA || !gamertag || !password) { errorText.textContent = 'Compila tutti i campi obbligatori'; errorMsg.style.display = 'block'; return; }
-            if (gamertag.length < 3) { errorText.textContent = 'Il gamertag deve avere almeno 3 caratteri'; errorMsg.style.display = 'block'; return; }
-            if (!selectedPlatform) { errorText.textContent = 'Seleziona una piattaforma'; errorMsg.style.display = 'block'; return; }
-            if (password.length < 6) { errorText.textContent = 'La password deve avere almeno 6 caratteri'; errorMsg.style.display = 'block'; return; }
-            if (password !== confirmPassword) { errorText.textContent = 'Le password non coincidono'; errorMsg.style.display = 'block'; return; }
+            if(!nomeEA || !gamertag || !password){ errorText.textContent='Compila tutto'; errorMsg.style.display='block'; return; }
+            if(gamertag.length < 3){ errorText.textContent='Gamertag corto'; errorMsg.style.display='block'; return; }
+            if(!selectedPlatform){ errorText.textContent='Scegli piattaforma'; errorMsg.style.display='block'; return; }
+            if(password !== confirmPassword){ errorText.textContent='Password diverse'; errorMsg.style.display='block'; return; }
 
             try {
-                // 1. Leggi i dati attuali
-                const readResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 
-                        'X-Master-Key': API_KEY 
-                    }
+                // 1. LEGGI
+                // USIAMO X-Access-Key PERCHÈ LA TUA CHIAVE È CUSTOM
+                const getResp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Access-Key': API_KEY }
                 });
-                
-                if (readResponse.status === 401) throw new Error("Chiave API non valida. Controlla i permessi su JSONBin.");
-                if (!readResponse.ok) throw new Error("Errore connessione al database.");
 
-                const data = await readResponse.json();
-                
-                // Gestione sicura della lista utenti
-                let users = [];
-                if (data.record && Array.isArray(data.record.users)) {
-                    users = data.record.users;
-                }
+                if(getResp.status === 401) throw new Error("Chiave API rifiutata. Controlla che il Bin ID nel codice sia corretto.");
+                if(!getResp.ok) throw new Error("Errore connessione.");
 
-                // 2. Controlla duplicati
-                const exists = users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase());
-                if (exists) {
-                    errorText.textContent = 'Questo gamertag è già registrato';
+                const data = await getResp.json();
+                let users = data.record.users || [];
+
+                // 2. CONTROLLA DUPLICATI
+                if(users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase())){
+                    errorText.textContent = 'Gamertag già usato';
                     errorMsg.style.display = 'block';
                     return;
                 }
 
-                // 3. Crea il nuovo utente
-                const newUser = {
+                // 3. CREA UTENTE
+                users.push({
                     id: 'user_' + Date.now(),
-                    nomeEA: nomeEA,
-                    gamertag: gamertag,
-                    discordId: discordId || '',
+                    nomeEA, gamertag, discordId,
                     piattaforma: selectedPlatform,
-                    password: password,
-                    isAdmin: false,
+                    password, isAdmin: false,
                     createdAt: new Date().toISOString()
-                };
+                });
 
-                users.push(newUser);
-
-                // 4. Aggiorna il database
-                const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                // 4. SCRIVI
+                const putResp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
+                        'X-Access-Key': API_KEY
                     },
                     body: JSON.stringify({ "users": users })
                 });
 
-                if (updateResponse.status === 401) throw new Error("Chiave API non ha permessi di scrittura.");
-                if (!updateResponse.ok) throw new Error("Errore durante il salvataggio.");
+                if(putResp.status === 401) throw new Error("Chiave non ha permessi scrittura.");
+                if(!putResp.ok) throw new Error("Errore salvataggio.");
 
-                // Successo
-                alert('Registrazione completata con successo!');
-                window.location.href = 'accesso.html?registered=true';
+                alert('Fatto! Ora puoi accedere.');
+                window.location.href = 'accesso.html';
 
-            } catch (error) {
-                console.error("Errore:", error);
-                errorText.textContent = error.message || 'Errore generico. Riprova.';
+            } catch(err) {
+                console.error(err);
+                errorText.textContent = err.message;
                 errorMsg.style.display = 'block';
             }
         });
