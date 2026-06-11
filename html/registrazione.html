@@ -6,8 +6,8 @@
     <title>FC27 - Registrazione</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../estetica/style.css">
-    <link rel="stylesheet" href="../estetica/components.css">
+    <link rel="stylesheet" href="../estetica/style.css?v=2">
+    <link rel="stylesheet" href="../estetica/components.css?v=2">
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
@@ -136,7 +136,7 @@
                 <i class="fas fa-check"></i>
             </div>
             <h2 style="margin-bottom: 10px;">Registrazione completata!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Reindirizzamento al login...</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Il file JSON è stato scaricato.<br>Caricalo nella cartella 'database' su GitHub.</p>
         </div>
     </div>
 
@@ -221,7 +221,7 @@
 
             const exists = users.find(u => u.gamertag && u.gamertag.toLowerCase() === gamertag.toLowerCase());
             if (exists) {
-                errorText.textContent = 'Questo gamertag e gia registrato';
+                errorText.textContent = 'Questo gamertag è già registrato';
                 errorMsg.style.display = 'block';
                 return;
             }
@@ -238,7 +238,12 @@
             };
 
             users.push(newUser);
+            
+            // 1. Salva nel browser (Local Storage)
             localStorage.setItem('fc27_users', JSON.stringify(users));
+
+            // 2. Scarica il file JSON (Simulazione Database)
+            downloadJSONFile(users);
 
             // Notifica benvenuto
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
@@ -256,8 +261,30 @@
 
             setTimeout(() => {
                 window.location.href = 'accesso.html?registered=true';
-            }, 1500);
+            }, 2500); // Tempo aumentato per permettere il download
         });
+
+        // Funzione per creare e scaricare il file JSON
+        function downloadJSONFile(data) {
+            // Crea il contenuto del file formattato bene
+            const jsonString = JSON.stringify(data, null, 2);
+            
+            // Crea un Blob (oggetto file)
+            const blob = new Blob([jsonString], { type: "application/json" });
+            
+            // Crea un link temporaneo per il download
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "registrazioni.json"; // Nome del file
+            
+            // Simula il click per scaricare
+            document.body.appendChild(link); // Necessario per Firefox
+            link.click();
+            
+            // Pulizia
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
     </script>
 </body>
 </html>
