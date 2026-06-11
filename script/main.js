@@ -1,4 +1,3 @@
-
 const CONFIG = {
     appName: "FC27",
     version: "1.0.0",
@@ -159,7 +158,7 @@ const Sidebar = {
 
     init() {
         this.sidebar = document.getElementById('sidebar');
-        this.overlay = document.getElementById('sidebar-overlay');
+        this.overlay = document.getElementById('sidebar-overlay'); // Nota: nell'HTML usi id="overlay"
 
         if (this.overlay) {
             this.overlay.addEventListener('click', () => this.close());
@@ -223,7 +222,7 @@ const Navigation = {
     }
 };
 
-const loadingScreen = {
+const loadingScreen = { // Nota: variabile definita con lettera minuscola
     element: null,
     progressBar: null,
     statusText: null,
@@ -403,7 +402,7 @@ window.FC27 = {
     Toast,
     Sidebar,
     Navigation,
-    LoadingScreen,
+    loadingScreen, // CORREZIONE: Cambiato da LoadingScreen a loadingScreen
     Tutorial,
     Theme,
     CONFIG
