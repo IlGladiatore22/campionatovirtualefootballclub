@@ -100,7 +100,8 @@
     <script>
         // --- CONFIGURAZIONE JSONBIN ---
         const BIN_ID = '6a2ae33cda38895dfeaee508';
-        const API_KEY = '$2a$10$jodFDcNDs2ScJVNFm.jvc.JiM7BJCXerh/fXTfuEXyYYiiG4L8ctO';
+        // La tua chiave con permessi
+        const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW';
 
         let selectedPlatform = null;
 
@@ -150,28 +151,25 @@
             if (password !== confirmPassword) { errorText.textContent = 'Le password non coincidono'; errorMsg.style.display = 'block'; return; }
 
             try {
-                // 1. Leggi i dati attuali dal database
-                // NOTA: Usiamo X-Access-Key perché hai creato una chiave nominata
+                // 1. Leggi i dati attuali
                 const readResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 
-                        'X-Access-Key': API_KEY // CAMBIATO DA X-Master-Key
+                        'X-Master-Key': API_KEY 
                     }
                 });
                 
-                if (!readResponse.ok) throw new Error("Errore lettura database");
-                
+                if (readResponse.status === 401) throw new Error("Chiave API non valida. Controlla i permessi su JSONBin.");
+                if (!readResponse.ok) throw new Error("Errore connessione al database.");
+
                 const data = await readResponse.json();
                 
-                // Prendi la lista utenti
+                // Gestione sicura della lista utenti
                 let users = [];
                 if (data.record && Array.isArray(data.record.users)) {
                     users = data.record.users;
-                } else if (Array.isArray(data.record)) {
-                    // Gestione nel caso il file contenga solo l'array []
-                    users = data.record;
                 }
 
-                // 2. Controlla se l'utente esiste già
+                // 2. Controlla duplicati
                 const exists = users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase());
                 if (exists) {
                     errorText.textContent = 'Questo gamertag è già registrato';
@@ -193,26 +191,26 @@
 
                 users.push(newUser);
 
-                // 4. Aggiorna il database su JSONBin
+                // 4. Aggiorna il database
                 const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Access-Key': API_KEY // CAMBIATO DA X-Master-Key
+                        'X-Master-Key': API_KEY
                     },
                     body: JSON.stringify({ "users": users })
                 });
 
-                if (updateResponse.ok) {
-                    alert('Registrazione completata con successo!');
-                    window.location.href = 'accesso.html?registered=true';
-                } else {
-                    throw new Error('Errore nel salvataggio');
-                }
+                if (updateResponse.status === 401) throw new Error("Chiave API non ha permessi di scrittura.");
+                if (!updateResponse.ok) throw new Error("Errore durante il salvataggio.");
+
+                // Successo
+                alert('Registrazione completata con successo!');
+                window.location.href = 'accesso.html?registered=true';
 
             } catch (error) {
                 console.error("Errore:", error);
-                errorText.textContent = 'Errore di connessione al database. Riprova.';
+                errorText.textContent = error.message || 'Errore generico. Riprova.';
                 errorMsg.style.display = 'block';
             }
         });
