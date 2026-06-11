@@ -27,6 +27,11 @@
         .success-content {
             text-align: center;
             animation: scaleIn 0.4s ease;
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            max-width: 400px;
         }
         
         .success-icon {
@@ -74,6 +79,7 @@
                     </div>
 
                     <form id="register-form">
+                        <!-- I campi del form sono invariati, li riporto brevemente per completezza -->
                         <div class="input-group">
                             <label class="input-label" for="nomeEA"><i class="fas fa-user"></i> Nome EA *</label>
                             <input type="text" id="nomeEA" class="input-field" placeholder="Il tuo nome EA" autocomplete="off" required>
@@ -88,7 +94,6 @@
                         <div class="input-group">
                             <label class="input-label" for="discordId"><i class="fab fa-discord"></i> Discord ID</label>
                             <input type="text" id="discordId" class="input-field" placeholder="Es. 123456789012345678">
-                            <small class="text-muted">Opzionale - per ricevere notifiche</small>
                         </div>
 
                         <div class="input-group">
@@ -129,14 +134,26 @@
         </main>
     </div>
 
-    <!-- Success Overlay -->
+    <!-- Success Overlay MODIFICATO -->
     <div id="success-overlay" class="success-overlay">
         <div class="success-content">
             <div class="success-icon">
                 <i class="fas fa-check"></i>
             </div>
             <h2 style="margin-bottom: 10px;">Registrazione completata!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Il file JSON è stato scaricato.<br>Caricalo nella cartella 'database' su GitHub.</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                L'utente è stato salvato nel browser.<br>
+                Clicca il pulsante sotto per scaricare il file per GitHub.
+            </p>
+            
+            <!-- PULSANTE DOWNLOAD AGGIUNTO -->
+            <button id="download-btn" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 15px;">
+                <i class="fas fa-download"></i> Scarica Database (JSON)
+            </button>
+
+            <a href="accesso.html" class="btn btn-secondary" style="width: 100%;">
+                Vai al Login
+            </a>
         </div>
     </div>
 
@@ -186,30 +203,10 @@
                 errorMsg.style.display = 'block';
                 return;
             }
-
-            if (gamertag.length < 3) {
-                errorText.textContent = 'Il gamertag deve avere almeno 3 caratteri';
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (!selectedPlatform) {
-                errorText.textContent = 'Seleziona una piattaforma';
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (password.length < 6) {
-                errorText.textContent = 'La password deve avere almeno 6 caratteri';
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                errorText.textContent = 'Le password non coincidono';
-                errorMsg.style.display = 'block';
-                return;
-            }
+            if (gamertag.length < 3) { errorText.textContent = 'Il gamertag deve avere almeno 3 caratteri'; errorMsg.style.display = 'block'; return; }
+            if (!selectedPlatform) { errorText.textContent = 'Seleziona una piattaforma'; errorMsg.style.display = 'block'; return; }
+            if (password.length < 6) { errorText.textContent = 'La password deve avere almeno 6 caratteri'; errorMsg.style.display = 'block'; return; }
+            if (password !== confirmPassword) { errorText.textContent = 'Le password non coincidono'; errorMsg.style.display = 'block'; return; }
 
             let users = [];
             try {
@@ -238,12 +235,7 @@
             };
 
             users.push(newUser);
-            
-            // 1. Salva nel browser (Local Storage)
             localStorage.setItem('fc27_users', JSON.stringify(users));
-
-            // 2. Scarica il file JSON (Simulazione Database)
-            downloadJSONFile(users);
 
             // Notifica benvenuto
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
@@ -257,33 +249,28 @@
             });
             localStorage.setItem('fc27_notifications', JSON.stringify(notifications));
 
+            // MOSTRA OVERLAY SENZA REINDIRIZZAMENTO AUTOMATICO
             document.getElementById('success-overlay').style.display = 'flex';
-
-            setTimeout(() => {
-                window.location.href = 'accesso.html?registered=true';
-            }, 2500); // Tempo aumentato per permettere il download
+            
+            // Prepara il tasto download
+            document.getElementById('download-btn').onclick = function() {
+                downloadJSONFile(users);
+                // Dopo il download, cambio il testo del bottone per conferma
+                this.innerHTML = '<i class="fas fa-check"></i> Scaricato!';
+                this.style.background = 'var(--accent-green)';
+            };
         });
 
-        // Funzione per creare e scaricare il file JSON
+        // Funzione per scaricare il file
         function downloadJSONFile(data) {
-            // Crea il contenuto del file formattato bene
             const jsonString = JSON.stringify(data, null, 2);
-            
-            // Crea un Blob (oggetto file)
             const blob = new Blob([jsonString], { type: "application/json" });
-            
-            // Crea un link temporaneo per il download
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "registrazioni.json"; // Nome del file
-            
-            // Simula il click per scaricare
-            document.body.appendChild(link); // Necessario per Firefox
+            link.download = "registrazioni.json";
+            document.body.appendChild(link);
             link.click();
-            
-            // Pulizia
             document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
         }
     </script>
 </body>
