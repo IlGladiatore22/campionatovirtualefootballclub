@@ -11,7 +11,6 @@
     <style> html, body { height: auto; min-height: 100vh; overflow-y: auto; } </style>
 </head>
 <body>
-    <!-- HTML INVIARIATO (uguale a prima) -->
     <div class="page-wrapper">
         <header class="header">
             <div class="header-left">
@@ -66,15 +65,16 @@
 
     <script>
         // --- CONFIGURAZIONE ---
-        // Assicurati che questo ID sia ESATTAMENTE quello che vedi su JSONBin nella lista Bins
-        const BIN_ID = '6a2ae33cda38895dfeaee508'; 
+        // ID del tuo Database (preso dalla URL su JSONBin)
+        const BIN_ID = '6a2ae33cda38895dfeaee508';
         
-        // La tua chiave presa dalla foto
-        const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW';
+        // --- ATTENZIONE ---
+        // Se ancora non funziona, torna su JSONBin, copia la chiave dall'icona "copia" 
+        // e incollala qui sotto al posto di quella vecchia.
+        const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW'; 
 
         let selectedPlatform = null;
 
-        // Logica Pulsanti
         document.querySelectorAll('.platform-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
@@ -91,20 +91,17 @@
             else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
         });
 
-        // Form Submit
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const nomeEA = document.getElementById('nomeEA').value.trim();
             const gamertag = document.getElementById('gamertag').value.trim();
-            const discordId = document.getElementById('discordId').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const errorMsg = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
             errorMsg.style.display = 'none';
 
-            // Validazioni
             if(!nomeEA || !gamertag || !password){ errorText.textContent='Compila tutto'; errorMsg.style.display='block'; return; }
             if(gamertag.length < 3){ errorText.textContent='Gamertag corto'; errorMsg.style.display='block'; return; }
             if(!selectedPlatform){ errorText.textContent='Scegli piattaforma'; errorMsg.style.display='block'; return; }
@@ -112,18 +109,17 @@
 
             try {
                 // 1. LEGGI
-                // USIAMO X-Access-Key PERCHÈ LA TUA CHIAVE È CUSTOM
                 const getResp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 'X-Access-Key': API_KEY }
                 });
 
-                if(getResp.status === 401) throw new Error("Chiave API rifiutata. Controlla che il Bin ID nel codice sia corretto.");
+                if(getResp.status === 401) throw new Error("Chiave API errata. Copiala di nuovo da JSONBin.");
                 if(!getResp.ok) throw new Error("Errore connessione.");
 
                 const data = await getResp.json();
                 let users = data.record.users || [];
 
-                // 2. CONTROLLA DUPLICATI
+                // 2. DUPLICATI
                 if(users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase())){
                     errorText.textContent = 'Gamertag già usato';
                     errorMsg.style.display = 'block';
@@ -133,7 +129,7 @@
                 // 3. CREA UTENTE
                 users.push({
                     id: 'user_' + Date.now(),
-                    nomeEA, gamertag, discordId,
+                    nomeEA, gamertag, discordId: document.getElementById('discordId').value.trim(),
                     piattaforma: selectedPlatform,
                     password, isAdmin: false,
                     createdAt: new Date().toISOString()
@@ -149,10 +145,10 @@
                     body: JSON.stringify({ "users": users })
                 });
 
-                if(putResp.status === 401) throw new Error("Chiave non ha permessi scrittura.");
+                if(putResp.status === 401) throw new Error("Chiave API non ha permessi scrittura.");
                 if(!putResp.ok) throw new Error("Errore salvataggio.");
 
-                alert('Fatto! Ora puoi accedere.');
+                alert('Registrazione OK!');
                 window.location.href = 'accesso.html';
 
             } catch(err) {
