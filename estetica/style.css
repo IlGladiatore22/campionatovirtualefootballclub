@@ -9,12 +9,12 @@
     --bg-tertiary: #111827;
     --bg-card: #0f172a;
     
-    /* Colori Secondari */
+    /* Colori Secondari - TRASFORMATI IN ROSSO */
 
-    --accent-gold: #00e5ff;
-    --accent-gold-light: #18ffff;
-    --accent-orange: #7c3aed;
-    --accent-red: #ff0055;
+    --accent-gold: #ff0a0a;       /* Cambiato da Cyan a Rosso vibrante */
+    --accent-gold-light: #ff3333; /* Rosso più chiaro per gli hover */
+    --accent-orange: #b91c1c;     /* Un rosso scuro per varianti */
+    --accent-red: #ff0055;        /* Mantenuto per errori/badge */
     --accent-green: #00ff88;
     --accent-blue: #3b82f6;
     
@@ -27,20 +27,20 @@
     /* Colori Bordi */
 
     --border-color: rgba(255, 255, 255, 0.08);
-    --border-glow: rgba(0, 229, 255, 0.3);
+    --border-glow: rgba(255, 10, 10, 0.3); /* Glow Rosso */
     
-    /* Gradient */
+    /* Gradient - TRASFORMATI IN ROSSO */
 
-    --gradient-gold: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+    --gradient-gold: linear-gradient(135deg, #ff0a0a 0%, #b91c1c 100%); /* Gradiente Rosso */
     --gradient-dark: linear-gradient(180deg, #030508 0%, #0a0e17 100%);
     --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
     
-    /* Ombre */
+    /* Ombre - TRASFORMATE IN ROSSO */
 
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
     --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
-    --shadow-gold: 0 4px 20px rgba(0, 229, 255, 0.25);
+    --shadow-gold: 0 4px 20px rgba(255, 10, 10, 0.25); /* Ombra Rossa */
     
     /* Dimensioni Vari */
 
@@ -83,8 +83,8 @@ body::before {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(ellipse at 10% 10%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 90%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+        radial-gradient(ellipse at 10% 10%, rgba(255, 10, 10, 0.08) 0%, transparent 50%), /* Luce Rossa in alto a sinistra */
+        radial-gradient(ellipse at 90% 90%, rgba(185, 28, 28, 0.08) 0%, transparent 50%); /* Luce Rossa scura in basso a destra */
     pointer-events: none;
     z-index: 0;
 }
@@ -203,13 +203,12 @@ a:hover {
     gap: 12px;
 }
 
-/* === MODIFICA LOGO ROtondo === */
 .logo {
     width: 45px;
     height: 45px;
     background: var(--gradient-gold);
-    border-radius: 50%; /* Cambiato da 10px a 50% per renderlo rotondo */
-    overflow: hidden;   /* Aggiunto per contenere eventuali immagini */
+    border-radius: 50%;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -263,7 +262,7 @@ a:hover {
 }
 
 .header-btn:hover {
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(255, 10, 10, 0.1);
     color: var(--accent-gold);
     border-color: var(--accent-gold);
     transform: translateY(-2px);
@@ -388,7 +387,7 @@ a:hover {
 }
 
 .nav-link.active {
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(255, 10, 10, 0.1);
     color: var(--accent-gold);
     border-left-color: var(--accent-gold);
 }
@@ -434,7 +433,7 @@ a:hover {
 
 .btn-primary:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 30px rgba(0, 229, 255, 0.35);
+    box-shadow: 0 8px 30px rgba(255, 10, 10, 0.35);
 }
 
 /* Shine effect on button */
@@ -463,7 +462,7 @@ a:hover {
 .btn-secondary:hover {
     border-color: var(--accent-gold);
     color: var(--accent-gold);
-    background: rgba(0, 229, 255, 0.05);
+    background: rgba(255, 10, 10, 0.05);
     transform: translateY(-2px);
 }
 
@@ -527,7 +526,7 @@ a:hover {
 .input-field:focus {
     outline: none;
     border-color: var(--accent-gold);
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+    box-shadow: 0 0 15px rgba(255, 10, 10, 0.1);
 }
 
 .input-field::placeholder {
@@ -559,7 +558,7 @@ a:hover {
 }
 
 .platform-btn.active {
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(255, 10, 10, 0.1);
     border-color: var(--accent-gold);
     color: var(--accent-gold);
 }
@@ -590,7 +589,7 @@ a:hover {
 }
 
 .card:hover {
-    border-color: rgba(0, 229, 255, 0.3);
+    border-color: rgba(255, 10, 10, 0.3);
     transform: translateY(-4px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
@@ -602,7 +601,7 @@ a:hover {
 .card-icon {
     width: 60px;
     height: 60px;
-    background: rgba(0, 229, 255, 0.1);
+    background: rgba(255, 10, 10, 0.1);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -671,8 +670,8 @@ a:hover {
 }
 
 .tag-admin {
-    background: rgba(124, 58, 237, 0.15);
-    border-color: rgba(124, 58, 237, 0.3);
+    background: rgba(185, 28, 28, 0.15);
+    border-color: rgba(185, 28, 28, 0.3);
     color: var(--accent-orange);
 }
 
@@ -741,12 +740,11 @@ a:hover {
     z-index: 9999;
 }
 
-/* === MODIFICA LOADING LOGO ROtondo === */
 .loading-logo {
     width: 120px;
     height: 120px;
     background: var(--gradient-gold);
-    border-radius: 50%; /* Cambiato da 24px a 50% per renderlo rotondo */
+    border-radius: 50%; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -854,7 +852,7 @@ a:hover {
 .tutorial-dot.active {
     background: var(--accent-gold);
     border-color: var(--accent-gold);
-    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    box-shadow: 0 0 10px rgba(255, 10, 10, 0.3);
 }
 
 .tutorial-buttons {
