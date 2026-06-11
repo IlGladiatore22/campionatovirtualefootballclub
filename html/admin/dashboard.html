@@ -223,7 +223,6 @@
                         <div><div class="action-title">Gestione Leghe</div><div class="action-subtitle">Calendari</div></div>
                     </a>
 
-                    <!-- CORREZIONE LINK LISTA CLUB -->
                     <a href="../club/club.html" class="action-card animate-slideUp">
                         <div class="action-icon" style="background: rgba(236, 240, 241, 0.1);"><i class="fas fa-users" style="color: #bdc3c7;"></i></div>
                         <div><div class="action-title">Lista Club</div><div class="action-subtitle">Vedi tutti</div></div>
@@ -304,7 +303,7 @@
                 const data = await response.json();
                 
                 const users = data.record.users || [];
-                const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]'); // Club rimangono locali per ora
+                const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]'); 
                 const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
                 const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
 
@@ -322,12 +321,12 @@
                 const tbody = document.getElementById('users-table-body');
                 tbody.innerHTML = '';
                 
-                if (users.length === 0) {
+                // FIX: Definisco sortedUsers fuori dal blocco if/else
+                const sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                if (sortedUsers.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun utente registrato</td></tr>';
                 } else {
-                    // Ordina per data (più recenti prima)
-                    const sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
                     sortedUsers.forEach(u => {
                         const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : 'N/A';
                         const role = u.isAdmin ? 'Admin' : 'Utente';
@@ -349,7 +348,7 @@
                 const activityList = document.getElementById('activity-list');
                 activityList.innerHTML = '';
 
-                const recentUsers = sortedUsers.slice(0, 5); // Prendi i primi 5
+                const recentUsers = sortedUsers.slice(0, 5); // Ora sortedUsers è definito
 
                 if(recentUsers.length === 0){
                     activityList.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Nessuna attività recente</p>';
