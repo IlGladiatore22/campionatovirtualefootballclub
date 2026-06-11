@@ -88,24 +88,23 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE (IDENTICA ALLA REGISTRAZIONE) ---
+        // --- CONFIGURAZIONE ---
         const BIN_ID = '6a2ae33cda38895dfeaee508';
-        const API_KEY = '$2a$10$m/VICwvC9TIv5IoVNGl10cFRhUlaEGq75y5yBcN/.AQ/neSYcYaw';
+        
+        // USA LA MASTER KEY PER ACCESSO TOTALE (COPIATA DALLA TUA FOTO)
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // Toggle password
         document.getElementById('toggle-btn').addEventListener('click', function() {
             const input = document.getElementById('password');
             const icon = document.getElementById('pass-icon');
             if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         });
 
-        // Messaggio successo registrazione
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('registered') === 'true') {
             document.getElementById('success-message').style.display = 'block';
@@ -120,7 +119,6 @@
             const errorDiv = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
             
-            // Reset errori
             errorDiv.style.display = 'none';
 
             if (!gamertagInput || !passwordInput) {
@@ -130,19 +128,13 @@
             }
 
             try {
-                // 1. Leggi dal Database
+                // 1. Leggi dal Database usando X-Master-Key
                 const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    // IMPORTANTE: Usiamo X-Access-Key perché la tua è una Access Key
-                    headers: { 'X-Access-Key': API_KEY }
+                    headers: { 'X-Master-Key': API_KEY }
                 });
 
-                // Controllo risposta server
-                if (response.status === 401) {
-                    throw new Error("Errore 401: La chiave API nel file accesso.html è sbagliata o il browser ha la cache vecchia. Premi CTRL+SHIFT+R.");
-                }
-                if (!response.ok) {
-                    throw new Error("Impossibile raggiungere il database.");
-                }
+                if (response.status === 401) throw new Error("Chiave API Master non valida.");
+                if (!response.ok) throw new Error("Errore connessione database.");
 
                 const data = await response.json();
                 const users = data.record.users || [];
