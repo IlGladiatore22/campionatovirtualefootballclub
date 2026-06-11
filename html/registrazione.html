@@ -64,14 +64,11 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE ---
-        // ID del tuo Database (preso dalla URL su JSONBin)
+        // --- CONFIGURAZIONE AGGIORNATA ---
         const BIN_ID = '6a2ae33cda38895dfeaee508';
         
-        // --- ATTENZIONE ---
-        // Se ancora non funziona, torna su JSONBin, copia la chiave dall'icona "copia" 
-        // e incollala qui sotto al posto di quella vecchia.
-        const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW'; 
+        // CHIAVE CORRETTA COPIATA DALLA TUA IMMAGINE (X-ACCESS-KEY)
+        const API_KEY = '$2a$10$m/VICwvC9TIv5IoVNGl10cFRhUlaEGq75y5yBcN/.AQ/neSYcYaw';
 
         let selectedPlatform = null;
 
@@ -113,7 +110,7 @@
                     headers: { 'X-Access-Key': API_KEY }
                 });
 
-                if(getResp.status === 401) throw new Error("Chiave API errata. Copiala di nuovo da JSONBin.");
+                if(getResp.status === 401) throw new Error("Chiave API errata.");
                 if(!getResp.ok) throw new Error("Errore connessione.");
 
                 const data = await getResp.json();
