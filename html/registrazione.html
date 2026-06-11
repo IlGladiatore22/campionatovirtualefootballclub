@@ -151,13 +151,25 @@
 
             try {
                 // 1. Leggi i dati attuali dal database
+                // NOTA: Usiamo X-Access-Key perché hai creato una chiave nominata
                 const readResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
+                    headers: { 
+                        'X-Access-Key': API_KEY // CAMBIATO DA X-Master-Key
+                    }
                 });
+                
+                if (!readResponse.ok) throw new Error("Errore lettura database");
+                
                 const data = await readResponse.json();
                 
-                // Prendi la lista utenti (se non esiste, creala vuota)
-                let users = data.record.users || [];
+                // Prendi la lista utenti
+                let users = [];
+                if (data.record && Array.isArray(data.record.users)) {
+                    users = data.record.users;
+                } else if (Array.isArray(data.record)) {
+                    // Gestione nel caso il file contenga solo l'array []
+                    users = data.record;
+                }
 
                 // 2. Controlla se l'utente esiste già
                 const exists = users.find(u => u.gamertag.toLowerCase() === gamertag.toLowerCase());
@@ -186,9 +198,9 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
+                        'X-Access-Key': API_KEY // CAMBIATO DA X-Master-Key
                     },
-                    body: JSON.stringify({ "users": users }) // Salviamo l'oggetto con la lista aggiornata
+                    body: JSON.stringify({ "users": users })
                 });
 
                 if (updateResponse.ok) {
