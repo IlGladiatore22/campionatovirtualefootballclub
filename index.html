@@ -10,17 +10,16 @@
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        <!-- 
-             QUI: Assicurati che la cartella 'estetica' sia nella radice 
-             (stesso livello di questo index.html) 
-        -->
         <link rel="stylesheet" href="estetica/style.css">
         <link rel="stylesheet" href="estetica/animations.css">
     </head>
     <body>
         
         <div id="loading-screen" class="loading-screen">
-            <div class="loading-logo animate-pulse">FC</div>
+            <!-- MODIFICA: Inserita l'immagine logosito.png con stile rotondo -->
+            <div class="loading-logo animate-pulse">
+                <img src="estetica/logosito.png" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            </div>
             
             <h1 class="loading-title">TITOLO</h1>
 
@@ -33,10 +32,6 @@
             <p class="loading-status" id="loading-status">Inizializzazione...</p>
         </div>
 
-        <!-- 
-             MODIFICA FATTA QUI: Rimosso "../" perché index.html è ora nella radice.
-             Assicurati che la cartella 'script' sia nella radice insieme a index.html.
-        -->
         <script src="script/main.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', async () => {
@@ -68,10 +63,8 @@
                     const tutorialCompleted = localStorage.getItem('tutorial_completed');
 
                     if (tutorialCompleted) {
-                        // Questo percorso è corretto se la cartella 'html' è nella radice
                         window.location.href = 'html/home-non-loggato.html';
                     } else {
-                        // Questo percorso è corretto se la cartella 'html' è nella radice
                         window.location.href = 'html/tutorial.html';
                     }
                 }, 500);
