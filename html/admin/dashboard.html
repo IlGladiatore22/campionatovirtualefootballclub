@@ -224,13 +224,11 @@
                         <div><div class="action-title">Gestione Leghe</div><div class="action-subtitle">Calendari</div></div>
                     </a>
 
-                    <!-- PULSANTE AGGIUNTO QUI (Gestione Club Admin) -->
                     <a href="lista-club.html" class="action-card animate-slideUp">
                         <div class="action-icon" style="background: rgba(52, 152, 219, 0.1);"><i class="fas fa-tasks" style="color: var(--accent-blue);"></i></div>
                         <div><div class="action-title">Gestione Club</div><div class="action-subtitle">Modifica o Elimina</div></div>
                     </a>
 
-                    <!-- PULSANTE ESISTENTE (Lista Club Pubblica) -->
                     <a href="../club/club.html" class="action-card animate-slideUp">
                         <div class="action-icon" style="background: rgba(236, 240, 241, 0.1);"><i class="fas fa-users" style="color: #bdc3c7;"></i></div>
                         <div><div class="action-title">Lista Club</div><div class="action-subtitle">Vedi tutti</div></div>
@@ -309,16 +307,21 @@
             let sortedUsers = [];
 
             try {
+                // AGGIUNTO CACHE BUSTER (?t=...) per forzare l'aggiornamento
+                const ts = '?t=' + new Date().getTime();
+
                 // 1. FETCH UTENTI
-                const usersRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
+                const usersRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest${ts}`, {
+                    headers: { 'X-Master-Key': API_KEY },
+                    cache: 'no-store' // Forza il browser a non usare la cache
                 });
                 const usersData = await usersRes.json();
                 users = usersData.record.users || [];
 
-                // 2. FETCH CLUB (DAL NUOVO BIN)
-                const clubsRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
+                // 2. FETCH CLUB
+                const clubsRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest${ts}`, {
+                    headers: { 'X-Master-Key': API_KEY },
+                    cache: 'no-store' // Forza il browser a non usare la cache
                 });
                 const clubsData = await clubsRes.json();
                 clubs = clubsData.record.clubs || [];
@@ -329,11 +332,10 @@
 
                 // 3. Aggiorna Statistiche
                 document.getElementById('stat-users').textContent = users.length;
-                document.getElementById('stat-clubs').textContent = clubs.length; // ORA FUNZIONA
+                document.getElementById('stat-clubs').textContent = clubs.length; 
                 document.getElementById('stat-tournaments').textContent = tournaments.filter(t => t.status !== 'chiusa').length;
                 
                 let pending = 0;
-                // Calcolo richieste (se implementato nei club)
                 clubs.forEach(c => { if(c.requests) pending += c.requests.filter(r => r.status === 'pending').length; });
                 document.getElementById('stat-pending').textContent = pending;
                 document.getElementById('stat-notifications').textContent = notifications.filter(n => !n.read).length;
