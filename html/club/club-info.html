@@ -83,7 +83,7 @@
         
         <div class="sidebar-overlay" id="overlay"></div>
         
-        <!-- SIDEBAR COMPLETA -->
+        <!-- SIDEBAR -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
             <nav class="sidebar-nav">
@@ -107,17 +107,10 @@
                 <div class="nav-section" id="admin-nav" style="display: none;">
                     <div class="nav-section-title">Admin</div>
                     <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
-                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
-                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
-                </div>
-                <div class="nav-section" id="guest-admin-nav">
-                    <div class="nav-section-title">Staff</div>
-                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Info</div>
                     <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
-                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
                     <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
                 </div>
             </nav>
@@ -183,9 +176,11 @@
                                 </div>
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
                                     <div class="number-warning" id="number-warning"><i class="fas fa-exclamation-triangle"></i> Numeri mancanti.</div>
-                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva Formazione</button>
-                                    <!-- FIX: PULSANTE GESTIONE NUMERI -->
-                                    <button id="manage-numbers-btn" class="btn btn-secondary btn-block"><i class="fas fa-hashtag"></i> Gestione Numeri</button>
+                                    <button class="btn btn-primary btn-block" id="save-form-btn" type="button"><i class="fas fa-save"></i> Salva Formazione</button>
+                                    <!-- FIX: Aggiunto type="button" e onclick inline -->
+                                    <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button" onclick="window.location.href='gestione-numeri.html?id=' + (new URLSearchParams(window.location.search)).get('id')">
+                                        <i class="fas fa-hashtag"></i> Gestione Numeri
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -217,6 +212,7 @@
             if (!cId) {
                 document.getElementById('error-box').style.display = 'block';
                 document.getElementById('error-msg').textContent = "Nessun ID Club specificato.";
+                document.getElementById('member-panel').style.display = 'none';
                 return;
             }
 
@@ -240,9 +236,7 @@
 
                 club = clubs.find(c => c.id === cId);
                 if (!club) {
-                    document.getElementById('error-box').style.display = 'block';
-                    document.getElementById('member-panel').style.display = 'none';
-                    return;
+                    throw new Error("Club non trovato.");
                 }
 
                 const uid = String(user.id);
@@ -262,12 +256,6 @@
                         document.getElementById('req-tab').style.display = 'block';
                         document.getElementById('captain-tools').style.display = 'flex';
                         document.getElementById('formation-box').style.display = 'block';
-                        
-                        // FIX: ONCLICK DIRETTO SUL BOTTONE
-                        document.getElementById('manage-numbers-btn').onclick = () => {
-                            window.location.href = 'gestione-numeri.html?id=' + cId;
-                        };
-                        
                         renderRequests();
                     }
                     initUI();
@@ -277,6 +265,7 @@
                 console.error(e);
                 document.getElementById('error-box').style.display = 'block';
                 document.getElementById('error-msg').textContent = e.message;
+                document.getElementById('member-panel').style.display = 'none'; // Nasconde il pannello se c'è errore
             }
         }
 
