@@ -10,6 +10,19 @@
     <style>
         body { background: #0d1117; color: #e0e0e0; }
         
+        /* Access Denied Box */
+        .access-denied-box {
+            text-align: center;
+            padding: 60px 20px;
+            background: #161b22;
+            border: 1px solid #f5a623;
+            border-radius: 12px;
+            margin-top: 50px;
+        }
+        .access-denied-box i { font-size: 3rem; color: #f5a623; margin-bottom: 20px; }
+        .access-denied-box h2 { color: #fff; margin-bottom: 10px; }
+        .access-denied-box p { color: var(--text-muted); margin-bottom: 20px; }
+
         /* Hero Section */
         .club-hero { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 12px; border: 1px solid #30363d; }
         .club-logo { width: 60px; height: 60px; border-radius: 50%; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid var(--accent-gold); flex-shrink: 0; overflow: hidden; }
@@ -94,8 +107,8 @@
                     <div class="nav-section-title">Menu Principale</div>
                     <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
-                    <a href="../tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
-                    <a href="../club/club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
+                    <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
+                    <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Comunicazioni</div>
@@ -110,8 +123,6 @@
                 <div class="nav-section" id="admin-nav" style="display: none;">
                     <div class="nav-section-title">Admin</div>
                     <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
-                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
-                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Info</div>
@@ -128,11 +139,20 @@
                 <div class="club-hero animate-slideUp">
                     <div class="club-logo" id="club-logo">?</div>
                     <div class="club-info">
-                        <h1 id="club-name">Nome</h1>
-                        <p id="club-info">Capitano: -</p>
+                        <h1 id="club-name">Caricamento...</h1>
+                        <p id="club-info">-</p>
                     </div>
                 </div>
 
+                <!-- ACCESS DENIED MESSAGE -->
+                <div id="access-denied" class="access-denied-box" style="display:none;">
+                    <i class="fas fa-lock"></i>
+                    <h2>Accesso Negato</h2>
+                    <p>Non fai parte di questo club. Solo i membri possono visualizzare la formazione e le tattiche.</p>
+                    <button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button>
+                </div>
+
+                <!-- MEMBER PANEL -->
                 <div id="member-panel" style="display:none;">
                     <div class="tabs-container mb-3">
                         <button class="tab-btn active" data-tab="formation">Formazione</button>
@@ -153,17 +173,8 @@
                                         <option value="4-3-3">4-3-3</option>
                                         <option value="4-4-2">4-4-2</option>
                                         <option value="4-2-3-1">4-2-3-1</option>
-                                        <option value="4-1-2-1-2">4-1-2-1-2 (Rombo)</option>
-                                        <option value="4-3-2-1">4-3-2-1 (Albero di Natale)</option>
-                                        <option value="4-5-1">4-5-1</option>
-                                        <option value="4-4-1-1">4-4-1-1</option>
                                         <option value="3-5-2">3-5-2</option>
-                                        <option value="3-4-2-1">3-4-2-1</option>
-                                        <option value="3-4-1-2">3-4-1-2</option>
-                                        <option value="3-4-3">3-4-3</option>
                                         <option value="5-3-2">5-3-2</option>
-                                        <option value="5-2-2-1">5-2-2-1</option>
-                                        <option value="5-2-1-2">5-2-1-2</option>
                                     </select>
                                 </div>
                                 <div class="roster-section">
@@ -176,77 +187,147 @@
                                 </div>
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
                                     <div class="number-warning" id="number-warning"><i class="fas fa-exclamation-triangle"></i> Assegna un numero a tutti i titolari.</div>
-                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva</button>
-                                    <a href="#" id="manage-numbers-link" class="btn btn-secondary btn-block"><i class="fas fa-hashtag"></i> Gestione Numeri</a>
+                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva Formazione</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div id="tab-tactics" class="tab-content" style="display:none;"><div class="card"><h3>Tattiche</h3><p>Sezione in sviluppo.</p></div></div>
-                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste</h3><div id="req-list"></div></div></div>
+                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste in sospeso</h3><div id="req-list"></div></div></div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // === SETUP INIZIALE ===
-        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        // === CONFIGURAZIONE JSONBIN ===
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        // === VARIABILI GLOBALI ===
+        let user = JSON.parse(localStorage.getItem('user') || 'null');
+        let clubs = [];
+        let users = [];
+        let club = null;
+        let isCaptain = false;
+        let isMember = false;
+
         const urlP = new URLSearchParams(window.location.search);
         const cId = urlP.get('id');
 
-        if (!user || !cId) window.location.href = '../accesso.html';
-        
-        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
-        let users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
-        let club = clubs.find(c => c.id === cId);
-        if (!club) window.location.href = 'club.html';
+        // === INIZIALIZZAZIONE ===
+        window.onload = async function() {
+            if (!user) return window.location.href = '../accesso.html';
+            if (!cId) return window.location.href = 'club.html';
 
-        const uid = String(user.id);
-        const capId = String(club.captain);
-        const members = (club.members || []).map(m => String(m));
-        const isCaptain = (uid === capId);
-        const isMember = members.includes(uid);
+            setupUIEvents();
+            await loadData(); // Carica dati da JSONBin
+        };
 
-        // === EVENTI UI ===
-        document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
-        document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
-        document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
-        document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
-        
-        if (user && user.isAdmin) document.getElementById('admin-nav').style.display = 'block';
+        // === CARICAMENTO DATI DAL CLOUD ===
+        async function loadData() {
+            try {
+                // Carico Utenti
+                const resUsers = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
+                });
+                const dataUsers = await resUsers.json();
+                users = dataUsers.record.users || [];
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.onclick = function() {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-                this.classList.add('active');
-                document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
-            };
-        });
+                // Carico Club
+                const resClubs = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
+                });
+                const dataClubs = await resClubs.json();
+                clubs = dataClubs.record.clubs || [];
 
-        // Render Info Base
-        document.getElementById('club-name').textContent = club.name;
-        document.getElementById('club-info').textContent = 'Capitano: ' + (users.find(u => String(u.id) === capId)?.nomeEA || 'N/D');
-        if (club.logo) document.getElementById('club-logo').innerHTML = '<img src="' + club.logo + '">';
+                // Trovo il club
+                club = clubs.find(c => c.id === cId);
+                if (!club) return window.location.href = 'club.html';
 
-        // === CONTROLLO ACCESSI ===
-        if (!isMember && !isCaptain) {
-            document.getElementById('member-panel').style.display = 'none';
-            alert('Accesso riservato ai membri del club.');
-        } else {
-            document.getElementById('member-panel').style.display = 'block';
-            if (isCaptain) {
-                document.getElementById('req-tab').style.display = 'block';
-                document.getElementById('captain-tools').style.display = 'flex'; 
-                document.getElementById('formation-box').style.display = 'block';
-                document.getElementById('manage-numbers-link').href = 'gestione-numeri.html?id=' + cId;
-                renderRequests();
+                // Verifica permessi
+                const uid = String(user.id);
+                const capId = String(club.captain);
+                const members = (club.members || []).map(m => String(m));
+                isCaptain = (uid === capId);
+                isMember = members.includes(uid);
+
+                renderHeader();
+
+                if (!isMember && !isCaptain) {
+                    document.getElementById('access-denied').style.display = 'block';
+                    document.getElementById('member-panel').style.display = 'none';
+                } else {
+                    document.getElementById('access-denied').style.display = 'none';
+                    document.getElementById('member-panel').style.display = 'block';
+                    
+                    if (isCaptain) {
+                        document.getElementById('req-tab').style.display = 'block';
+                        document.getElementById('captain-tools').style.display = 'flex';
+                        document.getElementById('formation-box').style.display = 'block';
+                        renderRequests();
+                    }
+                    initUI();
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Errore caricamento dati dal cloud.");
             }
-            initUI();
         }
 
-        // === FUNZIONI GRAFICHE ===
+        // === SALVATAGGIO DATI SU CLOUD ===
+        async function saveToCloud() {
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify({ clubs })
+                });
+                return true;
+            } catch (e) {
+                console.error(e);
+                alert("Errore salvataggio cloud.");
+                return false;
+            }
+        }
+
+        // === UI & RENDERING ===
+        function setupUIEvents() {
+            // Sidebar
+            document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
+            document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+            document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+            document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
+            if (user && user.isAdmin) document.getElementById('admin-nav').style.display = 'block';
+
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.onclick = function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                    this.classList.add('active');
+                    document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
+                };
+            });
+        }
+
+        function renderHeader() {
+            document.getElementById('club-name').textContent = club.name;
+            const capUser = users.find(u => String(u.id) === String(club.captain));
+            document.getElementById('club-info').textContent = 'Capitano: ' + (capUser ? capUser.nomeEA : 'N/D');
+            if (club.logo) document.getElementById('club-logo').innerHTML = '<img src="' + club.logo + '">';
+        }
+
+        function initUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
+        
+        function changeFormation(val) { 
+            club.formation = val; 
+            saveToCloud(); // Salvataggio automatico cloud
+            renderPitch(); renderRoster(); 
+        }
+
+        // === FUNZIONI GRAFICHE (Mantenute dal tuo file) ===
         function generateRealisticJersey(c1, c2, playerName, playerNum) {
             const numColor = isLightColor(c1) ? '#000' : '#fff';
             const numDisplay = playerNum ? playerNum : '?';
@@ -274,9 +355,6 @@
             else { warn.classList.remove('visible'); saveBtn.disabled = false; saveBtn.style.opacity = '1'; }
         }
 
-        function initUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
-        function changeFormation(val) { club.formation = val; localStorage.setItem('fc27_clubs', JSON.stringify(clubs)); renderPitch(); renderRoster(); checkMissingNumbers(); }
-
         // === GESTIONE ROSA ===
         function renderRoster() {
             const rosterList = document.getElementById('roster-list');
@@ -284,11 +362,12 @@
             rosterList.innerHTML = ''; benchList.innerHTML = '';
             if (!club.bench) club.bench = [];
 
+            const members = club.members || [];
             members.forEach(mId => {
-                const u = users.find(x => String(x.id) === mId); if(!u) return;
+                const u = users.find(x => String(x.id) === String(mId)); if(!u) return;
                 let isInLineup = false; let num = null;
-                if(club.lineup) { Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === mId) { isInLineup = true; num = club.lineup[k].num || null; } }); }
-                const isInBench = club.bench.includes(mId);
+                if(club.lineup) { Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === String(mId)) { isInLineup = true; num = club.lineup[k].num || null; } }); }
+                const isInBench = (club.bench || []).some(bid => String(bid) === String(mId));
                 
                 const div = document.createElement('div');
                 div.className = 'roster-item';
@@ -324,7 +403,7 @@
             document.getElementById('bench-list').classList.remove('drag-over'); 
             const droppedId = e.dataTransfer.getData('text/plain'); 
             if (!club.bench) club.bench = []; 
-            if (!club.bench.includes(droppedId)) { 
+            if (!club.bench.some(bid => String(bid) === String(droppedId))) { 
                 if(club.lineup) Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === droppedId) delete club.lineup[k]; }); 
                 club.bench.push(droppedId); 
                 saveAndRender(); 
@@ -332,12 +411,12 @@
         }
         window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
         
-        function removePlayerFromClub(pId) { 
+        async function removePlayerFromClub(pId) { 
             if(confirm('Rimuovere questo giocatore dal club?')) { 
-                club.members = club.members.filter(m => String(m) !== String(pId)); 
+                club.members = (club.members || []).filter(m => String(m) !== String(pId)); 
                 if(club.lineup) Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === pId) delete club.lineup[k]; }); 
-                if(club.bench) club.bench = club.bench.filter(id => id !== pId); 
-                saveAndRender(); 
+                if(club.bench) club.bench = club.bench.filter(id => String(id) !== String(pId)); 
+                await saveAndRender();
             } 
         }
 
@@ -388,7 +467,7 @@
                     const pName = rosterItem ? rosterItem.dataset.name : '?';
                     let pNum = '';
                     if (club.lineup) { Object.keys(club.lineup).forEach(k => { if (String(club.lineup[k].id) === droppedId) { pNum = club.lineup[k].num || ''; delete club.lineup[k]; } }); }
-                    if(club.bench) club.bench = club.bench.filter(id => id !== droppedId);
+                    if(club.bench) club.bench = club.bench.filter(id => String(id) !== String(droppedId));
                     if(!club.lineup) club.lineup = {};
                     club.lineup[i] = { id: droppedId, name: pName, num: pNum };
                     saveAndRender();
@@ -397,7 +476,7 @@
             });
         }
 
-        // === DATABASE MODULI FC27 (CORRETTO) ===
+        // === DATABASE MODULI ===
         function getFormationCoords(f) {
             const formations = {
                 "4-3-3": [
@@ -410,108 +489,77 @@
                     {x:15, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:38, y:55, abbrev:"CC", role:"Centrocampista"}, {x:62, y:55, abbrev:"CC", role:"Centrocampista"}, {x:85, y:50, abbrev:"ED", role:"Esterno Destro"},
                     {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
                 ],
-                "4-2-3-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
-                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
-                    {x:15, y:40, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:38, abbrev:"TQ", role:"Trequartista"}, {x:85, y:40, abbrev:"AD", role:"Ala Destra"},
-                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "4-1-2-1-2": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
-                    {x:50, y:65, abbrev:"MDC", role:"Mediano"},
-                    {x:35, y:52, abbrev:"CC", role:"Centrocampista"}, {x:65, y:52, abbrev:"CC", role:"Centrocampista"},
-                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
-                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "4-3-2-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
-                    {x:35, y:60, abbrev:"CC", role:"Centrocampista"}, {x:50, y:65, abbrev:"REG", role:"Regista"}, {x:65, y:60, abbrev:"CC", role:"Centrocampista"},
-                    {x:35, y:38, abbrev:"TQ", role:"Trequartista"}, {x:65, y:38, abbrev:"TQ", role:"Trequartista"},
-                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "4-5-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
-                    {x:15, y:48, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:50, y:62, abbrev:"REG", role:"Regista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:85, y:48, abbrev:"ED", role:"Esterno Destro"},
-                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "4-4-1-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
-                    {x:15, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:38, y:55, abbrev:"CC", role:"Centrocampista"}, {x:62, y:55, abbrev:"CC", role:"Centrocampista"}, {x:85, y:50, abbrev:"ED", role:"Esterno Destro"},
-                    {x:50, y:32, abbrev:"TQ", role:"Trequartista"},
-                    {x:50, y:15, abbrev:"AT", role:"Attaccante"}
-                ],
-                // CORREZIONE: Alzato la linea dei 3 difensori (y: 74/76 invece di 80/82)
                 "3-5-2": [
                     {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
                     {x:10, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:32, y:55, abbrev:"CC", role:"Centrocampista"}, {x:50, y:60, abbrev:"REG", role:"Regista"}, {x:68, y:55, abbrev:"CC", role:"Centrocampista"}, {x:90, y:50, abbrev:"ED", role:"Esterno Destro"},
                     {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
                 ],
-                "3-4-2-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
-                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
-                    {x:35, y:32, abbrev:"TQ", role:"Trequartista"}, {x:65, y:32, abbrev:"TQ", role:"Trequartista"},
-                    {x:50, y:15, abbrev:"AT", role:"Attaccante"}
-                ],
-                "3-4-1-2": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
-                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
-                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
-                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "3-4-3": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
-                    {x:10, y:52, abbrev:"ES", role:"Esterno Sinistro"}, {x:35, y:58, abbrev:"CC", role:"Centrocampista"}, {x:65, y:58, abbrev:"CC", role:"Centrocampista"}, {x:90, y:52, abbrev:"ED", role:"Esterno Destro"},
-                    {x:20, y:22, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:18, abbrev:"AT", role:"Prima Punta"}, {x:80, y:22, abbrev:"AD", role:"Ala Destra"}
-                ],
-                // CORREZIONE: Alzato anche i DC centrali nei 5 difensori
                 "5-3-2": [
                     {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
                     {x:30, y:52, abbrev:"CC", role:"Centrocampista"}, {x:50, y:58, abbrev:"REG", role:"Regista"}, {x:70, y:52, abbrev:"CC", role:"Centrocampista"},
                     {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
-                ],
-                "5-2-2-1": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
-                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
-                    {x:20, y:38, abbrev:"AS", role:"Ala Sinistra"}, {x:80, y:38, abbrev:"AD", role:"Ala Destra"},
-                    {x:50, y:18, abbrev:"AT", role:"Attaccante"}
-                ],
-                "5-2-1-2": [
-                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
-                    {x:35, y:60, abbrev:"MDC", role:"Mediano"}, {x:65, y:60, abbrev:"MDC", role:"Mediano"},
-                    {x:50, y:38, abbrev:"TQ", role:"Trequartista"},
-                    {x:35, y:18, abbrev:"AT", role:"Attaccante"}, {x:65, y:18, abbrev:"AT", role:"Attaccante"}
                 ]
             };
             return formations[f] || formations["4-3-3"];
         }
 
-        function saveAndRender() { localStorage.setItem('fc27_clubs', JSON.stringify(clubs)); renderUI(); }
+        async function saveAndRender() { 
+            await saveToCloud(); 
+            renderUI(); 
+        }
         function renderUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
 
-        document.getElementById('save-form-btn').onclick = () => {
+        document.getElementById('save-form-btn').onclick = async () => {
             const lineup = club.lineup || {};
             const missing = Object.keys(lineup).some(k => !lineup[k].num || lineup[k].num === '');
             if (missing) { alert('Assegna un numero di maglia a tutti i titolari.'); return; }
-            saveAndRender();
+            await saveAndRender();
             alert('Formazione salvata con successo!');
         };
 
-        // === RICHIESTE ===
+        // === RICHIESTE (LOGICA AGGIORNATA PER ID) ===
         function renderRequests() {
             const list = document.getElementById('req-list');
-            const pending = (club.requests || []).filter(r => r.status === 'pending');
-            if (pending.length === 0) { list.innerHTML = '<p style="padding:10px; opacity:0.5">Nessuna richiesta in sospeso.</p>'; return; }
+            const pendingIds = club.requests || [];
+
+            if (pendingIds.length === 0) { 
+                list.innerHTML = '<p style="padding:10px; opacity:0.5">Nessuna richiesta in sospeso.</p>'; 
+                return; 
+            }
+            
             list.innerHTML = '';
-            pending.forEach(r => { list.innerHTML += `<div style="background:#21262d; padding:10px; margin-bottom:5px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">${r.userName} <div><button onclick="decide('${r.id}', true)" class="btn btn-secondary" style="padding:5px 10px;">Accetta</button> <button onclick="decide('${r.id}', false)" class="btn btn-secondary" style="padding:5px 10px; background:#333;">Rifiuta</button></div></div>`; });
+            pendingIds.forEach(reqId => {
+                const u = users.find(us => String(us.id) === String(reqId));
+                const name = u ? u.nomeEA : 'Sconosciuto';
+                
+                const div = document.createElement('div');
+                div.style.cssText = "background:#21262d; padding:10px; margin-bottom:5px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;";
+                div.innerHTML = `
+                    <span>${name}</span>
+                    <div>
+                        <button class="btn btn-secondary" style="padding:5px 10px; margin-right:5px;" onclick="decide('${reqId}', true)">Accetta</button>
+                        <button class="btn btn-secondary" style="padding:5px 10px; background:#333;" onclick="decide('${reqId}', false)">Rifiuta</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
         }
         
-        window.decide = (id, approve) => {
-            const idx = club.requests.findIndex(r => r.id === id);
-            if (idx === -1) return;
-            const req = club.requests[idx];
-            if (approve) { if (!club.members) club.members = []; club.members.push(req.userId); }
-            club.requests.splice(idx, 1);
-            saveAndRender(); location.reload();
+        window.decide = async (id, approve) => {
+            // Rimuovi da richieste
+            club.requests = (club.requests || []).filter(r => String(r) !== String(id));
+            
+            if (approve) {
+                // Aggiungi a membri
+                if (!club.members) club.members = [];
+                if (!club.members.some(m => String(m) === String(id))) {
+                    club.members.push(id);
+                }
+            }
+            
+            await saveAndRender();
+            renderRequests(); // Aggiorna la lista visiva
+            alert(approve ? 'Giocatore accettato!' : 'Richiesta rifiutata.');
         };
     </script>
 </body>
