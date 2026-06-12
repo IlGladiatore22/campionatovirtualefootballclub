@@ -35,25 +35,10 @@
         .player-slot { position: absolute; width: 80px; height: auto; z-index: 10; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         .role-badge { background: rgba(0,0,0,0.9); color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; margin-bottom: 4px; z-index: 2; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .slot-card { width: 55px; height: 55px; position: relative; display: flex; align-items: center; justify-content: center; }
-        
-        /* FIX: Contenitore del nome con overflow nascosto */
         .slot-info { margin-top: 4px; text-align: center; width: 100%; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; overflow: hidden; }
-        
-        /* FIX: Animazione per i nomi lunghi */
-        .slot-player-name { 
-            font-size: 0.6rem; font-weight: 700; color: #fff; text-transform: uppercase; 
-            display: inline-block; white-space: nowrap; padding-left: 0; 
-        }
-        
-        /* Classe aggiunta via JS se il testo è troppo lungo */
-        .scrolling-name {
-            animation: scroll-text 4s linear infinite alternate;
-        }
-
-        @keyframes scroll-text {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(var(--scroll-offset)); }
-        }
+        .slot-player-name { font-size: 0.6rem; font-weight: 700; color: #fff; text-transform: uppercase; display: inline-block; white-space: nowrap; }
+        .scrolling-name { animation: scroll-text 4s linear infinite alternate; }
+        @keyframes scroll-text { 0% { transform: translateX(0); } 100% { transform: translateX(var(--scroll-offset)); } }
         
         .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 50px; background: rgba(0,0,0,0.1); }
         .player-slot.empty .slot-info { display: none; }
@@ -66,7 +51,14 @@
         .formation-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #21262d; color: white; border: 1px solid #30363d; cursor: pointer; }
         
         .roster-section { margin-bottom: 15px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .section-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        
+        /* FIX: Header flessibile per aggiungere bottone */
+        .section-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        
+        /* Stile bottone piccolo header */
+        .btn-header { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: #30363d; color: #fff; border: none; cursor: pointer; text-transform: uppercase; }
+        .btn-header:hover { background: var(--accent-gold); color: #000; }
+
         .roster-list-small { max-height: 120px; overflow-y: auto; }
         .roster-item { display: flex; align-items: center; justify-content: space-between; background: #21262d; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #30363d; cursor: grab; transition: all 0.2s; font-size: 0.8rem; }
         
@@ -145,7 +137,18 @@
                                         <option value="5-4-1">5-4-1</option>
                                     </select>
                                 </div>
-                                <div class="roster-section"><div class="section-header"><span>Rosa</span></div><div class="roster-list-small" id="roster-list"></div></div>
+                                
+                                <div class="roster-section">
+                                    <div class="section-header">
+                                        <span>Rosa</span>
+                                        <!-- NUOVO BOTTONE PANORAMICA -->
+                                        <button id="stats-btn" class="btn-header" title="Vedi Statistiche Partite">
+                                            <i class="fas fa-chart-pie"></i> Panoramica
+                                        </button>
+                                    </div>
+                                    <div class="roster-list-small" id="roster-list"></div>
+                                </div>
+                                
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
                                     <button class="btn btn-primary btn-block" id="save-form-btn" type="button"><i class="fas fa-save"></i> Salva</button>
                                     <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button"><i class="fas fa-hashtag"></i> Gestione Numeri</button>
@@ -243,6 +246,9 @@
                 };
             });
             document.getElementById('manage-numbers-btn').onclick = () => window.location.href = 'gestione-numeri.html?id=' + cId;
+            
+            // FIX: Pulsante Panoramica
+            document.getElementById('stats-btn').onclick = () => window.location.href = 'panoramica.html?id=' + cId;
         }
 
         function initUI() { renderRoster(); renderPitch(); }
@@ -252,7 +258,7 @@
             const numColor = isLightColor(c1) ? '#000' : '#fff';
             return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
                 <path d="M28,42 L28,105 Q28,115 38,115 L62,115 Q72,115 72,105 L72,42 L82,32 Q60,22 50,22 Q40,22 18,32 Z" fill="${c1}" stroke="${c2}" stroke-width="2"/>
-                <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight="bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${playerNum || '?'}</text>
+                <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight: bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${playerNum || '?'}</text>
             </svg>`;
         }
         function isLightColor(hex) { try { const c = hex.substring(1); const rgb = parseInt(c, 16); return ((rgb >> 16) & 0xff)*0.2126 + ((rgb >> 8) & 0xff)*0.7152 + ((rgb >> 0) & 0xff)*0.0722 > 127.5; } catch(e){ return false; } }
@@ -274,12 +280,9 @@
             });
         }
 
-        // FIX: Funzione per attivare animazione se il nome è lungo
         function checkNameScroll(el) {
-            // Se la larghezza del testo è maggiore della larghezza visibile
             if (el.scrollWidth > el.clientWidth) {
                 el.classList.add('scrolling-name');
-                // Calcoliamo di quanto deve spostarsi (differenza tra larghezza reale e visibile)
                 const offset = el.clientWidth - el.scrollWidth;
                 el.style.setProperty('--scroll-offset', `${offset}px`);
             }
@@ -308,7 +311,6 @@
                     const pName = pUser ? pUser.nomeEA : data.name;
                     const pNum = data.num || '';
                     
-                    // Creiamo l'elemento nome manualmente per passarlo alla funzione di check
                     const nameEl = document.createElement('div');
                     nameEl.className = 'slot-player-name';
                     nameEl.textContent = pName;
@@ -320,8 +322,6 @@
                     infoDiv.appendChild(nameEl);
                     slot.appendChild(infoDiv);
 
-                    // Attiviamo lo scroll se necessario
-                    // Usiamo un piccolo timeout per assicurarci che il DOM sia renderizzato
                     setTimeout(() => checkNameScroll(nameEl), 50);
 
                     if(isCaptain) { slot.draggable = true; slot.ondragstart = (e) => e.dataTransfer.setData('text/plain', String(data.id)); }
@@ -345,29 +345,29 @@
             });
         }
 
-        // === DATABASE MODULI FC26 ===
+        // === DATABASE MODULI FC26 (PORTIERE A y=90) ===
         function getFormationCoords(f) {
             const formations = {
-                "4-3-3": [{x:50, y:87, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:28, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:72, y:45, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
-                "4-3-3 (Attacco)": [{x:50, y:87, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:30, y:48, abbrev:"CC"}, {x:50, y:40, abbrev:"TQ"}, {x:70, y:48, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
-                "4-3-3 (Difesa)": [{x:50, y:87, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:25, y:52, abbrev:"MDC"}, {x:50, y:55, abbrev:"MDC"}, {x:75, y:52, abbrev:"MDC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
-                "4-4-2": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:42, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                 "4-4-2 (Flat)": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                "4-2-3-1": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"MDC"}, {x:65, y:52, abbrev:"MDC"}, {x:20, y:32, abbrev:"AS"}, {x:50, y:35, abbrev:"TQ"}, {x:80, y:32, abbrev:"AD"}, {x:50, y:15, abbrev:"AT"}],
-                "4-1-2-1-2": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:50, y:55, abbrev:"MDC"}, {x:35, y:42, abbrev:"CC"}, {x:65, y:42, abbrev:"CC"}, {x:50, y:30, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
-                "4-3-2-1": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:35, y:35, abbrev:"TQ"}, {x:65, y:35, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
-                "4-5-1": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:42, abbrev:"ES"}, {x:35, y:45, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:65, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}],
-                "4-4-1-1": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:50, y:30, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
-                "4-1-4-1": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:50, y:55, abbrev:"MDC"}, {x:15, y:42, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}],
-                "4-2-2-2": [{x:50, y:87, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"MDC"}, {x:65, y:52, abbrev:"MDC"}, {x:30, y:35, abbrev:"TQ"}, {x:70, y:35, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
-                "3-4-3": [{x:50, y:87, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
-                "3-5-2": [{x:50, y:87, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:42, abbrev:"ES"}, {x:35, y:45, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:65, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                "3-4-2-1": [{x:50, y:87, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:35, y:30, abbrev:"TQ"}, {x:65, y:30, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
-                "3-4-1-2": [{x:50, y:87, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:50, y:30, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
-                "5-3-2": [{x:50, y:87, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:30, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:70, y:45, abbrev:"CC"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                "5-2-2-1": [{x:50, y:87, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:35, y:50, abbrev:"MDC"}, {x:65, y:50, abbrev:"MDC"}, {x:25, y:32, abbrev:"AS"}, {x:75, y:32, abbrev:"AD"}, {x:50, y:15, abbrev:"AT"}],
-                "5-2-1-2": [{x:50, y:87, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:35, y:50, abbrev:"MDC"}, {x:65, y:50, abbrev:"MDC"}, {x:50, y:32, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
-                "5-4-1": [{x:50, y:87, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:20, y:45, abbrev:"ES"}, {x:40, y:45, abbrev:"CC"}, {x:60, y:45, abbrev:"CC"}, {x:80, y:45, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}]
+                "4-3-3": [{x:50, y:90, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:28, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:72, y:45, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
+                "4-3-3 (Attacco)": [{x:50, y:90, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:30, y:48, abbrev:"CC"}, {x:50, y:40, abbrev:"TQ"}, {x:70, y:48, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
+                "4-3-3 (Difesa)": [{x:50, y:90, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:25, y:52, abbrev:"MDC"}, {x:50, y:55, abbrev:"MDC"}, {x:75, y:52, abbrev:"MDC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
+                "4-4-2": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:42, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
+                 "4-4-2 (Flat)": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
+                "4-2-3-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"MDC"}, {x:65, y:52, abbrev:"MDC"}, {x:20, y:32, abbrev:"AS"}, {x:50, y:35, abbrev:"TQ"}, {x:80, y:32, abbrev:"AD"}, {x:50, y:15, abbrev:"AT"}],
+                "4-1-2-1-2": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:50, y:55, abbrev:"MDC"}, {x:35, y:42, abbrev:"CC"}, {x:65, y:42, abbrev:"CC"}, {x:50, y:30, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
+                "4-3-2-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:35, y:35, abbrev:"TQ"}, {x:65, y:35, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
+                "4-5-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:42, abbrev:"ES"}, {x:35, y:45, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:65, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}],
+                "4-4-1-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:50, y:30, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
+                "4-1-4-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:50, y:55, abbrev:"MDC"}, {x:15, y:42, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}],
+                "4-2-2-2": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"MDC"}, {x:65, y:52, abbrev:"MDC"}, {x:30, y:35, abbrev:"TQ"}, {x:70, y:35, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
+                "3-4-3": [{x:50, y:90, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
+                "3-5-2": [{x:50, y:90, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:42, abbrev:"ES"}, {x:35, y:45, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:65, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
+                "3-4-2-1": [{x:50, y:90, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:35, y:30, abbrev:"TQ"}, {x:65, y:30, abbrev:"TQ"}, {x:50, y:15, abbrev:"AT"}],
+                "3-4-1-2": [{x:50, y:90, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"}, {x:50, y:30, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
+                "5-3-2": [{x:50, y:90, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:30, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:70, y:45, abbrev:"CC"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
+                "5-2-2-1": [{x:50, y:90, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:35, y:50, abbrev:"MDC"}, {x:65, y:50, abbrev:"MDC"}, {x:25, y:32, abbrev:"AS"}, {x:75, y:32, abbrev:"AD"}, {x:50, y:15, abbrev:"AT"}],
+                "5-2-1-2": [{x:50, y:90, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:35, y:50, abbrev:"MDC"}, {x:65, y:50, abbrev:"MDC"}, {x:50, y:32, abbrev:"TQ"}, {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}],
+                "5-4-1": [{x:50, y:90, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:20, y:45, abbrev:"ES"}, {x:40, y:45, abbrev:"CC"}, {x:60, y:45, abbrev:"CC"}, {x:80, y:45, abbrev:"ED"}, {x:50, y:18, abbrev:"AT"}]
             };
             return formations[f] || formations["4-3-3"];
         }
