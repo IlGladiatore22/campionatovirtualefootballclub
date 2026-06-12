@@ -30,13 +30,17 @@
         .pitch-area-top { position: absolute; top: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-top: none; transform: translateX(-50%); }
         .pitch-area-bottom { position: absolute; bottom: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-bottom: none; transform: translateX(-50%); }
 
-        .player-slot { position: absolute; width: 90px; height: auto; z-index: 10; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
-        .role-badge { background: rgba(0,0,0,0.9); color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; padding: 3px 10px; border-radius: 4px; font-size: 0.7rem; margin-bottom: 5px; z-index: 2; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .slot-card { width: 70px; height: 70px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .slot-info { margin-top: 5px; text-align: center; width: 100%; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; }
-        .slot-player-name { font-size: 0.7rem; font-weight: 700; color: #fff; text-transform: uppercase; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* FIX: Ridotto dimensioni per evitare sovrapposizioni */
+        .player-slot { position: absolute; width: 80px; height: auto; z-index: 10; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
+        .role-badge { background: rgba(0,0,0,0.9); color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; margin-bottom: 4px; z-index: 2; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 65px; background: rgba(0,0,0,0.1); }
+        /* FIX: Card più piccola (60px invece di 70px) */
+        .slot-card { width: 60px; height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
+        
+        .slot-info { margin-top: 4px; text-align: center; width: 100%; background: rgba(0,0,0,0.7); padding: 3px; border-radius: 4px; }
+        .slot-player-name { font-size: 0.65rem; font-weight: 700; color: #fff; text-transform: uppercase; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 55px; background: rgba(0,0,0,0.1); }
         .player-slot.empty .slot-info { display: none; }
         .player-slot.empty .role-badge { opacity: 0.5; }
         
@@ -295,122 +299,122 @@
             });
         }
 
-        // === DATABASE MODULI FC26 (FIX COORDINATES) ===
+        // === DATABASE MODULI FC26 (FIX: Spazi aumentati e card rimpicciolite) ===
         function getFormationCoords(f) {
             const formations = {
-                // 4 DIFENSORI - Aumentato spazio difesa-portiere (POR y=95, DC y=74)
+                // 4 DIFENSORI - Difesa al 68%, Portiere al 92%
                 "4-3-3": [
-                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
-                    {x:28, y:52, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:72, y:52, abbrev:"CC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:18, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:82, y:68, abbrev:"TD"},
+                    {x:28, y:48, abbrev:"CC"}, {x:50, y:52, abbrev:"REG"}, {x:72, y:48, abbrev:"CC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-3-3 (Attacco)": [
-                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
-                    {x:30, y:52, abbrev:"CC"}, {x:50, y:45, abbrev:"TQ"}, {x:70, y:52, abbrev:"CC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:18, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:82, y:68, abbrev:"TD"},
+                    {x:30, y:50, abbrev:"CC"}, {x:50, y:42, abbrev:"TQ"}, {x:70, y:50, abbrev:"CC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-3-3 (Difesa)": [
-                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
-                    {x:25, y:58, abbrev:"MDC"}, {x:50, y:62, abbrev:"MDC"}, {x:75, y:58, abbrev:"MDC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:18, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:82, y:68, abbrev:"TD"},
+                    {x:25, y:55, abbrev:"MDC"}, {x:50, y:58, abbrev:"MDC"}, {x:75, y:55, abbrev:"MDC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-4-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:15, y:48, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:15, y:45, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"},
+                    {x:35, y:22, abbrev:"AT"}, {x:65, y:22, abbrev:"AT"}
                 ],
                  "4-4-2 (Flat)": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:15, y:50, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:35, y:22, abbrev:"AT"}, {x:65, y:22, abbrev:"AT"}
                 ],
                 "4-2-3-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:35, y:55, abbrev:"MDC"}, {x:65, y:55, abbrev:"MDC"},
                     {x:20, y:35, abbrev:"AS"}, {x:50, y:38, abbrev:"TQ"}, {x:80, y:35, abbrev:"AD"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-1-2-1-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:50, y:62, abbrev:"MDC"},
-                    {x:35, y:48, abbrev:"CC"}, {x:65, y:48, abbrev:"CC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:50, y:58, abbrev:"MDC"},
+                    {x:35, y:45, abbrev:"CC"}, {x:65, y:45, abbrev:"CC"},
                     {x:50, y:32, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
                 "4-3-2-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:35, y:58, abbrev:"CC"}, {x:50, y:62, abbrev:"REG"}, {x:65, y:58, abbrev:"CC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:35, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:65, y:55, abbrev:"CC"},
                     {x:35, y:38, abbrev:"TQ"}, {x:65, y:38, abbrev:"TQ"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-5-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:15, y:48, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:56, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:15, y:45, abbrev:"ES"}, {x:35, y:50, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:65, y:50, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ],
                 "4-4-1-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:15, y:50, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:50, y:32, abbrev:"TQ"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-1-4-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:50, y:62, abbrev:"MDC"},
-                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:50, y:60, abbrev:"MDC"},
+                    {x:15, y:45, abbrev:"ES"}, {x:38, y:48, abbrev:"CC"}, {x:62, y:48, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ],
                 "4-2-2-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
-                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
-                    {x:30, y:40, abbrev:"TQ"}, {x:70, y:40, abbrev:"TQ"},
+                    {x:50, y:92, abbrev:"POR"}, {x:15, y:68, abbrev:"TS"}, {x:38, y:70, abbrev:"DC"}, {x:62, y:70, abbrev:"DC"}, {x:85, y:68, abbrev:"TD"},
+                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
+                    {x:30, y:38, abbrev:"TQ"}, {x:70, y:38, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
 
-                // 3 DIFENSORI - Aumentato spazio orizzontale e verticale
+                // 3 DIFENSORI - Spaziati per non accavallarsi
                 "3-4-3": [
-                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
-                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:25, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:75, y:70, abbrev:"DC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "3-5-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
-                    {x:15, y:48, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:56, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:92, abbrev:"POR"}, {x:25, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:75, y:70, abbrev:"DC"},
+                    {x:15, y:45, abbrev:"ES"}, {x:35, y:50, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:65, y:50, abbrev:"CC"}, {x:85, y:45, abbrev:"ED"},
+                    {x:35, y:22, abbrev:"AT"}, {x:65, y:22, abbrev:"AT"}
                 ],
                 "3-4-2-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
-                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:25, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:75, y:70, abbrev:"DC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:35, y:35, abbrev:"TQ"}, {x:65, y:35, abbrev:"TQ"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "3-4-1-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
-                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
+                    {x:50, y:92, abbrev:"POR"}, {x:25, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:75, y:70, abbrev:"DC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:50, y:35, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
 
-                // 5 DIFENSORI - Difesa laterale più alta, centrale più basso
+                // 5 DIFENSORI - Terzini alti, centrali bassi
                 "5-3-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
-                    {x:30, y:48, abbrev:"CC"}, {x:50, y:52, abbrev:"REG"}, {x:70, y:48, abbrev:"CC"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:92, abbrev:"POR"}, {x:10, y:60, abbrev:"TS"}, {x:30, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:70, y:70, abbrev:"DC"}, {x:90, y:60, abbrev:"TD"},
+                    {x:30, y:48, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:70, y:48, abbrev:"CC"},
+                    {x:35, y:22, abbrev:"AT"}, {x:65, y:22, abbrev:"AT"}
                 ],
                 "5-2-2-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
-                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
-                    {x:25, y:38, abbrev:"AS"}, {x:75, y:38, abbrev:"AD"},
+                    {x:50, y:92, abbrev:"POR"}, {x:10, y:60, abbrev:"TS"}, {x:30, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:70, y:70, abbrev:"DC"}, {x:90, y:60, abbrev:"TD"},
+                    {x:35, y:55, abbrev:"MDC"}, {x:65, y:55, abbrev:"MDC"},
+                    {x:25, y:35, abbrev:"AS"}, {x:75, y:35, abbrev:"AD"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "5-2-1-2": [
-                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
-                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
+                    {x:50, y:92, abbrev:"POR"}, {x:10, y:60, abbrev:"TS"}, {x:30, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:70, y:70, abbrev:"DC"}, {x:90, y:60, abbrev:"TD"},
+                    {x:35, y:55, abbrev:"MDC"}, {x:65, y:55, abbrev:"MDC"},
                     {x:50, y:38, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
                 "5-4-1": [
-                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
+                    {x:50, y:92, abbrev:"POR"}, {x:10, y:60, abbrev:"TS"}, {x:30, y:70, abbrev:"DC"}, {x:50, y:72, abbrev:"DC"}, {x:70, y:70, abbrev:"DC"}, {x:90, y:60, abbrev:"TD"},
                     {x:20, y:48, abbrev:"ES"}, {x:40, y:50, abbrev:"CC"}, {x:60, y:50, abbrev:"CC"}, {x:80, y:48, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ]
