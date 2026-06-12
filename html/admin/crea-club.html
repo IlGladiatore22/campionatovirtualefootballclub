@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CVFC ADMIN - Crea Club</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/style.css?v=2">
     <link rel="stylesheet" href="../../estetica/components.css">
     <style>
         .logo-preview { width: 100px; height: 100px; border-radius: 50%; background: var(--bg-tertiary); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed var(--border-color); cursor: pointer; transition: all 0.3s; }
@@ -54,7 +54,7 @@
                         <div class="input-group">
                             <label class="input-label">Seleziona Capitano</label>
                             <select id="captain" class="input-field">
-                                <option value="">-- Seleziona Utente --</option>
+                                <option value="">-- Caricamento utenti... --</option>
                             </select>
                         </div>
 
@@ -88,18 +88,40 @@
     </div>
 
     <script>
+        // === CONFIGURAZIONE JSONBIN ===
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // ID Database Utenti
+        // INSERISCI QUI IL NUOVO ID DEL DATABASE CLUB
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
+        
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
+
         // === CONTROLLO SESSIONE ADMIN ===
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
             window.location.href = 'accesso-admin.html';
         }
 
-        // Carica utenti
-        const users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
-        const select = document.getElementById('captain');
-        users.forEach(u => {
-            select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
-        });
+        // === CARICA UTENTI DAL CLOUD (Per selezione Capitano) ===
+        async function loadUsersForSelect() {
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const data = await res.json();
+                const users = data.record.users || [];
+                
+                const select = document.getElementById('captain');
+                select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
+                
+                users.forEach(u => {
+                    select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
+                });
+            } catch (e) {
+                console.error("Errore caricamento utenti:", e);
+                document.getElementById('captain').innerHTML = '<option value="">Errore caricamento</option>';
+            }
+        }
+        loadUsersForSelect();
 
         // Preview Logo
         let logoBase64 = '';
@@ -126,30 +148,61 @@
         });
 
         // Submit
-        document.getElementById('form').addEventListener('submit', function(e) {
+        document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
-            const captainId = document.getElementById('captain').value;
             
-            clubs.push({
-                id: 'club_' + Date.now(),
-                name: document.getElementById('name').value,
-                tag: document.getElementById('tag').value.toUpperCase(),
-                logo: logoBase64, // Salvataggio immagine
-                captain: captainId || null,
-                members: captainId ? [captainId] : [],
-                colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
-                stadium: document.getElementById('stadium').value,
-                formation: '4-3-3',
-                tactics: {},
-                lineup: {}, 
-                requests: [],
-                createdAt: new Date().toISOString()
-            });
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creazione...';
 
-            localStorage.setItem('fc27_clubs', JSON.stringify(clubs));
-            alert('Club creato con successo!');
-            window.location.href = 'dashboard.html';
+            try {
+                // 1. Leggi Clubs attuali dal Database
+                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const getData = await getRes.json();
+                let clubs = getData.record.clubs || [];
+
+                const captainId = document.getElementById('captain').value;
+                
+                // 2. Crea nuovo oggetto Club
+                const newClub = {
+                    id: 'club_' + Date.now(),
+                    name: document.getElementById('name').value,
+                    tag: document.getElementById('tag').value.toUpperCase(),
+                    logo: logoBase64, 
+                    captain: captainId || null,
+                    members: captainId ? [captainId] : [],
+                    colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
+                    stadium: document.getElementById('stadium').value,
+                    formation: '4-3-3',
+                    tactics: {},
+                    lineup: {}, 
+                    requests: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                // 3. Aggiungi e Salva
+                clubs.push(newClub);
+
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ "clubs": clubs })
+                });
+
+                alert('Club creato con successo e salvato nel cloud!');
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore durante il salvataggio del club.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Crea Club';
+            }
         });
 
         // Logout Admin
