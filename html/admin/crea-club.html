@@ -88,8 +88,7 @@
     </div>
 
     <script>
-        // === CONFIGURAZIONE JSONBIN ===
-        // SOSTITUISCI CON LE TUE CHIAVI REALI
+        // === CONFIGURAZIONE JSONBIN (RIPISTATI DAI TUOI DATI) ===
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
@@ -104,11 +103,13 @@
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // FIX: Aggiunto 'cache: no-store' per evitare di leggere vecchi dati salvati nella cache del browser
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store'
+                    cache: 'no-store' // Fix per evitare dati vecchi
                 });
+                
+                if (!res.ok) throw new Error("Errore connessione o chiave errata");
+                
                 const data = await res.json();
                 const users = data.record.users || [];
                 
@@ -119,22 +120,23 @@
                 });
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
-                select.innerHTML = '<option value="">Errore connessione DB</option>';
+                select.innerHTML = '<option value="">Errore caricamento</option>';
             }
         }
         loadUsersForSelect();
 
         // Preview Logo
         let logoBase64 = '';
-        document.getElementById('logo-input').addEventListener('change', function(e) {
+        const logoInput = document.getElementById('logo-input');
+        
+        logoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                // Controllo dimensione file per evitare errori JSONBin (limite circa 500kb-1mb)
+                // Controllo peso immagine per evitare errori JSONBin
                 if (file.size > 400000) { 
-                    alert("Attenzione: L'immagine è troppo pesante. Carica un'immagine più leggera (max 400KB).");
+                    alert("Immagine troppo pesante! Max 400KB.");
                     return;
                 }
-
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     logoBase64 = ev.target.result;
@@ -154,7 +156,7 @@
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
-        // Submit
+        // Submit Form
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -166,10 +168,10 @@
                 // 1. Prendi lista club attuali (Fix Cache)
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store' // FIX: Forza lettura dati aggiornati
+                    cache: 'no-store' // Fix per evitare dati vecchi
                 });
                 
-                if (!getRes.ok) throw new Error("Errore lettura database");
+                if (!getRes.ok) throw new Error("Impossibile leggere il database.");
                 
                 const getData = await getRes.json();
                 let clubs = getData.record.clubs || [];
@@ -204,9 +206,8 @@
                     body: JSON.stringify({ "clubs": clubs })
                 });
 
-                // Controllo se il salvataggio è andato a buon fine
                 if (!saveRes.ok) {
-                    throw new Error("Errore durante il salvataggio nel cloud.");
+                    throw new Error("Errore durante il salvataggio.");
                 }
 
                 alert('Club creato con successo!');
