@@ -6,6 +6,7 @@
     <title>FC27 - Gestione Club</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
     <style>
         body { background: #0d1117; color: #e0e0e0; }
@@ -51,7 +52,6 @@
         .slot-player-name { font-size: 0.7rem; font-weight: 700; color: #fff; text-transform: uppercase; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .slot-role-real { font-size: 0.55rem; color: var(--accent-gold); font-style: italic; }
         
-        .player-slot.no-number .slot-card { outline: 2px dashed #f5a623; border-radius: 8px; }
         .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 65px; background: rgba(0,0,0,0.1); }
         .player-slot.empty .slot-info { display: none; }
         .player-slot.empty .role-badge { opacity: 0.5; }
@@ -95,18 +95,56 @@
         
         <div class="sidebar-overlay" id="overlay"></div>
         
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR COMPLETA -->
         <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+                <button id="close-btn" class="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Menu Principale</div>
                     <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="../competizioni/competizioni.html" class="nav-link"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
+                    <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
                     <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
                 </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
                 <div class="nav-section">
                     <div class="nav-section-title">Account</div>
                     <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
+                </div>
+                
+                <div class="nav-section" id="admin-nav" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
+                </div>
+                
+                <div class="nav-section" id="guest-admin-nav">
+                    <div class="nav-section-title">Staff</div>
+                    <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
                     <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
                 </div>
             </nav>
@@ -159,22 +197,30 @@
                                     <select id="formation-select" onchange="changeFormation(this.value)">
                                         <option value="4-3-3">4-3-3</option>
                                         <option value="4-4-2">4-4-2</option>
+                                        <option value="4-2-3-1">4-2-3-1</option>
                                         <option value="3-5-2">3-5-2</option>
+                                        <option value="5-3-2">5-3-2</option>
                                     </select>
+                                </div>
+                                <div class="roster-section">
+                                    <div class="section-header"><span>Panchina</span></div>
+                                    <div class="bench-box" id="bench-list" ondragover="handleDragOver(event)" ondrop="handleDropBench(event)"></div>
                                 </div>
                                 <div class="roster-section">
                                     <div class="section-header"><span>Rosa</span></div>
                                     <div class="roster-list-small" id="roster-list"></div>
                                 </div>
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
-                                    <div class="number-warning" id="number-warning"><i class="fas fa-exclamation-triangle"></i> Numeri mancanti.</div>
-                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva</button>
+                                    <div class="number-warning" id="number-warning"><i class="fas fa-exclamation-triangle"></i> Assegna un numero a tutti i titolari.</div>
+                                    <button class="btn btn-primary btn-block" id="save-form-btn"><i class="fas fa-save"></i> Salva Formazione</button>
+                                    <!-- NUOVO PULSANTE GESTIONE NUMERI -->
+                                    <a href="#" id="manage-numbers-btn" class="btn btn-secondary btn-block"><i class="fas fa-hashtag"></i> Gestione Numeri</a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div id="tab-tactics" class="tab-content" style="display:none;"><div class="card"><h3>Tattiche</h3><p>In sviluppo.</p></div></div>
-                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste</h3><div id="req-list"></div></div></div>
+                    <div id="tab-tactics" class="tab-content" style="display:none;"><div class="card"><h3>Tattiche</h3><p>Sezione in sviluppo.</p></div></div>
+                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste in sospeso</h3><div id="req-list"></div></div></div>
                 </div>
             </div>
         </main>
@@ -191,7 +237,6 @@
         let users = [];
         let club = null;
         let isCaptain = false;
-        let isMember = false;
 
         const urlP = new URLSearchParams(window.location.search);
         const cId = urlP.get('id');
@@ -199,8 +244,9 @@
         window.onload = async function() {
             if (!user) return window.location.href = '../accesso.html';
             if (!cId) {
-                alert("Nessun ID Club specificato.");
-                return window.location.href = 'club.html';
+                document.getElementById('error-box').style.display = 'block';
+                document.getElementById('error-msg').textContent = "Nessun ID Club specificato nell'URL.";
+                return;
             }
 
             setupUIEvents();
@@ -209,23 +255,18 @@
 
         async function loadData() {
             try {
-                // 1. Fetch Users
                 const resUsers = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
                 });
-                if (!resUsers.ok) throw new Error("Errore caricamento utenti (Cod: " + resUsers.status + ")");
                 const dataUsers = await resUsers.json();
                 users = dataUsers.record.users || [];
 
-                // 2. Fetch Clubs
                 const resClubs = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
                 });
-                if (!resClubs.ok) throw new Error("Errore caricamento club (Cod: " + resClubs.status + ")");
                 const dataClubs = await resClubs.json();
                 clubs = dataClubs.record.clubs || [];
 
-                // 3. Find Club
                 club = clubs.find(c => c.id === cId);
                 if (!club) {
                     document.getElementById('error-box').style.display = 'block';
@@ -234,12 +275,11 @@
                     return;
                 }
 
-                // 4. Permissions
                 const uid = String(user.id);
                 const capId = String(club.captain);
                 const members = (club.members || []).map(m => String(m));
                 isCaptain = (uid === capId);
-                isMember = members.includes(uid);
+                const isMember = members.includes(uid);
 
                 renderHeader();
 
@@ -252,6 +292,10 @@
                         document.getElementById('req-tab').style.display = 'block';
                         document.getElementById('captain-tools').style.display = 'flex';
                         document.getElementById('formation-box').style.display = 'block';
+                        
+                        // Imposta link gestione numeri
+                        document.getElementById('manage-numbers-btn').href = 'gestione-numeri.html?id=' + cId;
+                        
                         renderRequests();
                     }
                     initUI();
@@ -279,11 +323,18 @@
         }
 
         function setupUIEvents() {
+            // Sidebar Toggle
             document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
             document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
             document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+            
+            // Admin Nav
+            if (user && user.isAdmin) document.getElementById('admin-nav').style.display = 'block';
+            
+            // Logout
             document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
 
+            // Tabs
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.onclick = function() {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -304,13 +355,12 @@
         function initUI() { renderRoster(); renderPitch(); checkMissingNumbers(); }
         function changeFormation(val) { club.formation = val; saveToCloud(); renderPitch(); renderRoster(); }
 
-        // GRAPHICS FUNCTIONS
+        // GRAPHICS
         function generateRealisticJersey(c1, c2, playerName, playerNum) {
             const numColor = isLightColor(c1) ? '#000' : '#fff';
             const numDisplay = playerNum ? playerNum : '?';
             return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
                 <defs><linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${adjustColor(c1, -10)}" /><stop offset="50%" style="stop-color:${c1}" /></linearGradient></defs>
-                <ellipse cx="50" cy="130" rx="25" ry="5" fill="rgba(0,0,0,0.35)" />
                 <path d="M28,42 L28,105 Q28,115 38,115 L62,115 Q72,115 72,105 L72,42 L82,32 Q60,22 50,22 Q40,22 18,32 Z" fill="url(#bodyGrad)" stroke="${c2}" stroke-width="2"/>
                 <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight="bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${numDisplay}</text>
             </svg>`;
@@ -321,19 +371,48 @@
 
         function renderRoster() {
             const rosterList = document.getElementById('roster-list');
-            rosterList.innerHTML = '';
+            const benchList = document.getElementById('bench-list');
+            rosterList.innerHTML = ''; benchList.innerHTML = '';
+            if (!club.bench) club.bench = [];
+
             const members = club.members || [];
             members.forEach(mId => {
                 const u = users.find(x => String(x.id) === String(mId)); if(!u) return;
+                let isInLineup = false; let num = null;
+                if(club.lineup) { Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === String(mId)) { isInLineup = true; num = club.lineup[k].num || null; } }); }
+                const isInBench = (club.bench || []).some(bid => String(bid) === String(mId));
+                
                 const div = document.createElement('div');
                 div.className = 'roster-item';
                 div.dataset.id = u.id; div.dataset.name = u.nomeEA;
                 div.innerHTML = `<span class="r-name">${u.nomeEA}</span>`;
-                if(isCaptain) div.setAttribute('draggable', 'true');
-                div.ondragstart = (e) => e.dataTransfer.setData('text/plain', u.id);
-                rosterList.appendChild(div);
+                
+                if(isCaptain) {
+                     div.setAttribute('draggable', 'true');
+                     div.ondragstart = (e) => e.dataTransfer.setData('text/plain', u.id);
+                }
+                
+                if (isInLineup) { 
+                    div.style.opacity = '0.4'; div.style.borderStyle = 'dashed'; rosterList.appendChild(div); 
+                } else if (isInBench) { 
+                    benchList.appendChild(div); 
+                } else { 
+                    rosterList.appendChild(div); 
+                }
             });
         }
+        
+        window.handleDropBench = function(e) { 
+            e.preventDefault(); 
+            const droppedId = e.dataTransfer.getData('text/plain'); 
+            if (!club.bench) club.bench = []; 
+            if (!club.bench.includes(droppedId)) { 
+                if(club.lineup) Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === droppedId) delete club.lineup[k]; }); 
+                club.bench.push(droppedId); 
+                saveAndRender(); 
+            } 
+        }
+        window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
 
         function renderPitch() {
             const pitch = document.getElementById('pitch');
@@ -358,9 +437,11 @@
                     const pUser = users.find(u => String(u.id) === String(data.id));
                     const pName = pUser ? pUser.nomeEA : data.name;
                     const pNum = data.num || '';
-                    slot.innerHTML = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card">${generateRealisticJersey(c1, c2, pName, pNum)}</div><div class="slot-info"><div class="slot-player-name">${pName}</div></div>`;
-                    slot.draggable = true;
-                    slot.ondragstart = (e) => e.dataTransfer.setData('text/plain', String(data.id));
+                    slot.innerHTML = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card">${generateRealisticJersey(c1, c2, pName, pNum)}</div><div class="slot-info"><div class="slot-player-name">${pName}</div><div class="slot-role-real">${pt.role}</div></div>`;
+                    if(isCaptain) {
+                        slot.draggable = true;
+                        slot.ondragstart = (e) => e.dataTransfer.setData('text/plain', String(data.id));
+                    }
                 } else {
                     slot.classList.add('empty');
                     slot.innerHTML = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card"></div>`;
@@ -370,15 +451,15 @@
                 slot.ondragleave = () => slot.classList.remove('drag-over');
                 slot.ondrop = (e) => {
                     e.preventDefault(); slot.classList.remove('drag-over');
-                    const droppedId = e.dataTransfer.getData('text/plain');
-                    if (!droppedId) return;
+                    const droppedId = e.dataTransfer.getData('text/plain'); if (!droppedId) return;
+                    const rosterItem = document.querySelector(`.roster-item[data-id="${droppedId}"]`);
+                    const pName = rosterItem ? rosterItem.dataset.name : '?';
                     
-                    // Logic: remove from other slot if exists, add to this slot
-                    if(club.lineup) { Object.keys(club.lineup).forEach(k => { if(String(club.lineup[k].id) === droppedId) delete club.lineup[k]; }); }
+                    if(club.lineup) { Object.keys(club.lineup).forEach(k => { if (String(club.lineup[k].id) === droppedId) { delete club.lineup[k]; } }); }
+                    if(club.bench) club.bench = club.bench.filter(id => id !== droppedId);
                     
                     if(!club.lineup) club.lineup = {};
-                    club.lineup[i] = { id: droppedId, name: div.dataset.name || 'Giocatore' }; // Name needs retrieval
-                    
+                    club.lineup[i] = { id: droppedId, name: pName, num: '' };
                     saveAndRender();
                 };
                 pitch.appendChild(slot);
@@ -388,19 +469,24 @@
         function getFormationCoords(f) {
             const formations = {
                 "4-3-3": [
-                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
-                    {x:28, y:52, abbrev:"CC"}, {x:50, y:58, abbrev:"REG"}, {x:72, y:52, abbrev:"CC"},
-                    {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:18, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:82, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:28, y:52, abbrev:"CC", role:"Centrocampista"}, {x:50, y:58, abbrev:"REG", role:"Regista"}, {x:72, y:52, abbrev:"CC", role:"Centrocampista"},
+                    {x:20, y:22, abbrev:"AS", role:"Ala Sinistra"}, {x:50, y:18, abbrev:"AT", role:"Prima Punta"}, {x:80, y:22, abbrev:"AD", role:"Ala Destra"}
                 ],
                 "4-4-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:15, y:50, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:15, y:75, abbrev:"TS", role:"Terzino Sinistro"}, {x:38, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:62, y:80, abbrev:"DC", role:"Difensore Centrale"}, {x:85, y:75, abbrev:"TD", role:"Terzino Destro"},
+                    {x:15, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:38, y:55, abbrev:"CC", role:"Centrocampista"}, {x:62, y:55, abbrev:"CC", role:"Centrocampista"}, {x:85, y:50, abbrev:"ED", role:"Esterno Destro"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
                 ],
-                 "3-5-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
-                    {x:10, y:50, abbrev:"ES"}, {x:32, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:68, y:55, abbrev:"CC"}, {x:90, y:50, abbrev:"ED"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                "3-5-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:25, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Difensore Centrale"}, {x:75, y:74, abbrev:"DC", role:"Difensore Centrale"},
+                    {x:10, y:50, abbrev:"ES", role:"Esterno Sinistro"}, {x:32, y:55, abbrev:"CC", role:"Centrocampista"}, {x:50, y:60, abbrev:"REG", role:"Regista"}, {x:68, y:55, abbrev:"CC", role:"Centrocampista"}, {x:90, y:50, abbrev:"ED", role:"Esterno Destro"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
+                ],
+                "5-3-2": [
+                    {x:50, y:90, abbrev:"POR", role:"Portiere"}, {x:10, y:68, abbrev:"TS", role:"Terzino Sinistro"}, {x:30, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:50, y:76, abbrev:"DC", role:"Stopper"}, {x:70, y:74, abbrev:"DC", role:"Difensore Centrale"}, {x:90, y:68, abbrev:"TD", role:"Terzino Destro"},
+                    {x:30, y:52, abbrev:"CC", role:"Centrocampista"}, {x:50, y:58, abbrev:"REG", role:"Regista"}, {x:70, y:52, abbrev:"CC", role:"Centrocampista"},
+                    {x:35, y:20, abbrev:"AT", role:"Attaccante"}, {x:65, y:20, abbrev:"AT", role:"Attaccante"}
                 ]
             };
             return formations[f] || formations["4-3-3"];
@@ -410,7 +496,7 @@
 
         document.getElementById('save-form-btn').onclick = async () => {
             await saveAndRender();
-            alert('Salvato!');
+            alert('Formazione salvata con successo!');
         };
 
         // === REQUESTS ===
@@ -438,6 +524,7 @@
             }
             await saveAndRender();
             renderRequests();
+            alert(approve ? 'Giocatore aggiunto al club!' : 'Richiesta rifiutata.');
         };
     </script>
 </body>
