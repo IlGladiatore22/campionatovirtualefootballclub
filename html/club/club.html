@@ -15,28 +15,73 @@
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
-        /* Stile Card Club */
+        /* Stile Card Club - Nuovo Layout */
         .club-card {
-            position: relative;
-            overflow: hidden;
+            cursor: pointer; /* Mostra che è cliccabile */
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .club-logo {
-            width: 100%;
-            height: 150px;
+        .club-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Riga superiore: Icona + Nome */
+        .club-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Icona Club */
+        .club-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             background: var(--bg-tertiary);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
         }
-        .club-logo img {
+        .club-icon-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: contain; 
+            object-fit: cover; 
         }
-        .club-logo i {
-            font-size: 3rem;
+        .club-icon-wrapper i {
+            font-size: 1.5rem;
             color: var(--accent-gold);
+        }
+
+        /* Nome Club */
+        .club-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Riga inferiore: Stadio */
+        .club-info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding-left: 65px; /* Allinea con il testo del nome */
+        }
+        .club-info-row i {
+            width: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -45,7 +90,7 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- AGGIUNTA FRECCIA INDIETRO -->
+                <!-- FRECCIA INDIETRO -->
                 <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
                     <i class="fas fa-arrow-left"></i>
                 </a>
@@ -68,7 +113,7 @@
         <!-- SIDEBAR OVERLAY -->
         <div id="overlay" class="sidebar-overlay"></div>
 
-        <!-- SIDEBAR COMPLETA (Link adattati per la cartella club/) -->
+        <!-- SIDEBAR COMPLETA -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
@@ -194,13 +239,13 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // === CARICA CLUB CON CACHE BUSTER ===
+        // === CARICA CLUB E CREA LISTA ===
         async function loadClubs() {
             const grid = document.getElementById('clubs-grid');
             const emptyState = document.getElementById('empty-state');
             
             try {
-                // CACHE BUSTER: forza il browser a scaricare i dati nuovi
+                // CACHE BUSTER
                 const cacheBuster = '?t=' + new Date().getTime();
                 const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest${cacheBuster}`, {
                     headers: { 'X-Master-Key': API_KEY },
@@ -224,21 +269,30 @@
                 clubs.forEach((club, index) => {
                     const card = document.createElement('div');
                     card.className = 'card club-card animate-slideUp';
-                    card.style.animationDelay = (index * 0.1) + 's';
+                    card.style.animationDelay = (index * 0.05) + 's';
                     
+                    // Immagine o Placeholder
                     const logoContent = club.logo 
                         ? `<img src="${club.logo}" alt="${club.name}">`
                         : `<i class="fas fa-shield-alt"></i>`;
 
+                    // Costruzione HTML Card
                     card.innerHTML = `
-                        <div class="club-logo">${logoContent}</div>
-                        <span class="card-badge" style="background: ${club.colors?.primary || '#333'}; color: ${club.colors?.secondary || '#fff'};">${club.tag || 'CLUB'}</span>
-                        <h4 class="card-title">${club.name}</h4>
-                        <p class="card-description">${club.stadium || 'Stadio non definito'}</p>
-                        <div class="flex justify-between mt-2">
-                            <span class="text-muted"><i class="fas fa-users"></i> ${club.members ? club.members.length : 0} Membri</span>
+                        <div class="club-header">
+                            <div class="club-icon-wrapper">${logoContent}</div>
+                            <h4 class="club-name">${club.name}</h4>
+                        </div>
+                        <div class="club-info-row">
+                            <i class="fas fa-futbol"></i>
+                            <span>${club.stadium || 'Stadio non definito'}</span>
                         </div>
                     `;
+
+                    // AZIONE CLICK: Vai a club-info.html con l'ID
+                    card.addEventListener('click', () => {
+                        window.location.href = `club-info.html?id=${club.id}`;
+                    });
+
                     grid.appendChild(card);
                 });
 
