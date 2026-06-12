@@ -88,51 +88,48 @@
     </div>
 
     <script>
-        // === CONFIGURAZIONE JSONBIN (RIPISTATI DAI TUOI DATI) ===
+        // === CONFIGURAZIONE ===
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
-        // === CONTROLLO SESSIONE ADMIN ===
+        // === CONTROLLO SESSIONE ===
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
             window.location.href = 'accesso-admin.html';
         }
 
-        // === CARICA UTENTI DAL CLOUD (Fix Cache) ===
+        // === FUNZIONI API ===
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
+                // FIX: Usiamo X-Access-Key invece di X-Master-Key
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store' // Fix per evitare dati vecchi
+                    headers: { 'X-Access-Key': API_KEY }, 
+                    cache: 'no-store'
                 });
                 
-                if (!res.ok) throw new Error("Errore connessione o chiave errata");
+                if (res.status === 401 || res.status === 403) throw new Error("Chiave API non valida (Codice " + res.status + ")");
                 
                 const data = await res.json();
                 const users = data.record.users || [];
                 
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
-                
                 users.forEach(u => {
                     select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
                 });
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
-                select.innerHTML = '<option value="">Errore caricamento</option>';
+                select.innerHTML = '<option value="">Errore API</option>';
             }
         }
         loadUsersForSelect();
 
         // Preview Logo
         let logoBase64 = '';
-        const logoInput = document.getElementById('logo-input');
-        
-        logoInput.addEventListener('change', function(e) {
+        document.getElementById('logo-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                // Controllo peso immagine per evitare errori JSONBin
                 if (file.size > 400000) { 
                     alert("Immagine troppo pesante! Max 400KB.");
                     return;
@@ -148,7 +145,7 @@
             }
         });
 
-        // Sync Color Inputs
+        // Sync Color
         ['color1', 'color2'].forEach(id => {
             const color = document.getElementById(id);
             const text = document.getElementById(id + '-text');
@@ -156,7 +153,7 @@
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
-        // Submit Form
+        // Submit
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -165,20 +162,20 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Prendi lista club attuali (Fix Cache)
+                // 1. Leggi club
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store' // Fix per evitare dati vecchi
+                    headers: { 'X-Access-Key': API_KEY }, // FIX: Usiamo X-Access-Key
+                    cache: 'no-store'
                 });
                 
-                if (!getRes.ok) throw new Error("Impossibile leggere il database.");
+                if (!getRes.ok) throw new Error("Impossibile leggere il DB.");
                 
                 const getData = await getRes.json();
                 let clubs = getData.record.clubs || [];
 
                 const captainId = document.getElementById('captain').value;
                 
-                // 2. Crea oggetto Club
+                // 2. Crea Club
                 const newClub = {
                     id: 'club_' + Date.now(),
                     name: document.getElementById('name').value,
@@ -195,19 +192,23 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Salva nel Bin Club
                 clubs.push(newClub);
+
+                // 3. Salva
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
+                        'X-Access-Key': API_KEY // FIX: Usiamo X-Access-Key
                     },
                     body: JSON.stringify({ "clubs": clubs })
                 });
 
+                if (saveRes.status === 403) {
+                    throw new Error("Errore 403: La chiave non ha permessi di SCRITTURA. Controlla su JSONBin che la spunta 'UPDATE' sia attiva.");
+                }
                 if (!saveRes.ok) {
-                    throw new Error("Errore durante il salvataggio.");
+                    throw new Error("Errore nel salvataggio.");
                 }
 
                 alert('Club creato con successo!');
@@ -215,13 +216,13 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Errore: " + err.message);
+                alert(err.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Crea Club';
             }
         });
 
-        // Logout Admin
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('admin');
             window.location.href = 'accesso-admin.html';
