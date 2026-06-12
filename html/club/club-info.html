@@ -11,34 +11,16 @@
     <style>
         body { background: #0d1117; color: #e0e0e0; }
         
-        /* Messaggi Errore/Accesso Negato */
-        .access-denied-box, .error-box {
-            text-align: center;
-            padding: 60px 20px;
-            background: #161b22;
-            border: 1px solid #f5a623;
-            border-radius: 12px;
-            margin-top: 50px;
-        }
+        .access-denied-box, .error-box { text-align: center; padding: 60px 20px; background: #161b22; border: 1px solid #f5a623; border-radius: 12px; margin-top: 50px; }
         .access-denied-box i, .error-box i { font-size: 3rem; color: #f5a623; margin-bottom: 20px; }
-        .access-denied-box h2, .error-box h2 { color: #fff; margin-bottom: 10px; }
-        .access-denied-box p, .error-box p { color: var(--text-muted); margin-bottom: 20px; }
-
-        /* Hero Sezione Club */
-        .club-hero { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 12px; border: 1px solid #30363d; }
         
-        .club-logo { 
-            width: 60px; height: 60px; border-radius: 50%; background: #21262d; 
-            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; 
-            border: 2px solid var(--accent-gold); flex-shrink: 0; overflow: hidden; 
-        }
-        /* Stile immagine logo */
+        .club-hero { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 12px; border: 1px solid #30363d; }
+        .club-logo { width: 60px; height: 60px; border-radius: 50%; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid var(--accent-gold); flex-shrink: 0; overflow: hidden; }
         .club-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         
         .main-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
         @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
         
-        /* Campo e Giocatori */
         .pitch-box { background: #0d1117; border-radius: 12px; padding: 10px; border: 1px solid #30363d; }
         .pitch-field { background: #1d5c2f; position: relative; width: 100%; padding-bottom: 105%; border-radius: 8px; border: 3px solid #2d7d45; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
         
@@ -60,7 +42,6 @@
         
         .jersey-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
 
-        /* Sidebar Panel */
         .sidebar-panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
         .sidebar-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; margin-bottom: 15px; color: var(--accent-gold); text-transform: uppercase; }
         .formation-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #21262d; color: white; border: 1px solid #30363d; cursor: pointer; }
@@ -76,7 +57,6 @@
 </head>
 <body>
     <div class="page-wrapper">
-        <!-- HEADER -->
         <header class="header">
             <div class="header-left">
                 <button onclick="history.back()" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></button>
@@ -87,7 +67,6 @@
         
         <div class="sidebar-overlay" id="overlay"></div>
         
-        <!-- SIDEBAR -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
             <nav class="sidebar-nav">
@@ -104,10 +83,8 @@
             </nav>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="main-content">
             <div class="container">
-                <!-- Hero con Logo -->
                 <div class="club-hero animate-slideUp">
                     <div class="club-logo" id="club-logo">?</div>
                     <div class="club-info">
@@ -116,7 +93,6 @@
                     </div>
                 </div>
 
-                <!-- Error Box -->
                 <div id="error-box" class="error-box" style="display:none;">
                     <i class="fas fa-wifi"></i>
                     <h2>Errore</h2>
@@ -124,7 +100,6 @@
                     <button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button>
                 </div>
 
-                <!-- Access Denied -->
                 <div id="access-denied" class="access-denied-box" style="display:none;">
                     <i class="fas fa-lock"></i>
                     <h2>Accesso Negato</h2>
@@ -132,7 +107,6 @@
                     <button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button>
                 </div>
 
-                <!-- Member Panel -->
                 <div id="member-panel" style="display:none;">
                     <div class="tabs-container mb-3">
                         <button class="tab-btn active" data-tab="formation">Formazione</button>
@@ -150,8 +124,25 @@
                                     <label style="font-size: 0.8rem; color: var(--text-muted); display:block; margin-bottom:5px;">Modulo</label>
                                     <select id="formation-select" onchange="changeFormation(this.value)">
                                         <option value="4-3-3">4-3-3</option>
+                                        <option value="4-3-3 (Attacco)">4-3-3 (Attacco)</option>
+                                        <option value="4-3-3 (Difesa)">4-3-3 (Difesa)</option>
                                         <option value="4-4-2">4-4-2</option>
+                                        <option value="4-4-2 (Flat)">4-4-2 (Flat)</option>
+                                        <option value="4-2-3-1">4-2-3-1</option>
+                                        <option value="4-1-2-1-2">4-1-2-1-2 (Rombo)</option>
+                                        <option value="4-3-2-1">4-3-2-1 (Albero)</option>
+                                        <option value="4-5-1">4-5-1</option>
+                                        <option value="4-4-1-1">4-4-1-1</option>
+                                        <option value="4-1-4-1">4-1-4-1</option>
+                                        <option value="4-2-2-2">4-2-2-2</option>
+                                        <option value="3-4-3">3-4-3</option>
                                         <option value="3-5-2">3-5-2</option>
+                                        <option value="3-4-2-1">3-4-2-1</option>
+                                        <option value="3-4-1-2">3-4-1-2</option>
+                                        <option value="5-3-2">5-3-2</option>
+                                        <option value="5-2-2-1">5-2-2-1</option>
+                                        <option value="5-2-1-2">5-2-1-2</option>
+                                        <option value="5-4-1">5-4-1</option>
                                     </select>
                                 </div>
                                 <div class="roster-section">
@@ -160,9 +151,7 @@
                                 </div>
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
                                     <button class="btn btn-primary btn-block" id="save-form-btn" type="button"><i class="fas fa-save"></i> Salva</button>
-                                    <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button">
-                                        <i class="fas fa-hashtag"></i> Gestione Numeri
-                                    </button>
+                                    <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button"><i class="fas fa-hashtag"></i> Gestione Numeri</button>
                                 </div>
                             </div>
                         </div>
@@ -180,45 +169,31 @@
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         let user = JSON.parse(localStorage.getItem('user') || 'null');
-        let clubs = [];
-        let users = [];
-        let club = null;
-        let isCaptain = false;
-
+        let clubs = [], users = [], club = null, isCaptain = false;
         const urlP = new URLSearchParams(window.location.search);
         const cId = urlP.get('id');
 
         window.onload = async function() {
             if (!user) return window.location.href = '../accesso.html';
-            if (!cId) {
-                document.getElementById('error-box').style.display = 'block';
-                document.getElementById('error-msg').textContent = "ID Club mancante.";
-                return;
-            }
-
+            if (!cId) { document.getElementById('error-box').style.display = 'block'; document.getElementById('error-msg').textContent = "ID Club mancante."; return; }
             setupUIEvents();
             await loadData();
         };
 
         async function loadData() {
             try {
-                const resUsers = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                const dataUsers = await resUsers.json();
-                users = dataUsers.record.users || [];
-
-                const resClubs = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                const dataClubs = await resClubs.json();
-                clubs = dataClubs.record.clubs || [];
-
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
+                users = (await res.json()).record.users || [];
+                res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
+                clubs = (await res.json()).record.clubs || [];
+                
                 club = clubs.find(c => c.id === cId);
                 if (!club) throw new Error("Club non trovato.");
 
-                const uid = String(user.id);
-                const capId = String(club.captain);
-                isCaptain = (uid === capId);
-                const isMember = (club.members || []).map(m => String(m)).includes(uid);
+                isCaptain = (String(user.id) === String(club.captain));
+                const isMember = (club.members || []).map(m => String(m)).includes(String(user.id));
 
-                renderHeader(); // Chiama la funzione che aggiorna logo e nome
+                renderHeader();
 
                 if (!isMember && !isCaptain) {
                     document.getElementById('access-denied').style.display = 'block';
@@ -233,7 +208,6 @@
                     }
                     initUI();
                 }
-
             } catch (e) {
                 console.error(e);
                 document.getElementById('error-box').style.display = 'block';
@@ -246,25 +220,16 @@
             document.getElementById('club-name').textContent = club.name;
             const capUser = users.find(u => String(u.id) === String(club.captain));
             document.getElementById('club-info').textContent = 'Capitano: ' + (capUser ? capUser.nomeEA : 'N/D');
-            
-            // --- INSERIMENTO LOGO ---
             const logoDiv = document.getElementById('club-logo');
-            if (club.logo) {
-                logoDiv.innerHTML = `<img src="${club.logo}" alt="Logo ${club.name}">`;
-            } else {
-                logoDiv.innerHTML = '?'; // Fallback se non c'è logo
-            }
+            if (club.logo) logoDiv.innerHTML = `<img src="${club.logo}" alt="Logo">`;
+            else logoDiv.innerHTML = '?';
         }
 
         async function saveToCloud() {
-            try {
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ clubs })
-                });
-                return true;
-            } catch (e) { alert("Errore salvataggio."); return false; }
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                body: JSON.stringify({ clubs })
+            });
         }
 
         function setupUIEvents() {
@@ -272,7 +237,6 @@
             document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
             document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
             document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
-
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.onclick = function() {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -281,17 +245,12 @@
                     document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
                 };
             });
-
-            // Pulsante Gestione Numeri
-            document.getElementById('manage-numbers-btn').onclick = () => {
-                window.location.href = 'gestione-numeri.html?id=' + cId;
-            };
+            document.getElementById('manage-numbers-btn').onclick = () => window.location.href = 'gestione-numeri.html?id=' + cId;
         }
 
         function initUI() { renderRoster(); renderPitch(); }
         function changeFormation(val) { club.formation = val; saveToCloud(); renderPitch(); renderRoster(); }
 
-        // GRAPHICS
         function generateRealisticJersey(c1, c2, playerName, playerNum) {
             const numColor = isLightColor(c1) ? '#000' : '#fff';
             return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
@@ -307,7 +266,6 @@
             (club.members || []).forEach(mId => {
                 const u = users.find(x => String(x.id) === String(mId)); if(!u) return;
                 const isInLineup = club.lineup && Object.values(club.lineup).some(slot => String(slot.id) === String(mId));
-                
                 const div = document.createElement('div');
                 div.className = 'roster-item';
                 div.dataset.id = u.id; div.dataset.name = u.nomeEA;
@@ -354,7 +312,6 @@
                     const droppedId = e.dataTransfer.getData('text/plain'); if (!droppedId) return;
                     const rosterItem = document.querySelector(`.roster-item[data-id="${droppedId}"]`);
                     const pName = rosterItem ? rosterItem.dataset.name : '?';
-                    
                     if(club.lineup) Object.keys(club.lineup).forEach(k => { if (String(club.lineup[k].id) === droppedId) delete club.lineup[k]; });
                     if(!club.lineup) club.lineup = {};
                     club.lineup[i] = { id: droppedId, name: pName };
@@ -364,11 +321,125 @@
             });
         }
 
+        // === DATABASE MODULI FC26 COMPLETO ===
         function getFormationCoords(f) {
             const formations = {
-                "4-3-3": [{x:50,y:90},{x:18,y:75},{x:38,y:80},{x:62,y:80},{x:82,y:75},{x:28,y:52},{x:50,y:58},{x:72,y:52},{x:20,y:22},{x:50,y:18},{x:80,y:22}],
-                "4-4-2": [{x:50,y:90},{x:15,y:75},{x:38,y:80},{x:62,y:80},{x:85,y:75},{x:15,y:50},{x:38,y:55},{x:62,y:55},{x:85,y:50},{x:35,y:20},{x:65,y:20}],
-                "3-5-2": [{x:50,y:90},{x:25,y:74},{x:50,y:76},{x:75,y:74},{x:10,y:50},{x:32,y:55},{x:50,y:60},{x:68,y:55},{x:90,y:50},{x:35,y:20},{x:65,y:20}]
+                // 4 DIFENSORI
+                "4-3-3": [
+                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
+                    {x:28, y:52, abbrev:"CC"}, {x:50, y:58, abbrev:"REG"}, {x:72, y:52, abbrev:"CC"},
+                    {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
+                ],
+                "4-3-3 (Attacco)": [
+                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
+                    {x:30, y:55, abbrev:"CC"}, {x:50, y:48, abbrev:"TQ"}, {x:70, y:55, abbrev:"CC"},
+                    {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
+                ],
+                "4-3-3 (Difesa)": [
+                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
+                    {x:25, y:60, abbrev:"MDC"}, {x:50, y:65, abbrev:"MDC"}, {x:75, y:60, abbrev:"MDC"},
+                    {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
+                ],
+                "4-4-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:15, y:50, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                ],
+                "4-4-2 (Flat)": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:15, y:55, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                ],
+                "4-2-3-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:35, y:62, abbrev:"MDC"}, {x:65, y:62, abbrev:"MDC"},
+                    {x:20, y:38, abbrev:"AS"}, {x:50, y:38, abbrev:"TQ"}, {x:80, y:38, abbrev:"AD"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "4-1-2-1-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:50, y:65, abbrev:"MDC"},
+                    {x:35, y:50, abbrev:"CC"}, {x:65, y:50, abbrev:"CC"},
+                    {x:50, y:35, abbrev:"TQ"},
+                    {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
+                ],
+                "4-3-2-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:35, y:60, abbrev:"CC"}, {x:50, y:65, abbrev:"REG"}, {x:65, y:60, abbrev:"CC"},
+                    {x:35, y:38, abbrev:"TQ"}, {x:65, y:38, abbrev:"TQ"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "4-5-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:15, y:48, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "4-4-1-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:15, y:50, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:50, y:32, abbrev:"TQ"},
+                    {x:50, y:15, abbrev:"AT"}
+                ],
+                "4-1-4-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:50, y:65, abbrev:"MDC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:35, y:50, abbrev:"CC"}, {x:65, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "4-2-2-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
+                    {x:35, y:62, abbrev:"MDC"}, {x:65, y:62, abbrev:"MDC"},
+                    {x:30, y:42, abbrev:"TQ"}, {x:70, y:42, abbrev:"TQ"},
+                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                ],
+
+                // 3 DIFENSORI
+                "3-4-3": [
+                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
+                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
+                ],
+                "3-5-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
+                    {x:15, y:50, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                ],
+                "3-4-2-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
+                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:35, y:35, abbrev:"TQ"}, {x:65, y:35, abbrev:"TQ"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "3-4-1-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
+                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:50, y:38, abbrev:"TQ"},
+                    {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
+                ],
+
+                // 5 DIFENSORI
+                "5-3-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
+                    {x:30, y:52, abbrev:"CC"}, {x:50, y:58, abbrev:"REG"}, {x:70, y:52, abbrev:"CC"},
+                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                ],
+                "5-2-2-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
+                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
+                    {x:25, y:40, abbrev:"AS"}, {x:75, y:40, abbrev:"AD"},
+                    {x:50, y:18, abbrev:"AT"}
+                ],
+                "5-2-1-2": [
+                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
+                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
+                    {x:50, y:38, abbrev:"TQ"},
+                    {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
+                ],
+                 "5-4-1": [
+                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
+                    {x:20, y:50, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:65, y:52, abbrev:"CC"}, {x:80, y:50, abbrev:"ED"},
+                    {x:50, y:18, abbrev:"AT"}
+                ]
             };
             return formations[f] || formations["4-3-3"];
         }
