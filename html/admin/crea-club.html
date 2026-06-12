@@ -91,7 +91,8 @@
         // === CONFIGURAZIONE JSONBIN ===
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club
-        const API_KEY = '$2a$10$m/VICwvC9TIv5eIoVNGl1OcFRhUlaEGq75y5yBcN/.AQ/neSYcYaW'; // Master Key
+        // FIX: Assicurati che questa chiave sia valida. Se hai ricevuto errori 401, genera una nuova chiave su JSONBin
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
         // === CONTROLLO SESSIONE ADMIN ===
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
@@ -99,15 +100,20 @@
             window.location.href = 'accesso-admin.html';
         }
 
-        // === CARICA UTENTI DAL CLOUD ===
+        // === CARICA UTENTI DAL CLOUD (FIX) ===
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // FIX: Aggiunto cache: 'no-store' per dati freschi e X-Master-Key corretto
+                // FIX: Aggiunto cache: 'no-store' e X-Master-Key
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
+                
+                if (!res.ok) {
+                    throw new Error(`Errore Server: ${res.status}`);
+                }
+
                 const data = await res.json();
                 const users = data.record.users || [];
                 
@@ -119,6 +125,7 @@
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
                 select.innerHTML = '<option value="">Errore connessione DB</option>';
+                alert("Impossibile caricare gli utenti. Controlla la console per i dettagli.");
             }
         }
         loadUsersForSelect();
@@ -156,12 +163,14 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Prendi lista club attuali
-                // FIX: Aggiunto cache: 'no-store'
+                // 1. Prendi lista club attuali (FIX)
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
+                
+                if (!getRes.ok) throw new Error("Impossibile leggere il database.");
+                
                 const getData = await getRes.json();
                 let clubs = getData.record.clubs || [];
 
@@ -184,10 +193,8 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Salva nel Bin Club
+                // 3. Salva nel Bin Club (FIX)
                 clubs.push(newClub);
-                
-                // FIX: Controllo errore reale
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
@@ -197,11 +204,8 @@
                     body: JSON.stringify({ "clubs": clubs })
                 });
 
-                if (saveRes.status === 403) {
-                    throw new Error("Errore 403: La tua chiave API non ha i permessi di SCRITTURA su questo Bin. Vai su JSONBin, seleziona il Bin 'Clubs' e assicurati che la tua chiave possa MODIFICARE.");
-                }
                 if (!saveRes.ok) {
-                    throw new Error("Errore generico del server.");
+                    throw new Error("Errore durante il salvataggio.");
                 }
 
                 alert('Club creato con successo!');
@@ -209,7 +213,7 @@
 
             } catch (err) {
                 console.error(err);
-                alert(err.message);
+                alert("Errore: " + err.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Crea Club';
             }
