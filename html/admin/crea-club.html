@@ -90,7 +90,7 @@
     <script>
         // === CONFIGURAZIONE JSONBIN ===
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club (NUOVO ID)
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
 
         // === CONTROLLO SESSIONE ADMIN ===
@@ -99,13 +99,13 @@
             window.location.href = 'accesso-admin.html';
         }
 
-        // === CARICA UTENTI DAL CLOUD (Per selezione Capitano) ===
+        // === CARICA UTENTI DAL CLOUD ===
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // FIX 1: Aggiunto 'cache: no-store' e cambiato header in 'X-Access-Key'
+                // FIX: Aggiunto cache: 'no-store' per dati freschi e X-Master-Key corretto
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Access-Key': API_KEY },
+                    headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 const data = await res.json();
@@ -157,9 +157,9 @@
 
             try {
                 // 1. Prendi lista club attuali
-                // FIX 1: Aggiunto 'cache: no-store' e cambiato header in 'X-Access-Key'
+                // FIX: Aggiunto cache: 'no-store'
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Access-Key': API_KEY },
+                    headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 const getData = await getRes.json();
@@ -186,22 +186,30 @@
 
                 // 3. Salva nel Bin Club
                 clubs.push(newClub);
-                // FIX 2: Cambiato header in 'X-Access-Key'
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                
+                // FIX: Controllo errore reale
+                const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Access-Key': API_KEY
+                        'X-Master-Key': API_KEY
                     },
                     body: JSON.stringify({ "clubs": clubs })
                 });
+
+                if (saveRes.status === 403) {
+                    throw new Error("Errore 403: La tua chiave API non ha i permessi di SCRITTURA su questo Bin. Vai su JSONBin, seleziona il Bin 'Clubs' e assicurati che la tua chiave possa MODIFICARE.");
+                }
+                if (!saveRes.ok) {
+                    throw new Error("Errore generico del server.");
+                }
 
                 alert('Club creato con successo!');
                 window.location.href = 'dashboard.html';
 
             } catch (err) {
                 console.error(err);
-                alert("Errore durante il salvataggio.");
+                alert(err.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Crea Club';
             }
