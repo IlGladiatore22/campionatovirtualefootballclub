@@ -1,212 +1,139 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CVFC ADMIN - Crea Club</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../../estetica/style.css?v=2">
-    <link rel="stylesheet" href="../../estetica/components.css">
-    <style>
-        .logo-preview { width: 100px; height: 100px; border-radius: 50%; background: var(--bg-tertiary); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed var(--border-color); cursor: pointer; transition: all 0.3s; }
-        .logo-preview:hover { border-color: var(--accent-gold); }
-        .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-preview i { font-size: 2rem; color: var(--text-muted); }
-        .color-sync { display: flex; gap: 10px; align-items: center; }
-        .color-sync input[type="color"] { width: 50px; height: 40px; padding: 0; border: none; cursor: pointer; background: none; }
-        .color-sync input[type="text"] { flex: 1; text-transform: uppercase; }
-    </style>
-</head>
-<body>
-    <div class="page-wrapper">
-        <header class="header">
-            <div class="header-left">
-                <a href="dashboard.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
-                <span class="site-name" style="color: var(--accent-orange);">Crea Club</span>
-            </div>
-            <div class="header-right">
-                <button class="header-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
-        </header>
+<script>
+    // === CONFIGURAZIONE JSONBIN ===
+    // RICORDA: Genera una nuova API Key su jsonbin.io perché questa è pubblica ora!
+    const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
+    const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
+    const API_KEY = 'INSERISCI_LA_TUA_NUOVA_CHIAVE_SICURA'; 
 
-        <main class="main-content">
-            <div class="container" style="max-width: 600px; padding: 60px 20px;">
-                <div class="card animate-slideUp">
-                    <h2 class="mb-3 text-center"><i class="fas fa-shield-alt text-gold"></i> Nuovo Club</h2>
-                    
-                    <div class="logo-preview" onclick="document.getElementById('logo-input').click()">
-                        <i class="fas fa-camera" id="placeholder-icon"></i>
-                        <img id="preview-img" src="" style="display: none;">
-                    </div>
-                    <input type="file" id="logo-input" accept="image/*" style="display: none;">
-                    
-                    <form id="form">
-                        <div class="input-group">
-                            <label class="input-label">Nome Club *</label>
-                            <input type="text" id="name" class="input-field" placeholder="Es. FC Warriors" required>
-                        </div>
+    // === CONTROLLO SESSIONE ADMIN ===
+    const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+    if (!admin || !admin.isAdmin) {
+        window.location.href = 'accesso-admin.html';
+    }
 
-                        <div class="input-group">
-                            <label class="input-label">Abbreviazione (Tag)</label>
-                            <input type="text" id="tag" class="input-field" placeholder="FCW" maxlength="4">
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Seleziona Capitano</label>
-                            <select id="captain" class="input-field">
-                                <option value="">-- Caricamento utenti... --</option>
-                            </select>
-                        </div>
-
-                        <div class="grid-2">
-                            <div class="input-group">
-                                <label class="input-label">Colore Primario</label>
-                                <div class="color-sync">
-                                    <input type="color" id="color1" value="#f5a623">
-                                    <input type="text" id="color1-text" class="input-field" value="#f5a623" maxlength="7">
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">Colore Secondario</label>
-                                <div class="color-sync">
-                                    <input type="color" id="color2" value="#1a1a24">
-                                    <input type="text" id="color2-text" class="input-field" value="#1a1a24" maxlength="7">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Stadio</label>
-                            <input type="text" id="stadium" class="input-field" placeholder="Nome stadio">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Crea Club</button>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // === CONFIGURAZIONE JSONBIN ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club (NUOVO ID)
-        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
-
-        // === CONTROLLO SESSIONE ADMIN ===
-        const admin = JSON.parse(localStorage.getItem('admin') || 'null');
-        if (!admin || !admin.isAdmin) {
-            window.location.href = 'accesso-admin.html';
-        }
-
-        // === CARICA UTENTI DAL CLOUD (Per selezione Capitano) ===
-        async function loadUsersForSelect() {
-            const select = document.getElementById('captain');
-            try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
-                const data = await res.json();
-                const users = data.record.users || [];
-                
-                select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
-                
-                users.forEach(u => {
-                    select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
-                });
-            } catch (e) {
-                console.error("Errore caricamento utenti:", e);
-                select.innerHTML = '<option value="">Errore connessione DB</option>';
-            }
-        }
-        loadUsersForSelect();
-
-        // Preview Logo
-        let logoBase64 = '';
-        document.getElementById('logo-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    logoBase64 = ev.target.result;
-                    document.getElementById('preview-img').src = logoBase64;
-                    document.getElementById('preview-img').style.display = 'block';
-                    document.getElementById('placeholder-icon').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Sync Color Inputs
-        ['color1', 'color2'].forEach(id => {
-            const color = document.getElementById(id);
-            const text = document.getElementById(id + '-text');
-            color.oninput = () => text.value = color.value;
-            text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
-        });
-
-        // Submit
-        document.getElementById('form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    // === CARICA UTENTI (FIX: Aggiunto cache: 'no-store') ===
+    async function loadUsersForSelect() {
+        const select = document.getElementById('captain');
+        try {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
+                headers: { 'X-Master-Key': API_KEY },
+                cache: 'no-store' // FIX: Forza il download dei dati freschi
+            });
+            const data = await res.json();
+            const users = data.record.users || [];
             
-            const submitBtn = document.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+            select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
+            
+            users.forEach(u => {
+                select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
+            });
+        } catch (e) {
+            console.error("Errore caricamento utenti:", e);
+            select.innerHTML = '<option value="">Errore connessione DB</option>';
+        }
+    }
+    loadUsersForSelect();
 
-            try {
-                // 1. Prendi lista club attuali
-                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
-                const getData = await getRes.json();
-                let clubs = getData.record.clubs || [];
-
-                const captainId = document.getElementById('captain').value;
-                
-                // 2. Crea oggetto Club
-                const newClub = {
-                    id: 'club_' + Date.now(),
-                    name: document.getElementById('name').value,
-                    tag: document.getElementById('tag').value.toUpperCase(),
-                    logo: logoBase64, 
-                    captain: captainId || null,
-                    members: captainId ? [captainId] : [],
-                    colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
-                    stadium: document.getElementById('stadium').value,
-                    formation: '4-3-3',
-                    tactics: {},
-                    lineup: {}, 
-                    requests: [],
-                    createdAt: new Date().toISOString()
-                };
-
-                // 3. Salva nel Bin Club
-                clubs.push(newClub);
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify({ "clubs": clubs })
-                });
-
-                alert('Club creato con successo!');
-                window.location.href = 'dashboard.html';
-
-            } catch (err) {
-                console.error(err);
-                alert("Errore durante il salvataggio.");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Crea Club';
+    // Preview Logo
+    let logoBase64 = '';
+    document.getElementById('logo-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // FIX OPZIONALE: Controllare la dimensione del file per non rompere il DB
+            if (file.size > 200000) { // 200KB limite
+                alert("L'immagine è troppo pesante! Carica un'immagine più leggera.");
+                return;
             }
-        });
 
-        // Logout Admin
-        document.getElementById('logout-btn').addEventListener('click', function() {
-            localStorage.removeItem('admin');
-            window.location.href = 'accesso-admin.html';
-        });
-    </script>
-</body>
-</html>
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                logoBase64 = ev.target.result;
+                document.getElementById('preview-img').src = logoBase64;
+                document.getElementById('preview-img').style.display = 'block';
+                document.getElementById('placeholder-icon').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Sync Color Inputs
+    ['color1', 'color2'].forEach(id => {
+        const color = document.getElementById(id);
+        const text = document.getElementById(id + '-text');
+        color.oninput = () => text.value = color.value;
+        text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
+    });
+
+    // Submit
+    document.getElementById('form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+
+        try {
+            // 1. Prendi lista club attuali (FIX: Aggiunto cache: 'no-store')
+            const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                headers: { 'X-Master-Key': API_KEY },
+                cache: 'no-store' // FIX: Leggiamo sempre l'ultima versione reale
+            });
+            
+            if (!getRes.ok) throw new Error("Impossibile leggere il database.");
+            
+            const getData = await getRes.json();
+            let clubs = getData.record.clubs || [];
+
+            const captainId = document.getElementById('captain').value;
+            
+            // 2. Crea oggetto Club
+            const newClub = {
+                id: 'club_' + Date.now(),
+                name: document.getElementById('name').value,
+                tag: document.getElementById('tag').value.toUpperCase(),
+                logo: logoBase64, 
+                captain: captainId || null,
+                members: captainId ? [captainId] : [],
+                colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
+                stadium: document.getElementById('stadium').value,
+                formation: '4-3-3',
+                tactics: {},
+                lineup: {}, 
+                requests: [],
+                createdAt: new Date().toISOString()
+            };
+
+            // 3. Salva nel Bin Club
+            clubs.push(newClub);
+            
+            const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify({ "clubs": clubs })
+            });
+
+            // FIX: Controlliamo se il salvataggio è riuscito davvero
+            if (!saveRes.ok) {
+                throw new Error("Il database ha rifiutato il salvataggio (controlla dimensione dati).");
+            }
+
+            alert('Club creato con successo!');
+            window.location.href = 'dashboard.html';
+
+        } catch (err) {
+            console.error(err);
+            alert("Errore durante il salvataggio: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Crea Club';
+        }
+    });
+
+    // Logout Admin
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        localStorage.removeItem('admin');
+        window.location.href = 'accesso-admin.html';
+    });
+</script>
