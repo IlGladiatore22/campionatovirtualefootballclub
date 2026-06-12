@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FC27 - Gestione Numeri</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Corretto: due livelli sopra per uscire da html/club -->
     <link rel="stylesheet" href="../../estetica/style.css">
     <link rel="stylesheet" href="../../estetica/components.css">
     <style>
@@ -50,7 +49,14 @@
 
     <main class="main-content">
         <div class="page-container">
-            <div class="card animate-slideUp">
+            <!-- Loading State -->
+            <div id="loading-state" class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Caricamento dati...</p>
+            </div>
+
+            <!-- Content -->
+            <div id="main-card" class="card animate-slideUp" style="display:none;">
                 <h2 style="margin-bottom: 5px;">Gestione Numeri</h2>
                 <p style="opacity: 0.6; margin-bottom: 25px;">Assegna un numero (1-99) a ogni giocatore.</p>
 
@@ -65,52 +71,89 @@
     </main>
 
     <script>
-        // Controllo Accesso
+        // === CONFIG ===
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const urlP = new URLSearchParams(window.location.search);
         const cId = urlP.get('id');
-        
-        // Corretto: torna alla root html/
-        if (!user || !cId) window.location.href = '../accesso.html';
 
-        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
-        let users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
-        let club = clubs.find(c => c.id === cId);
-        
-        // Corretto: file nella stessa cartella
-        if (!club) window.location.href = 'club.html';
+        let club = null;
+        let users = [];
+        let clubs = [];
 
-        // Verifica se è capitano
-        const uid = String(user.id);
-        const capId = String(club.captain);
-        if (uid !== capId) {
-            alert('Accesso riservato al Capitano.');
-            history.back();
-        }
+        window.onload = async function() {
+            // Controllo base
+            if (!user || !cId) {
+                window.location.href = '../accesso.html';
+                return;
+            }
 
-        const members = club.members || [];
-        const rosterList = document.getElementById('players-list');
+            try {
+                // 1. Carica Utenti
+                const resUsers = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
+                });
+                const dataUsers = await resUsers.json();
+                users = dataUsers.record.users || [];
 
-        // Render Lista
+                // 2. Carica Club
+                const resClubs = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
+                });
+                const dataClubs = await resClubs.json();
+                clubs = dataClubs.record.clubs || [];
+
+                // 3. Troova Club
+                club = clubs.find(c => c.id === cId);
+                if (!club) {
+                    alert("Club non trovato.");
+                    window.location.href = 'club.html';
+                    return;
+                }
+
+                // 4. Controllo Capitano
+                const uid = String(user.id);
+                const capId = String(club.captain);
+                if (uid !== capId) {
+                    alert('Accesso riservato al Capitano.');
+                    history.back();
+                    return;
+                }
+
+                // Tutto ok, mostra UI
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('main-card').style.display = 'block';
+                renderList();
+
+            } catch (e) {
+                console.error(e);
+                alert("Errore di connessione al database.");
+            }
+        };
+
         function renderList() {
+            const rosterList = document.getElementById('players-list');
             rosterList.innerHTML = '';
-            
+            const members = club.members || [];
+
             members.forEach(mId => {
-                var u = users.find(x => String(x.id) === String(mId));
+                const u = users.find(x => String(x.id) === String(mId));
                 if (!u) return;
 
                 // Cerca numero esistente
-                var currentNum = '';
+                let currentNum = '';
+                let isInLineup = false;
+                
                 if (club.lineup) {
                     Object.values(club.lineup).forEach(slot => {
-                        if (String(slot.id) === String(mId)) currentNum = slot.num || '';
+                        if (String(slot.id) === String(mId)) {
+                            currentNum = slot.num || '';
+                            isInLineup = true;
+                        }
                     });
-                }
-
-                // Cerca se è in panchina (non in formazione)
-                var isInLineup = false;
-                if (club.lineup) {
-                    isInLineup = Object.values(club.lineup).some(slot => String(slot.id) === String(mId));
                 }
 
                 const div = document.createElement('div');
@@ -123,56 +166,69 @@
                             <small>@${u.gamertag}</small>
                         </div>
                     </div>
-                    <input type="number" class="number-input" data-id="${u.id}" data-in-lineup="${isInLineup}" value="${currentNum}" placeholder="#" min="1" max="99">
+                    <input type="number" class="number-input" data-id="${u.id}" value="${currentNum}" placeholder="#" min="1" max="99">
                 `;
                 rosterList.appendChild(div);
             });
         }
 
-        // Salva
-        document.getElementById('save-btn').onclick = function() {
-            const inputs = document.querySelectorAll('.number-input');
+        document.getElementById('save-btn').onclick = async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
             
+            const inputs = document.querySelectorAll('.number-input');
+            let hasError = false;
+
             inputs.forEach(input => {
                 let num = input.value;
                 const pId = input.dataset.id;
-                const isInLineup = input.dataset.inLineup === 'true';
 
-                if (!num) return; // Se vuoto non fare nulla
+                // Se vuoto, non fare nulla (o cancella se vuoi)
+                if (!num) return;
 
                 if(num < 1 || num > 99) {
                     alert('I numeri devono essere tra 1 e 99.');
+                    hasError = true;
                     return;
                 }
 
-                // Se è in formazione, aggiorna direttamente il suo slot
-                if (isInLineup && club.lineup) {
+                // Aggiorna la formazione
+                if (club.lineup) {
                     Object.keys(club.lineup).forEach(k => {
                         if (String(club.lineup[k].id) === pId) {
                             club.lineup[k].num = num;
                         }
                     });
-                } else {
-                    // Gestione numeri per giocatori non in formazione
-                    if (!club.lineup) club.lineup = {};
-                    // Trova indice libero o crea voce panchina
-                    let benchIdx = Object.keys(club.lineup).length + 100; // Indici > 100 = panchina
-                    club.lineup[benchIdx] = {
-                        id: pId,
-                        num: num,
-                        name: users.find(x => x.id === pId)?.nomeEA || '?'
-                    };
                 }
             });
 
-            // Salva
-            localStorage.setItem('fc27_clubs', JSON.stringify(clubs));
-            alert('Numeri salvati!');
-            // Corretto: file nella stessa cartella
-            window.location.href = 'club-info.html?id=' + cId;
-        };
+            if (hasError) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Salva Tutto';
+                return;
+            }
 
-        renderList();
+            // Salva su JSONBin
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ clubs })
+                });
+                
+                alert('Numeri salvati con successo!');
+                window.location.href = 'club-info.html?id=' + cId;
+
+            } catch (e) {
+                alert("Errore durante il salvataggio.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Salva Tutto';
+            }
+        };
     </script>
 </body>
 </html>
