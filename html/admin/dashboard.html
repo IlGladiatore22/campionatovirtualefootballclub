@@ -143,6 +143,7 @@
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 0.9rem;
+            flex-shrink: 0;
         }
         .activity-info p { margin: 0; color: var(--text-primary); font-size: 0.9rem; }
         .activity-info span { color: var(--text-muted); font-size: 0.8rem; }
@@ -230,7 +231,7 @@
 
                 </div>
 
-                <!-- NUOVA SEZIONE: UTENTI REGISTRATI -->
+                <!-- SEZIONE: UTENTI REGISTRATI -->
                 <div class="admin-section animate-slideUp">
                     <div class="section-header">
                         <h3 class="section-title"><i class="fas fa-users-cog"></i> Utenti Registrati (Live)</h3>
@@ -254,7 +255,7 @@
                     </div>
                 </div>
 
-                <!-- NUOVA SEZIONE: ATTIVITÀ RECENTI -->
+                <!-- SEZIONE: ATTIVITÀ RECENTI -->
                 <div class="admin-section animate-slideUp">
                     <div class="section-header">
                         <h3 class="section-title"><i class="fas fa-history"></i> Attività Recenti</h3>
@@ -272,7 +273,8 @@
         // =============================================
         // CONFIGURAZIONE JSONBIN
         // =============================================
-        const BIN_ID = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // NUOVO ID BIN CLUB
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
 
         // =============================================
@@ -295,43 +297,52 @@
         // FUNZIONE PRINCIPALE DATI
         // =============================================
         async function loadAdminData() {
+            let users = [];
+            let clubs = [];
+            let sortedUsers = [];
+
             try {
-                // 1. Fetch Dati da JSONBin
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                // 1. FETCH UTENTI
+                const usersRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }
                 });
-                const data = await response.json();
-                
-                const users = data.record.users || [];
-                const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]'); 
+                const usersData = await usersRes.json();
+                users = usersData.record.users || [];
+
+                // 2. FETCH CLUB (DAL NUOVO BIN)
+                const clubsRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const clubsData = await clubsRes.json();
+                clubs = clubsData.record.clubs || [];
+
+                // Altri dati (rimangono locali per ora)
                 const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
                 const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
 
-                // 2. Aggiorna Statistiche
+                // 3. Aggiorna Statistiche
                 document.getElementById('stat-users').textContent = users.length;
-                document.getElementById('stat-clubs').textContent = clubs.length;
+                document.getElementById('stat-clubs').textContent = clubs.length; // ORA FUNZIONA
                 document.getElementById('stat-tournaments').textContent = tournaments.filter(t => t.status !== 'chiusa').length;
                 
                 let pending = 0;
+                // Calcolo richieste (se implementato nei club)
                 clubs.forEach(c => { if(c.requests) pending += c.requests.filter(r => r.status === 'pending').length; });
                 document.getElementById('stat-pending').textContent = pending;
                 document.getElementById('stat-notifications').textContent = notifications.filter(n => !n.read).length;
 
-                // 3. Popola Tabella Utenti
+                // 4. Popola Tabella Utenti
                 const tbody = document.getElementById('users-table-body');
                 tbody.innerHTML = '';
-                
-                // FIX: Definisco sortedUsers fuori dal blocco if/else
-                const sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                 if (sortedUsers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun utente registrato</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun utente</td></tr>';
                 } else {
                     sortedUsers.forEach(u => {
                         const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : 'N/A';
                         const role = u.isAdmin ? 'Admin' : 'Utente';
                         const roleClass = u.isAdmin ? 'badge-admin' : 'badge-user';
-                        
                         tbody.innerHTML += `
                             <tr>
                                 <td>${u.nomeEA || '-'}</td>
@@ -344,28 +355,60 @@
                     });
                 }
 
-                // 4. Popola Attività Recenti (Ultimi 5 utenti registrati)
+                // 5. Popola Attività Recenti (Misto Utenti + Club)
                 const activityList = document.getElementById('activity-list');
                 activityList.innerHTML = '';
 
-                const recentUsers = sortedUsers.slice(0, 5); // Ora sortedUsers è definito
+                // Creiamo un'unica lista di attività
+                let activities = [];
 
-                if(recentUsers.length === 0){
-                    activityList.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Nessuna attività recente</p>';
-                } else {
-                    recentUsers.forEach(u => {
-                        const time = u.createdAt ? new Date(u.createdAt).toLocaleString('it-IT') : '';
-                        activityList.innerHTML += `
+                // Aggiungi utenti
+                users.forEach(u => {
+                    activities.push({
+                        type: 'user',
+                        date: new Date(u.createdAt),
+                        html: `
                             <div class="activity-item">
-                                <div class="activity-icon" style="background: rgba(0, 229, 255, 0.1); color: var(--accent-gold);">
+                                <div class="activity-icon" style="background: rgba(52, 152, 219, 0.1); color: var(--accent-blue);">
                                     <i class="fas fa-user-plus"></i>
                                 </div>
                                 <div class="activity-info">
                                     <p><strong>${u.nomeEA}</strong> si è registrato</p>
-                                    <span>${time}</span>
+                                    <span>${u.createdAt ? new Date(u.createdAt).toLocaleString('it-IT') : ''}</span>
                                 </div>
-                            </div>
-                        `;
+                            </div>`
+                    });
+                });
+
+                // Aggiungi club
+                clubs.forEach(c => {
+                    activities.push({
+                        type: 'club',
+                        date: new Date(c.createdAt),
+                        html: `
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: rgba(245, 166, 35, 0.1); color: var(--accent-gold);">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="activity-info">
+                                    <p><strong>${c.name}</strong> è stato creato</p>
+                                    <span>${c.createdAt ? new Date(c.createdAt).toLocaleString('it-IT') : ''}</span>
+                                </div>
+                            </div>`
+                    });
+                });
+
+                // Ordina per data (più recenti prima)
+                activities.sort((a, b) => b.date - a.date);
+
+                // Mostra solo gli ultimi 5
+                const recentActivities = activities.slice(0, 5);
+
+                if(recentActivities.length === 0){
+                    activityList.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Nessuna attività recente</p>';
+                } else {
+                    recentActivities.forEach(act => {
+                        activityList.innerHTML += act.html;
                     });
                 }
 
