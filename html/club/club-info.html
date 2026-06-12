@@ -52,7 +52,6 @@
         .roster-item { display: flex; align-items: center; justify-content: space-between; background: #21262d; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #30363d; cursor: grab; transition: all 0.2s; font-size: 0.8rem; }
         
         .captain-tools { margin-top: auto; padding-top: 15px; border-top: 1px solid #30363d; display: flex; flex-direction: column; gap: 8px; }
-        .bench-box { background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 8px; padding: 10px; min-height: 50px; }
     </style>
 </head>
 <body>
@@ -70,16 +69,8 @@
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
             <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">Menu</div>
-                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
-                    <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
-                </div>
-                <div class="nav-section">
-                    <div class="nav-section-title">Account</div>
-                    <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
-                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
-                </div>
+                <div class="nav-section"><div class="nav-section-title">Menu</div><a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a><a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a></div>
+                <div class="nav-section"><div class="nav-section-title">Account</div><a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a><button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
             </nav>
         </aside>
 
@@ -87,25 +78,11 @@
             <div class="container">
                 <div class="club-hero animate-slideUp">
                     <div class="club-logo" id="club-logo">?</div>
-                    <div class="club-info">
-                        <h1 id="club-name">Caricamento...</h1>
-                        <p id="club-info">-</p>
-                    </div>
+                    <div class="club-info"><h1 id="club-name">Caricamento...</h1><p id="club-info">-</p></div>
                 </div>
 
-                <div id="error-box" class="error-box" style="display:none;">
-                    <i class="fas fa-wifi"></i>
-                    <h2>Errore</h2>
-                    <p id="error-msg">Impossibile caricare i dati.</p>
-                    <button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button>
-                </div>
-
-                <div id="access-denied" class="access-denied-box" style="display:none;">
-                    <i class="fas fa-lock"></i>
-                    <h2>Accesso Negato</h2>
-                    <p>Non fai parte di questo club.</p>
-                    <button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button>
-                </div>
+                <div id="error-box" class="error-box" style="display:none;"><i class="fas fa-wifi"></i><h2>Errore</h2><p id="error-msg">Impossibile caricare i dati.</p><button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button></div>
+                <div id="access-denied" class="access-denied-box" style="display:none;"><i class="fas fa-lock"></i><h2>Accesso Negato</h2><p>Non fai parte di questo club.</p><button onclick="window.location.href='club.html'" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Torna ai Club</button></div>
 
                 <div id="member-panel" style="display:none;">
                     <div class="tabs-container mb-3">
@@ -145,10 +122,7 @@
                                         <option value="5-4-1">5-4-1</option>
                                     </select>
                                 </div>
-                                <div class="roster-section">
-                                    <div class="section-header"><span>Rosa</span></div>
-                                    <div class="roster-list-small" id="roster-list"></div>
-                                </div>
+                                <div class="roster-section"><div class="section-header"><span>Rosa</span></div><div class="roster-list-small" id="roster-list"></div></div>
                                 <div class="captain-tools" id="captain-tools" style="display:none;">
                                     <button class="btn btn-primary btn-block" id="save-form-btn" type="button"><i class="fas fa-save"></i> Salva</button>
                                     <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button"><i class="fas fa-hashtag"></i> Gestione Numeri</button>
@@ -321,123 +295,123 @@
             });
         }
 
-        // === DATABASE MODULI FC26 COMPLETO ===
+        // === DATABASE MODULI FC26 (FIX COORDINATES) ===
         function getFormationCoords(f) {
             const formations = {
-                // 4 DIFENSORI
+                // 4 DIFENSORI - Aumentato spazio difesa-portiere (POR y=95, DC y=74)
                 "4-3-3": [
-                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
-                    {x:28, y:52, abbrev:"CC"}, {x:50, y:58, abbrev:"REG"}, {x:72, y:52, abbrev:"CC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
+                    {x:28, y:52, abbrev:"CC"}, {x:50, y:55, abbrev:"REG"}, {x:72, y:52, abbrev:"CC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-3-3 (Attacco)": [
-                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
-                    {x:30, y:55, abbrev:"CC"}, {x:50, y:48, abbrev:"TQ"}, {x:70, y:55, abbrev:"CC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
+                    {x:30, y:52, abbrev:"CC"}, {x:50, y:45, abbrev:"TQ"}, {x:70, y:52, abbrev:"CC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-3-3 (Difesa)": [
-                    {x:50, y:90, abbrev:"POR"}, {x:18, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:82, y:75, abbrev:"TD"},
-                    {x:25, y:60, abbrev:"MDC"}, {x:50, y:65, abbrev:"MDC"}, {x:75, y:60, abbrev:"MDC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:18, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:82, y:72, abbrev:"TD"},
+                    {x:25, y:58, abbrev:"MDC"}, {x:50, y:62, abbrev:"MDC"}, {x:75, y:58, abbrev:"MDC"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "4-4-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:15, y:50, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
                 ],
-                "4-4-2 (Flat)": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:15, y:55, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                 "4-4-2 (Flat)": [
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
                     {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
                 ],
                 "4-2-3-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:35, y:62, abbrev:"MDC"}, {x:65, y:62, abbrev:"MDC"},
-                    {x:20, y:38, abbrev:"AS"}, {x:50, y:38, abbrev:"TQ"}, {x:80, y:38, abbrev:"AD"},
-                    {x:50, y:18, abbrev:"AT"}
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
+                    {x:20, y:35, abbrev:"AS"}, {x:50, y:38, abbrev:"TQ"}, {x:80, y:35, abbrev:"AD"},
+                    {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-1-2-1-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:50, y:65, abbrev:"MDC"},
-                    {x:35, y:50, abbrev:"CC"}, {x:65, y:50, abbrev:"CC"},
-                    {x:50, y:35, abbrev:"TQ"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:50, y:62, abbrev:"MDC"},
+                    {x:35, y:48, abbrev:"CC"}, {x:65, y:48, abbrev:"CC"},
+                    {x:50, y:32, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
                 "4-3-2-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:35, y:60, abbrev:"CC"}, {x:50, y:65, abbrev:"REG"}, {x:65, y:60, abbrev:"CC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:35, y:58, abbrev:"CC"}, {x:50, y:62, abbrev:"REG"}, {x:65, y:58, abbrev:"CC"},
                     {x:35, y:38, abbrev:"TQ"}, {x:65, y:38, abbrev:"TQ"},
-                    {x:50, y:18, abbrev:"AT"}
+                    {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-5-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:15, y:48, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:15, y:48, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:56, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ],
                 "4-4-1-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:15, y:50, abbrev:"ES"}, {x:38, y:55, abbrev:"CC"}, {x:62, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:15, y:50, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
                     {x:50, y:32, abbrev:"TQ"},
                     {x:50, y:15, abbrev:"AT"}
                 ],
                 "4-1-4-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:50, y:65, abbrev:"MDC"},
-                    {x:15, y:48, abbrev:"ES"}, {x:35, y:50, abbrev:"CC"}, {x:65, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:50, y:62, abbrev:"MDC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:38, y:50, abbrev:"CC"}, {x:62, y:50, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ],
                 "4-2-2-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:15, y:75, abbrev:"TS"}, {x:38, y:80, abbrev:"DC"}, {x:62, y:80, abbrev:"DC"}, {x:85, y:75, abbrev:"TD"},
-                    {x:35, y:62, abbrev:"MDC"}, {x:65, y:62, abbrev:"MDC"},
-                    {x:30, y:42, abbrev:"TQ"}, {x:70, y:42, abbrev:"TQ"},
-                    {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
+                    {x:50, y:95, abbrev:"POR"}, {x:15, y:72, abbrev:"TS"}, {x:38, y:74, abbrev:"DC"}, {x:62, y:74, abbrev:"DC"}, {x:85, y:72, abbrev:"TD"},
+                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
+                    {x:30, y:40, abbrev:"TQ"}, {x:70, y:40, abbrev:"TQ"},
+                    {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
 
-                // 3 DIFENSORI
+                // 3 DIFENSORI - Aumentato spazio orizzontale e verticale
                 "3-4-3": [
-                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
-                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
+                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
                     {x:20, y:22, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:22, abbrev:"AD"}
                 ],
                 "3-5-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
-                    {x:15, y:50, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:50, y:60, abbrev:"REG"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:50, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
+                    {x:15, y:48, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:50, y:56, abbrev:"REG"}, {x:65, y:52, abbrev:"CC"}, {x:85, y:48, abbrev:"ED"},
                     {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
                 ],
                 "3-4-2-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
-                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
+                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
+                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
                     {x:35, y:35, abbrev:"TQ"}, {x:65, y:35, abbrev:"TQ"},
-                    {x:50, y:18, abbrev:"AT"}
+                    {x:50, y:15, abbrev:"AT"}
                 ],
                 "3-4-1-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:25, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:75, y:78, abbrev:"DC"},
-                    {x:15, y:55, abbrev:"ES"}, {x:35, y:55, abbrev:"CC"}, {x:65, y:55, abbrev:"CC"}, {x:85, y:55, abbrev:"ED"},
-                    {x:50, y:38, abbrev:"TQ"},
+                    {x:50, y:95, abbrev:"POR"}, {x:25, y:74, abbrev:"DC"}, {x:50, y:75, abbrev:"DC"}, {x:75, y:74, abbrev:"DC"},
+                    {x:15, y:52, abbrev:"ES"}, {x:38, y:52, abbrev:"CC"}, {x:62, y:52, abbrev:"CC"}, {x:85, y:52, abbrev:"ED"},
+                    {x:50, y:35, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
 
-                // 5 DIFENSORI
+                // 5 DIFENSORI - Difesa laterale più alta, centrale più basso
                 "5-3-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
-                    {x:30, y:52, abbrev:"CC"}, {x:50, y:58, abbrev:"REG"}, {x:70, y:52, abbrev:"CC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
+                    {x:30, y:48, abbrev:"CC"}, {x:50, y:52, abbrev:"REG"}, {x:70, y:48, abbrev:"CC"},
                     {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}
                 ],
                 "5-2-2-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
-                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
-                    {x:25, y:40, abbrev:"AS"}, {x:75, y:40, abbrev:"AD"},
-                    {x:50, y:18, abbrev:"AT"}
+                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
+                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
+                    {x:25, y:38, abbrev:"AS"}, {x:75, y:38, abbrev:"AD"},
+                    {x:50, y:15, abbrev:"AT"}
                 ],
                 "5-2-1-2": [
-                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
-                    {x:35, y:60, abbrev:"MDC"}, {x:65, y:60, abbrev:"MDC"},
+                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
+                    {x:35, y:58, abbrev:"MDC"}, {x:65, y:58, abbrev:"MDC"},
                     {x:50, y:38, abbrev:"TQ"},
                     {x:35, y:18, abbrev:"AT"}, {x:65, y:18, abbrev:"AT"}
                 ],
-                 "5-4-1": [
-                    {x:50, y:90, abbrev:"POR"}, {x:10, y:68, abbrev:"TS"}, {x:30, y:78, abbrev:"DC"}, {x:50, y:80, abbrev:"DC"}, {x:70, y:78, abbrev:"DC"}, {x:90, y:68, abbrev:"TD"},
-                    {x:20, y:50, abbrev:"ES"}, {x:35, y:52, abbrev:"CC"}, {x:65, y:52, abbrev:"CC"}, {x:80, y:50, abbrev:"ED"},
+                "5-4-1": [
+                    {x:50, y:95, abbrev:"POR"}, {x:10, y:65, abbrev:"TS"}, {x:30, y:74, abbrev:"DC"}, {x:50, y:76, abbrev:"DC"}, {x:70, y:74, abbrev:"DC"}, {x:90, y:65, abbrev:"TD"},
+                    {x:20, y:48, abbrev:"ES"}, {x:40, y:50, abbrev:"CC"}, {x:60, y:50, abbrev:"CC"}, {x:80, y:48, abbrev:"ED"},
                     {x:50, y:18, abbrev:"AT"}
                 ]
             };
