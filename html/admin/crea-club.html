@@ -89,10 +89,8 @@
 
     <script>
         // === CONFIGURAZIONE JSONBIN ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // ID Database Utenti
-        // INSERISCI QUI IL NUOVO ID DEL DATABASE CLUB
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
-        
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club (NUOVO ID)
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
 
         // === CONTROLLO SESSIONE ADMIN ===
@@ -103,6 +101,7 @@
 
         // === CARICA UTENTI DAL CLOUD (Per selezione Capitano) ===
         async function loadUsersForSelect() {
+            const select = document.getElementById('captain');
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }
@@ -110,7 +109,6 @@
                 const data = await res.json();
                 const users = data.record.users || [];
                 
-                const select = document.getElementById('captain');
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
                 
                 users.forEach(u => {
@@ -118,7 +116,7 @@
                 });
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
-                document.getElementById('captain').innerHTML = '<option value="">Errore caricamento</option>';
+                select.innerHTML = '<option value="">Errore connessione DB</option>';
             }
         }
         loadUsersForSelect();
@@ -153,10 +151,10 @@
             
             const submitBtn = document.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creazione...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Leggi Clubs attuali dal Database
+                // 1. Prendi lista club attuali
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }
                 });
@@ -165,7 +163,7 @@
 
                 const captainId = document.getElementById('captain').value;
                 
-                // 2. Crea nuovo oggetto Club
+                // 2. Crea oggetto Club
                 const newClub = {
                     id: 'club_' + Date.now(),
                     name: document.getElementById('name').value,
@@ -182,9 +180,8 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Aggiungi e Salva
+                // 3. Salva nel Bin Club
                 clubs.push(newClub);
-
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
@@ -194,12 +191,12 @@
                     body: JSON.stringify({ "clubs": clubs })
                 });
 
-                alert('Club creato con successo e salvato nel cloud!');
+                alert('Club creato con successo!');
                 window.location.href = 'dashboard.html';
 
             } catch (err) {
                 console.error(err);
-                alert("Errore durante il salvataggio del club.");
+                alert("Errore durante il salvataggio.");
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Crea Club';
             }
