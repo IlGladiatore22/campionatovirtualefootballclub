@@ -97,7 +97,7 @@
                 <!-- SEZIONE TORNEI -->
                 <div id="tornei" class="content-section">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3>Tornei (Locale)</h3>
+                        <h3>Tornei</h3> <!-- Rimosso "(Locale)" -->
                         <button class="btn btn-small btn-secondary" onclick="loadTorneiData()"><i class="fas fa-sync-alt"></i></button>
                     </div>
                     <div id="tornei-list">
@@ -113,6 +113,7 @@
         // === CONFIGURAZIONE ===
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
+        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797'; // NUOVO BIN TORNEI
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
@@ -144,7 +145,6 @@
                 if(clubs.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun club.</p>'; return; }
 
                 clubs.forEach(c => {
-                    // Gestione Logo
                     const logoHtml = c.logo 
                         ? `<img src="${c.logo}" alt="${c.nome || c.name}">` 
                         : `<i class="fas fa-shield-alt"></i>`;
@@ -195,7 +195,6 @@
                 if(comps.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessuna competizione.</p>'; return; }
 
                 comps.forEach(c => {
-                    // Gestione Immagine
                     const imgHtml = c.immagine 
                         ? `<img src="${c.immagine}" alt="${c.nome || c.name}">` 
                         : `<i class="fas fa-trophy"></i>`;
@@ -233,36 +232,79 @@
 
         function modificaCompetizione(id) { window.location.href = `modifica-competizione.html?id=${id}`; }
 
-        // === GESTIONE TORNEI (LOCALE) ===
-        function loadTorneiData() {
+        // === GESTIONE TORNEI (DATABASE) ===
+        async function loadTorneiData() {
             const container = document.getElementById('tornei-list');
-            const tornei = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
+            container.innerHTML = '<p style="text-align:center;">Caricamento...</p>';
             
-            container.innerHTML = '';
-            if(tornei.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun torneo.</p>'; return; }
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { 
+                    headers: { 'X-Master-Key': API_KEY }, 
+                    cache: 'no-store' 
+                });
+                
+                if (res.status === 404) throw new Error("Bin Tornei non trovato.");
+                if (!res.ok) throw new Error("Errore connessione.");
 
-            tornei.forEach(t => {
-                container.innerHTML += `
-                    <div class="item-row">
-                        <div class="item-logo"><i class="fas fa-medal"></i></div>
-                        <div class="item-info">
-                            <h4>${t.name}</h4>
-                            <p>Tipo: ${t.type || 'N/D'}</p>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn-sm btn-edit" onclick="alert('Modifica tornei disponibile prossimamente')"><i class="fas fa-edit"></i></button>
-                            <button class="btn-sm btn-delete" onclick="eliminaTorneo('${t.id}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
+                const data = await res.json();
+                // Leggiamo l'array "tornei" (in italiano)
+                const tornei = data.record.tornei || [];
+                
+                container.innerHTML = '';
+                if(tornei.length === 0) { 
+                    container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun torneo.</p>'; 
+                    return; 
+                }
+
+                tornei.forEach(t => {
+                    // Usiamo i campi in italiano
+                    const nomeTorneo = t.nome || t.name || 'Senza Nome';
+                    const statoTorneo = t.stato || t.status || 'N/D';
+
+                    container.innerHTML += `
+                        <div class="item-row">
+                            <div class="item-logo"><i class="fas fa-medal"></i></div>
+                            <div class="item-info">
+                                <h4>${nomeTorneo}</h4>
+                                <p>Stato: ${statoTorneo}</p>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn-sm btn-edit" onclick="alert('Modifica tornei in arrivo')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-sm btn-delete" onclick="eliminaTorneo('${t.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                });
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento tornei.</p>';
+            }
         }
 
-        function eliminaTorneo(id) {
+        async function eliminaTorneo(id) {
             if(!confirm("Eliminare questo torneo?")) return;
-            let tornei = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
-            tornei = tornei.filter(t => t.id !== id);
-            localStorage.setItem('fc27_tournaments', JSON.stringify(tornei));
-            loadTorneiData();
+            try {
+                // 1. Leggi lista attuale
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { 
+                    headers: { 'X-Master-Key': API_KEY } 
+                });
+                const data = await res.json();
+                let lista = data.record.tornei || [];
+                
+                // 2. Filtra
+                lista = lista.filter(t => t.id !== id);
+                
+                // 3. Salva
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify({ "tornei": lista })
+                });
+                
+                loadTorneiData();
+            } catch(e) {
+                console.error(e);
+                alert("Errore eliminazione torneo.");
+            }
         }
 
         // Init
