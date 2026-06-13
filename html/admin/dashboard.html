@@ -63,6 +63,7 @@
             align-items: center;
             text-align: center;
             gap: 10px;
+            position: relative; /* Per posizionare il badge */
         }
         .action-card:hover {
             transform: translateY(-5px);
@@ -74,9 +75,29 @@
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
+            position: relative; /* Per il badge interno */
         }
         .action-title { font-weight: 600; color: var(--text-primary); }
         .action-subtitle { font-size: 0.8rem; color: var(--text-muted); line-height: 1.2; }
+
+        /* Badge Notifica Richieste */
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-red);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--bg-secondary);
+            display: none; /* Nascosto di default */
+        }
 
         /* Sezioni Admin */
         .admin-section {
@@ -186,6 +207,19 @@
                         <div class="action-icon" style="background: rgba(236, 240, 241, 0.1);"><i class="fas fa-users" style="color: #bdc3c7;"></i></div>
                         <div><div class="action-title">Lista Club</div><div class="action-subtitle">Vedi tutti</div></div>
                     </a>
+                    
+                    <!-- NUOVA CARD: RICHIESTE COMPETIZIONI -->
+                    <a href="richieste-competizioni.html" class="action-card animate-slideUp">
+                        <div class="action-icon" style="background: rgba(255, 165, 0, 0.15);">
+                            <i class="fas fa-inbox" style="color: var(--accent-orange);"></i>
+                            <!-- Badge Contatore -->
+                            <span id="requests-badge" class="notif-badge">0</span>
+                        </div>
+                        <div>
+                            <div class="action-title">Richieste Iscrizioni</div>
+                            <div class="action-subtitle">Approva Club</div>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- SEZIONE: UTENTI REGISTRATI -->
@@ -231,7 +265,7 @@
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
-        const BIN_ID_TORNEI = '6a2dc84ada38895dfebbe465'; // NUOVO ID BIN TORNEI
+        const BIN_ID_TORNEI = '6a2dc84ada38895dfebbe465';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // =============================================
@@ -286,9 +320,22 @@
                 if (compRes.ok) {
                     const compData = await compRes.json();
                     competitions = compData.record.competizioni || [];
+                    
+                    // --- NUOVO: CALCOLO RICHIESTE IN SOSPESO ---
+                    const richieste = compData.record.richieste_iscrizione || [];
+                    const pendingCount = richieste.filter(r => r.stato === 'in_attesa').length;
+                    const badge = document.getElementById('requests-badge');
+                    
+                    if (pendingCount > 0) {
+                        badge.style.display = 'flex';
+                        badge.textContent = pendingCount;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    // -------------------------------------------
                 }
 
-                // 4. FETCH TORNEI (NUOVO)
+                // 4. FETCH TORNEI
                 const tournRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest${ts}`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
@@ -376,7 +423,7 @@
                     });
                 });
 
-                // Aggiungi tornei (NUOVO)
+                // Aggiungi tornei
                 tournaments.forEach(t => {
                     const dateObj = new Date(t.creato_il || t.createdAt);
                     const tournName = t.nome || 'Torneo';
