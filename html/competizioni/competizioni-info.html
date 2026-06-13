@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="../../estetica/style.css">
     <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
@@ -32,21 +35,21 @@
 
         /* LOGO FIX: Stile Cerchio */
         .site-logo-wrapper {
-            width: 80px; /* Dimensione fissa */
-            height: 80px; /* Dimensione fissa uguale a width per il cerchio */
+            width: 80px;
+            height: 80px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.1); /* Opzionale: sfondo leggero */
-            border-radius: 50%; /* Cerchio perfetto */
-            overflow: hidden; /* Taglia l'immagine fuori dai bordi */
-            border: 2px solid var(--accent-gold); /* Bordo opzionale */
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--accent-gold);
         }
         .site-logo-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Copre l'area circolare */
+            object-fit: cover;
         }
 
         .text-content {
@@ -82,18 +85,14 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
-        .organizer-inline i {
-            color: var(--accent-gold);
-        }
-        .organizer-inline strong {
-            color: var(--text-primary);
-        }
+        .organizer-inline i { color: var(--accent-gold); }
+        .organizer-inline strong { color: var(--text-primary); }
 
         .comp-date-small { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
         .comp-desc-small { color: var(--text-secondary); line-height: 1.5; margin-top: 5px; }
         #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; align-self: flex-start; }
 
-        /* --- STATS GRID MODIFICATO --- */
+        /* --- STATS GRID --- */
         .stats-grid-mod { grid-template-columns: repeat(3, 1fr); }
         
         .stat-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -159,7 +158,7 @@
         <!-- Sidebar Overlay -->
         <div class="sidebar-overlay" id="overlay"></div>
 
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR COMPLETA -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="../home.html" class="logo-container" style="text-decoration: none;">
@@ -167,27 +166,45 @@
                 </a>
                 <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
             </div>
+            
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Menu</div>
+                    <div class="nav-section-title">Menu Principale</div>
                     <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="competizioni.html" class="nav-link active"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
                     <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
                     <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
                 </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Comunicazioni</div>
+                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
+                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
+                </div>
+                
                 <div class="nav-section">
                     <div class="nav-section-title">Account</div>
                     <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
+                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
                 </div>
+                
                 <div class="nav-section" id="admin-nav" style="display: none;">
                     <div class="nav-section-title">Admin</div>
                     <a href="../admin/dashboard.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i><span>Dashboard Admin</span></a>
+                    <a href="../admin/crea-competizione.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                    <a href="../admin/crea-torneo.html" class="nav-link" style="color: var(--accent-orange);"><i class="fas fa-plus"></i><span>Crea Torneo</span></a>
                 </div>
+                
                 <div class="nav-section" id="guest-admin-nav">
                     <div class="nav-section-title">Staff</div>
                     <a href="../admin/accesso-admin.html" class="nav-link"><i class="fas fa-key"></i><span>Accesso Admin</span></a>
                 </div>
+                
                 <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="../regolamento.html" class="nav-link"><i class="fas fa-book"></i><span>Regolamento</span></a>
+                    <a href="../faq.html" class="nav-link"><i class="fas fa-question-circle"></i><span>FAQ</span></a>
+                    <a href="../segnalazioni.html" class="nav-link"><i class="fas fa-flag"></i><span>Segnalazioni</span></a>
                     <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
                 </div>
             </nav>
@@ -205,14 +222,14 @@
                     
                     <!-- NUOVO HERO CARD -->
                     <div class="card animate-slideUp hero-card">
-                        <!-- Site Logo (Sinistra) - Ora Circolare -->
+                        <!-- Site Logo (Sinistra) - Stile Cerchio -->
                         <div class="site-logo-wrapper">
                             <img src="../../estetica/logosito.png" alt="Logo">
                         </div>
                         
                         <!-- Contentuto Centrale -->
                         <div class="text-content">
-                            <!-- Riga Superiore: Titolo a Sinistra, Organizzatore a Destra -->
+                            <!-- Riga Superiore -->
                             <div class="top-row">
                                 <div class="title-group">
                                     <i class="fas fa-trophy"></i>
@@ -330,11 +347,14 @@
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
         const sidebar = document.getElementById('sidebar');
+
         function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
         // Funzione per accordion regolamento
         function toggleRegolamento() {
@@ -350,7 +370,7 @@
         }
 
         // =============================================
-        // AUTH
+        // AUTH & NOTIFICHE
         // =============================================
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
@@ -359,9 +379,26 @@
             window.location.href = '../accesso.html';
         } else {
             document.getElementById('username-display').textContent = user.nomeEA;
+            
+            // Logica Admin/Staff
+            const adminNav = document.getElementById('admin-nav');
+            const guestAdminNav = document.getElementById('guest-admin-nav');
+
             if (user.isAdmin) {
-                document.getElementById('admin-nav').style.display = 'block';
-                document.getElementById('guest-admin-nav').style.display = 'none';
+                adminNav.style.display = 'block';
+                guestAdminNav.style.display = 'none';
+            } else {
+                adminNav.style.display = 'none';
+                guestAdminNav.style.display = 'block';
+            }
+
+            // Logica Notifiche Badge
+            const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
+            const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
+            if (unread > 0) {
+                const notifBadge = document.getElementById('notif-badge');
+                notifBadge.style.display = 'flex';
+                notifBadge.textContent = unread;
             }
         }
 
