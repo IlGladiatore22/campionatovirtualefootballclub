@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVFC ADMIN - Modifica Competizione</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css?v=2">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); }
+        .form-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .form-section h3 { margin-bottom: 15px; color: var(--accent-gold); font-size: 1.1rem; }
+        
+        .image-upload-area {
+            border: 2px dashed var(--border-color); border-radius: 12px; padding: 20px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02); position: relative; overflow: hidden;
+        }
+        .image-upload-area:hover { border-color: var(--accent-orange); }
+        .image-upload-area i { font-size: 2rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
+        .image-upload-area p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+        #imagePreview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; }
+        .remove-image-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
+            border: none; color: white; width: 30px; height: 30px; border-radius: 50%;
+            cursor: pointer; display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <a href="gestione.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name" style="color: var(--accent-orange);">Modifica Competizione</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container" style="max-width: 600px; padding: 60px 20px;">
+                <div class="card animate-slideUp">
+                    <h2 class="mb-3 text-center"><i class="fas fa-edit text-gold"></i> Modifica Competizione</h2>
+                    
+                    <form id="form">
+                        <input type="hidden" id="comp-id">
+                        
+                        <div class="form-section">
+                            <h3><i class="fas fa-image"></i> Immagine</h3>
+                            <div class="image-upload-area" id="uploadArea">
+                                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                                <button type="button" class="remove-image-btn" id="removeBtn"><i class="fas fa-times"></i></button>
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p id="uploadText">Clicca per cambiare immagine</p>
+                                <img id="imagePreview" src="#" alt="Preview">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Info</h3>
+                            <div class="input-group">
+                                <label class="input-label">Nome *</label>
+                                <input type="text" id="nome" class="input-field" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Descrizione</label>
+                                <textarea id="descrizione" class="input-field" rows="3"></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Stato</label>
+                                <select id="stato" class="input-field">
+                                    <option value="aperta">Iscrizioni Aperte</option>
+                                    <option value="chiusa">Iscrizioni Chiuse</option>
+                                    <option value="in_corso">In Corso</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fas fa-cogs"></i> Dettagli</h3>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Max Squadre</label>
+                                    <input type="number" id="max_squadre" class="input-field" min="2">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Costo</label>
+                                    <input type="number" id="costo" class="input-field" min="0">
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Data Inizio</label>
+                                    <input type="date" id="data_inizio" class="input-field">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Ora Inizio</label>
+                                    <input type="time" id="ora_inizio" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section" style="border-bottom: none;">
+                            <h3><i class="fas fa-gift"></i> Premi</h3>
+                            <div class="input-group">
+                                <textarea id="premi" class="input-field" rows="3" placeholder="Lista premi..."></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Salva Modifiche</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === CONFIG ===
+        const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+        if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
+
+        let currentData = null;
+        let newImageBase64 = '';
+
+        // Compressione
+        function comprimiImmagine(file, wMax, hMax, qualita) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > wMax) { h *= wMax / w; w = wMax; } }
+                        else { if (h > hMax) { w *= hMax / h; h = hMax; } }
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', qualita));
+                    };
+                    img.onerror = (err) => reject(err);
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Carica Dati
+        async function loadData() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) { alert('ID non valido'); window.location.href = 'gestione.html'; return; }
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
+                const data = await res.json();
+                const lista = data.record.competizioni || [];
+                currentData = lista.find(c => c.id === id);
+
+                if (!currentData) { alert('Competizione non trovata'); window.location.href = 'gestione.html'; return; }
+
+                // Popola Form
+                document.getElementById('comp-id').value = currentData.id;
+                document.getElementById('nome').value = currentData.nome || '';
+                document.getElementById('descrizione').value = currentData.descrizione || '';
+                document.getElementById('stato').value = currentData.stato || 'aperta';
+                document.getElementById('max_squadre').value = currentData.max_squadre || '';
+                document.getElementById('costo').value = currentData.costo || '';
+                document.getElementById('data_inizio').value = currentData.data_inizio || '';
+                document.getElementById('ora_inizio').value = currentData.ora_inizio || '';
+                document.getElementById('premi').value = currentData.premi || '';
+
+                // Immagine
+                if (currentData.immagine) {
+                    document.getElementById('imagePreview').src = currentData.immagine;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('uploadText').style.display = 'none';
+                    document.getElementById('uploadArea').querySelector('i').style.display = 'none';
+                    document.getElementById('removeBtn').style.display = 'block';
+                }
+
+            } catch (e) { console.error(e); alert('Errore caricamento dati'); }
+        }
+
+        loadData();
+
+        // Gestione Immagine
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const removeBtn = document.getElementById('removeBtn');
+        const imagePreview = document.getElementById('imagePreview');
+
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                newImageBase64 = await comprimiImmagine(file, 400, 400, 0.7);
+                imagePreview.src = newImageBase64;
+                imagePreview.style.display = 'block';
+                document.getElementById('uploadText').style.display = 'none';
+                uploadArea.querySelector('i').style.display = 'none';
+                removeBtn.style.display = 'block';
+            }
+        });
+
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            newImageBase64 = '';
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+            removeBtn.style.display = 'none';
+            document.getElementById('uploadText').style.display = 'block';
+            uploadArea.querySelector('i').style.display = 'block';
+        });
+
+        // Submit
+        document.getElementById('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+
+            try {
+                // Fetch lista attuale
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const data = await res.json();
+                let lista = data.record.competizioni || [];
+
+                const index = lista.findIndex(c => c.id === document.getElementById('comp-id').value);
+                if (index === -1) throw new Error("Non trovato");
+
+                // Aggiorna
+                lista[index] = {
+                    ...lista[index],
+                    nome: document.getElementById('nome').value,
+                    descrizione: document.getElementById('descrizione').value,
+                    stato: document.getElementById('stato').value,
+                    max_squadre: parseInt(document.getElementById('max_squadre').value) || null,
+                    costo: parseInt(document.getElementById('costo').value) || 0,
+                    data_inizio: document.getElementById('data_inizio').value,
+                    ora_inizio: document.getElementById('ora_inizio').value,
+                    premi: document.getElementById('premi').value,
+                    immagine: newImageBase64 || lista[index].immagine || '',
+                    aggiornato_il: new Date().toISOString()
+                };
+
+                // Salva
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify({ "competizioni": lista })
+                });
+
+                alert('Modifiche salvate!');
+                window.location.href = 'gestione.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Salva Modifiche';
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('admin');
+            window.location.href = 'accesso-admin.html';
+        });
+    </script>
+</body>
+</html>
