@@ -90,7 +90,8 @@
                 });
                 
                 const data = await res.json();
-                const clubs = data.record.clubs || [];
+                // LEGGIAMO "club" (SINGOLARE) come salvato nel nuovo form
+                const clubs = data.record.club || [];
 
                 container.innerHTML = '';
 
@@ -101,17 +102,21 @@
 
                 clubs.forEach(club => {
                     const logoContent = club.logo 
-                        ? `<img src="${club.logo}" alt="${club.name}">` 
+                        ? `<img src="${club.logo}" alt="${club.nome || club.name}">` 
                         : `<i class="fas fa-shield-alt"></i>`;
+
+                    // Usiamo i campi in Italiano con fallback in inglese
+                    const nomeClub = club.nome || club.name || 'Senza Nome';
+                    const stadioClub = club.stadio || club.stadium || '-';
 
                     const div = document.createElement('div');
                     div.className = 'club-item';
                     div.innerHTML = `
                         <div class="club-logo-small">${logoContent}</div>
                         <div class="club-details">
-                            <h4 style="margin:0; color:var(--text-primary);">${club.name}</h4>
+                            <h4 style="margin:0; color:var(--text-primary);">${nomeClub}</h4>
                             <p style="margin:0; color:var(--text-muted); font-size:0.8rem;">
-                                Tag: ${club.tag || '-'} | Stadio: ${club.stadium || '-'}
+                                Tag: ${club.tag || '-'} | Stadio: ${stadioClub}
                             </p>
                         </div>
                         <div class="club-actions">
@@ -135,21 +140,23 @@
                 // 1. Leggi
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                 const data = await res.json();
-                let clubs = data.record.clubs || [];
+                // Leggiamo la lista "club"
+                let clubs = data.record.club || [];
                 
                 // 2. Filtra
                 const newClubs = clubs.filter(c => c.id !== id);
 
-                // 3. Salva
+                // 3. Salva (ripristinando la struttura corretta)
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ clubs: newClubs })
+                    body: JSON.stringify({ "club": newClubs }) // Salviamo con chiave "club"
                 });
 
                 alert('Club eliminato!');
                 loadClubs(); // Ricarica lista
             } catch (e) {
+                console.error(e);
                 alert("Errore durante l'eliminazione.");
             }
         }
