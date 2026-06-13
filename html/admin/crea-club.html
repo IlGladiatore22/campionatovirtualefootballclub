@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../estetica/style.css?v=2">
     <link rel="stylesheet" href="../../estetica/components.css">
     <style>
+        /* Stili invariati */
         .logo-preview { width: 100px; height: 100px; border-radius: 50%; background: var(--bg-tertiary); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed var(--border-color); cursor: pointer; transition: all 0.3s; }
         .logo-preview:hover { border-color: var(--accent-gold); }
         .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -43,7 +44,7 @@
                     <form id="form">
                         <div class="input-group">
                             <label class="input-label">Nome Club *</label>
-                            <input type="text" id="name" class="input-field" placeholder="Es. FC Warriors" required>
+                            <input type="text" id="nome" class="input-field" placeholder="Es. FC Warriors" required>
                         </div>
 
                         <div class="input-group">
@@ -53,7 +54,7 @@
 
                         <div class="input-group">
                             <label class="input-label">Seleziona Capitano</label>
-                            <select id="captain" class="input-field">
+                            <select id="capitano" class="input-field">
                                 <option value="">-- Caricamento utenti... --</option>
                             </select>
                         </div>
@@ -62,22 +63,22 @@
                             <div class="input-group">
                                 <label class="input-label">Colore Primario</label>
                                 <div class="color-sync">
-                                    <input type="color" id="color1" value="#f5a623">
-                                    <input type="text" id="color1-text" class="input-field" value="#f5a623" maxlength="7">
+                                    <input type="color" id="colore1" value="#f5a623">
+                                    <input type="text" id="colore1-testo" class="input-field" value="#f5a623" maxlength="7">
                                 </div>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Colore Secondario</label>
                                 <div class="color-sync">
-                                    <input type="color" id="color2" value="#1a1a24">
-                                    <input type="text" id="color2-text" class="input-field" value="#1a1a24" maxlength="7">
+                                    <input type="color" id="colore2" value="#1a1a24">
+                                    <input type="text" id="colore2-testo" class="input-field" value="#1a1a24" maxlength="7">
                                 </div>
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label class="input-label">Stadio</label>
-                            <input type="text" id="stadium" class="input-field" placeholder="Nome stadio">
+                            <input type="text" id="stadio" class="input-field" placeholder="Nome stadio">
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Crea Club</button>
@@ -91,12 +92,12 @@
         // ==========================================
         // CONFIGURAZIONE
         // ==========================================
-        const BIN_ID_USERS = 'INSERISCI_ID_BIN_UTENTI_QUI'; 
-        const BIN_ID_CLUBS = 'INSERISCI_ID_BIN_CLUB_QUI'; 
-        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+        const BIN_ID_UTENTI = 'INSERISCI_QUI_ID_BIN_UTENTI'; 
+        const BIN_ID_CLUB = 'INSERISCI_QUI_ID_BIN_CLUB'; 
+        const CHIAVE_MASTER = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // ==========================================
-        // CONTROLLO SESSIONE
+        // CONTROLLO ADMIN
         // ==========================================
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
@@ -104,29 +105,29 @@
         }
 
         // ==========================================
-        // FUNZIONI UTILITA
+        // FUNZIONI UTILITA'
         // ==========================================
-        function compressImage(file, maxWidth, maxHeight, quality) {
+        function comprimiImmagine(file, larghezzaMax, altezzaMax, qualita) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
+                        let w = img.width;
+                        let h = img.height;
 
-                        if (width > height) {
-                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                        if (w > h) {
+                            if (w > larghezzaMax) { h *= larghezzaMax / w; w = larghezzaMax; }
                         } else {
-                            if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                            if (h > altezzaMax) { w *= altezzaMax / h; h = altezzaMax; }
                         }
                         
-                        canvas.width = width;
-                        canvas.height = height;
+                        canvas.width = w;
+                        canvas.height = h;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', qualita));
                     };
                     img.onerror = (err) => reject(err);
                     img.src = event.target.result;
@@ -139,20 +140,20 @@
         // ==========================================
         // CARICA UTENTI
         // ==========================================
-        async function loadUsersForSelect() {
-            const select = document.getElementById('captain');
+        async function caricaUtenti() {
+            const select = document.getElementById('capitano');
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_UTENTI}/latest`, {
+                    headers: { 'X-Master-Key': CHIAVE_MASTER },
                     cache: 'no-store'
                 });
-                if (!res.ok) throw new Error("Errore caricamento utenti");
+                if (!res.ok) throw new Error("Errore caricamento");
                 
                 const data = await res.json();
-                const users = data.record.users || []; // Assumendo che gli utenti restino in inglese nel DB
+                const utenti = data.record.users || []; // Presupponiamo che gli utenti restino in inglese nel DB
                 
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
-                users.forEach(u => {
+                utenti.forEach(u => {
                     select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
                 });
             } catch (e) {
@@ -160,7 +161,7 @@
                 select.innerHTML = '<option value="">Errore DB</option>';
             }
         }
-        loadUsersForSelect();
+        caricaUtenti();
 
         // ==========================================
         // GESTIONE LOGO
@@ -170,82 +171,79 @@
             const file = e.target.files[0];
             if (file) {
                 try {
-                    logoBase64 = await compressImage(file, 200, 200, 0.7);
+                    logoBase64 = await comprimiImmagine(file, 200, 200, 0.7);
                     document.getElementById('preview-img').src = logoBase64;
                     document.getElementById('preview-img').style.display = 'block';
                     document.getElementById('placeholder-icon').style.display = 'none';
                 } catch (err) {
-                    console.error("Errore elaborazione immagine", err);
+                    console.error("Errore immagine", err);
                 }
             }
         });
 
-        // Sync Color
-        ['color1', 'color2'].forEach(id => {
+        // Sync Color Inputs
+        ['colore1', 'colore2'].forEach(id => {
             const color = document.getElementById(id);
-            const text = document.getElementById(id + '-text');
+            const text = document.getElementById(id + '-testo');
             color.oninput = () => text.value = color.value;
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
         // ==========================================
-        // SUBMIT FORM (STRUTTURA ITALIANO)
+        // SUBMIT FORM (STRUTTURA ORDINATA ITALIANO)
         // ==========================================
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = document.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Leggi lista club esistente
-                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
+                // 1. Scarica lista attuale
+                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUB}/latest`, {
+                    headers: { 'X-Master-Key': CHIAVE_MASTER },
                     cache: 'no-store'
                 });
                 
-                if (getRes.status === 404) throw new Error("Bin non trovato (404). Controlla l'ID.");
+                if (getRes.status === 404) throw new Error("Bin Club non trovato (404). Crealo su JSONBin.");
                 if (!getRes.ok) throw new Error("Errore lettura database.");
                 
-                const getData = await getRes.json();
-                
-                // Leggiamo la lista "club" (in italiano)
-                let listaClub = getData.record.club || [];
+                const dati = await getRes.json();
+                let listaClub = dati.record.club || [];
 
-                const captainId = document.getElementById('captain').value;
+                const idCapitano = document.getElementById('capitano').value;
                 
-                // 2. Crea oggetto in italiano
+                // 2. Crea oggetto ORDINATO in italiano
                 const nuovoClub = {
                     id: 'club_' + Date.now(),
-                    nome: document.getElementById('name').value, // In italiano
+                    nome: document.getElementById('nome').value,
                     tag: document.getElementById('tag').value.toUpperCase(),
-                    logo: logoBase64, 
-                    capitano: captainId || null, // In italiano
-                    membri: captainId ? [captainId] : [], // In italiano
-                    colori: { // In italiano
-                        primario: document.getElementById('color1').value, 
-                        secondario: document.getElementById('color2').value
+                    logo: logoBase64,
+                    capitano: idCapitano || null,
+                    membri: idCapitano ? [idCapitano] : [],
+                    colori: {
+                        primario: document.getElementById('colore1').value,
+                        secondario: document.getElementById('colore2').value
                     },
-                    stadio: document.getElementById('stadium').value, // In italiano
-                    formazione: '4-3-3', // In italiano
-                    tattiche: {}, // In italiano
-                    schieramento: {}, // In italiano (ex lineup)
-                    richieste: [], // In italiano
-                    creatoIl: new Date().toISOString() // In italiano
+                    stadio: document.getElementById('stadio').value,
+                    formazione: '4-3-3',
+                    tattiche: {},
+                    schieramento: {},
+                    richieste: [],
+                    creato_il: new Date().toISOString()
                 };
 
                 // 3. Aggiungi e salva
                 listaClub.push(nuovoClub);
                 
-                const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
+                const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUB}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
+                        'X-Master-Key': CHIAVE_MASTER
                     },
-                    // Salviamo con la chiave "club"
-                    body: JSON.stringify({ "club": listaClub }) 
+                    body: JSON.stringify({ "club": listaClub })
                 });
 
                 if (saveRes.status === 403) throw new Error("Errore 403: Permesso negato.");
@@ -257,8 +255,8 @@
             } catch (err) {
                 console.error(err);
                 alert("Errore: " + err.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Crea Club';
+                btn.disabled = false;
+                btn.innerHTML = 'Crea Club';
             }
         });
 
