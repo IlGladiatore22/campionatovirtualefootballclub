@@ -14,131 +14,55 @@
     
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
-        
-        /* Stili Sidebar e Header */
         .logo { overflow: hidden; }
         .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 
-        /* --- LAYOUT HERO CARD --- */
-        .hero-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            text-align: left;
-        }
+        .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
         @media (max-width: 768px) {
             .hero-card { flex-direction: column; align-items: center; text-align: center; }
             .text-content { align-items: center; }
             .top-row { flex-direction: column; gap: 10px; }
             .organizer-inline { justify-content: center; }
-            /* Centra lo stato su mobile */
             .status-container { align-self: center; }
         }
 
-        /* LOGO FIX: Stile Cerchio */
         .site-logo-wrapper {
-            width: 80px;
-            height: 80px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid var(--accent-gold);
+            width: 80px; height: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.1); border-radius: 50%; overflow: hidden; border: 2px solid var(--accent-gold);
         }
-        .site-logo-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .site-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 
-        .text-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        /* Riga superiore */
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .title-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .text-content { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
+        .title-group { display: flex; align-items: center; gap: 10px; }
         .title-group i { color: var(--accent-gold); font-size: 1.2rem; margin-top: -2px; }
         .comp-title-main { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
 
-        /* Organizzatore Inline */
-        .organizer-inline {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+        .organizer-inline { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.9rem; }
         .organizer-inline i { color: var(--accent-gold); }
         .organizer-inline strong { color: var(--text-primary); }
 
         .comp-date-small { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
         .comp-desc-small { color: var(--text-secondary); line-height: 1.5; margin-top: 5px; }
-        
-        /* Stato a destra */
-        .status-container {
-            margin-top: 10px;
-            align-self: flex-end; /* Spinge a destra */
-        }
-        #comp-status { 
-            color: white !important; 
-            font-weight: 600; 
-            padding: 5px 10px; 
-            border-radius: 4px; 
-        }
+        .status-container { margin-top: 10px; align-self: flex-end; }
+        #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
 
-        /* --- STATS GRID --- */
         .stats-grid-mod { grid-template-columns: repeat(3, 1fr); }
-        
         .stat-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .stat-header { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
         .stat-header i { font-size: 1rem; }
         .stat-value-big { font-size: 1.8rem; font-weight: 800; color: var(--accent-gold); font-family: 'Orbitron', sans-serif; }
 
-        /* Premi */
         .prize-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-size: 1rem; }
         .prize-item:last-child { border-bottom: none; }
         .prize-item i { font-size: 1.2rem; width: 25px; text-align: center; }
 
-        /* Regolamento Accordion */
-        .accordion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding: 5px 0;
-        }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 5px 0; }
         .accordion-header h4 { margin: 0; display: flex; align-items: center; gap: 10px; }
         .accordion-arrow { transition: transform 0.3s ease; }
         .accordion-arrow.open { transform: rotate(180deg); }
-        .accordion-content {
-            display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
+        .accordion-content { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary); }
 
-        /* Lista Squadre */
         .teams-container-list { display: flex; flex-direction: column; width: 100%; }
         .teams-container-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
         .team-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
@@ -227,51 +151,35 @@
         <main class="main-content">
             <div class="container" style="padding-top: 30px;">
                 
-                <!-- Loading State -->
                 <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
 
-                <!-- Content -->
                 <div id="main-content" style="display: none;">
                     
-                    <!-- NUOVO HERO CARD -->
                     <div class="card animate-slideUp hero-card">
-                        <!-- Site Logo (Sinistra) - Stile Cerchio -->
                         <div class="site-logo-wrapper">
                             <img src="../../estetica/logosito.png" alt="Logo">
                         </div>
-                        
-                        <!-- Contentuto Centrale -->
                         <div class="text-content">
-                            <!-- Riga Superiore -->
                             <div class="top-row">
                                 <div class="title-group">
                                     <i class="fas fa-trophy"></i>
                                     <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
                                 </div>
-                                
-                                <!-- Organizzatore Inline -->
                                 <div class="organizer-inline">
                                     <i class="fas fa-user-tie"></i>
                                     <span>Organizzatore: <strong id="organizer-name">FC27</strong></span>
                                 </div>
                             </div>
-                            
-                            <!-- Data Creazione -->
                             <div class="comp-date-small">
                                 <i class="far fa-calendar-alt"></i> Creata il: <span id="comp-created">-</span>
                             </div>
-                            
-                            <!-- Descrizione -->
                             <div id="comp-desc-hero" class="comp-desc-small"></div>
-                            
-                            <!-- Stato (A Destra) -->
                             <div class="status-container">
                                 <span id="comp-status" class="tag">Stato</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Admin Controls -->
                     <div id="admin-controls" class="card mt-4 animate-slideUp" style="display: none; border-color: var(--accent-orange);">
                         <h4 style="color: var(--accent-orange);"><i class="fas fa-shield-alt"></i> Controlli Admin</h4>
                         <div class="flex gap-2 mt-2">
@@ -280,7 +188,6 @@
                         </div>
                     </div>
 
-                    <!-- STATS GRID -->
                     <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
                         <div class="stat-card">
                             <div class="stat-header"><i class="fas fa-euro-sign"></i><span>Costo</span></div>
@@ -296,13 +203,11 @@
                         </div>
                     </div>
 
-                    <!-- Premi -->
                     <div class="card mt-4 animate-slideUp stagger-2">
                         <h4 class="mb-3"><i class="fas fa-gift text-gold"></i> Premi</h4>
                         <div id="comp-prizes"><p class="text-muted">-</p></div>
                     </div>
 
-                    <!-- Regolamento (Nuovo Riquadro Espandibile) -->
                     <div class="card mt-4 animate-slideUp stagger-3">
                         <div class="accordion-header" onclick="toggleRegolamento()">
                             <h4><i class="fas fa-book text-gold"></i> Regolamento</h4>
@@ -313,19 +218,16 @@
                         </div>
                     </div>
 
-                    <!-- Dettagli Extra -->
                     <div class="card mt-4 animate-slideUp stagger-3">
                         <h4 class="mb-3"><i class="fas fa-info-circle text-gold"></i> Dettagli</h4>
                         <div id="comp-details"><p class="text-muted">-</p></div>
                     </div>
 
-                    <!-- Squadre Registrate -->
                     <div class="card mt-4 animate-slideUp stagger-4">
                         <h4 class="mb-3"><i class="fas fa-shield-alt text-gold"></i> Squadre Registrate (<span id="teams-count">0</span>)</h4>
                         <div id="teams-list"><p class="text-muted">-</p></div>
                     </div>
 
-                    <!-- Action -->
                     <div class="mt-4 mb-4 animate-slideUp stagger-5">
                         <button id="subscribe-btn" class="btn btn-primary btn-block btn-large">
                             <i class="fas fa-sign-in-alt"></i> Iscrivi il Tuo Club
@@ -334,7 +236,6 @@
 
                 </div>
 
-                <!-- Error State -->
                 <div id="error-state" class="empty-state" style="display: none;">
                     <div class="empty-state-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
                     <h3 class="empty-state-title">Competizione non trovata</h3>
@@ -346,16 +247,10 @@
     </div>
 
     <script>
-        // =============================================
-        // CONFIGURAZIONE
-        // =============================================
         const BIN_ID_COMP = '6a2d7dcbf5f4af5e29ec21b0';
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-        // =============================================
-        // UI SETUP
-        // =============================================
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
@@ -363,13 +258,11 @@
 
         function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
-        // Funzione per accordion regolamento
         function toggleRegolamento() {
             const content = document.getElementById('reg-content');
             const arrow = document.getElementById('reg-arrow');
@@ -382,9 +275,6 @@
             }
         }
 
-        // =============================================
-        // AUTH & NOTIFICHE
-        // =============================================
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
         
@@ -392,11 +282,8 @@
             window.location.href = '../accesso.html';
         } else {
             document.getElementById('username-display').textContent = user.nomeEA;
-            
-            // Logica Admin/Staff
             const adminNav = document.getElementById('admin-nav');
             const guestAdminNav = document.getElementById('guest-admin-nav');
-
             if (user.isAdmin) {
                 adminNav.style.display = 'block';
                 guestAdminNav.style.display = 'none';
@@ -404,8 +291,6 @@
                 adminNav.style.display = 'none';
                 guestAdminNav.style.display = 'block';
             }
-
-            // Logica Notifiche Badge
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
             const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
             if (unread > 0) {
@@ -420,9 +305,6 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // =============================================
-        // LOAD DATA
-        // =============================================
         const urlParams = new URLSearchParams(window.location.search);
         const compId = urlParams.get('id');
         let currentComp = null;
@@ -430,25 +312,18 @@
 
         async function loadData() {
             if (!compId) { showError(); return; }
-
             try {
                 const [compRes, clubRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
                 ]);
-
                 const compData = await compRes.json();
                 const clubData = await clubRes.json();
-
                 const competizioni = compData.record.competizioni || [];
                 allClubs = clubData.record.club || [];
-
                 currentComp = competizioni.find(c => c.id === compId);
-
                 if (!currentComp) { showError(); return; }
-
                 renderUI();
-
             } catch (error) {
                 console.error(error);
                 document.getElementById('loading-state').innerHTML = '<p style="color:red;">Errore database.</p>';
@@ -460,66 +335,43 @@
             document.getElementById('error-state').style.display = 'block';
         }
 
-        // =============================================
-        // RENDER
-        // =============================================
         function renderUI() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-
-            // Title & Header
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
-            
-            // Organizzatore
             document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
-
-            // Date
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
             document.getElementById('comp-created').textContent = created;
 
-            // Status
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
-            
-            // Fix Testo: Sostituisce "_" con spazio (es. IN_CORSO -> IN CORSO)
             let statusText = stato.replace(/_/g, ' ').toUpperCase();
             statusEl.textContent = statusText;
-            
             statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
-            // Stats Values
             const costo = currentComp.costo || 0;
             document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
-            
             const registrati = currentComp.club_registrati || [];
             const maxSq = currentComp.max_squadre || '∞';
             document.getElementById('comp-teams').textContent = registrati.length + '/' + maxSq;
             
-            // Data Inizio Formattata (GG/MM/AAAA)
             if (currentComp.data_inizio) {
                 const dataObj = new Date(currentComp.data_inizio);
                 if (!isNaN(dataObj)) {
                     const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                     document.getElementById('comp-date').textContent = dataObj.toLocaleDateString('it-IT', options);
-                } else {
-                    document.getElementById('comp-date').textContent = currentComp.data_inizio;
-                }
-            } else {
-                document.getElementById('comp-date').textContent = 'N/D';
-            }
+                } else { document.getElementById('comp-date').textContent = currentComp.data_inizio; }
+            } else { document.getElementById('comp-date').textContent = 'N/D'; }
 
-            // Regolamento
             document.getElementById('comp-rules').textContent = currentComp.regolamento || 'Nessun regolamento specificato.';
 
-            // Details List
             let detailsHTML = '<ul style="list-style: none; padding: 0; line-height: 2;">';
             detailsHTML += `<li><i class="fas fa-users text-muted"></i> Max Squadre: ${maxSq}</li>`;
             if (currentComp.formato) detailsHTML += `<li><i class="fas fa-sitemap text-muted"></i> Formato: ${currentComp.formato}</li>`;
             detailsHTML += '</ul>';
             document.getElementById('comp-details').innerHTML = detailsHTML;
 
-            // Prizes
             const prizesDiv = document.getElementById('comp-prizes');
             const premi = currentComp.premi || '';
             if (premi.trim() !== '') {
@@ -533,14 +385,10 @@
                     html += `<div class="prize-item" style="color: ${color};"><i class="fas ${icon}"></i> ${p}</div>`;
                 });
                 prizesDiv.innerHTML = html;
-            } else {
-                prizesDiv.innerHTML = '<p class="text-muted">Nessun premio specificato.</p>';
-            }
+            } else { prizesDiv.innerHTML = '<p class="text-muted">Nessun premio specificato.</p>'; }
 
-            // Teams List
             renderTeams(registrati);
 
-            // Admin
             if (user.isAdmin) {
                 document.getElementById('admin-controls').style.display = 'block';
                 document.getElementById('edit-link').href = `../admin/modifica-competizione.html?id=${compId}`;
@@ -568,72 +416,90 @@
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
-
             if (registrati.length > 0) {
                 const containerClass = registrati.length >= 5 ? 'teams-container-grid' : 'teams-container-list';
                 let html = `<div class="${containerClass}">`;
-                
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
                         const logoHtml = club.logo ? `<img src="${club.logo}" alt="Logo">` : '<i class="fas fa-shield-alt"></i>';
-                        html += `
-                            <div class="team-list-item">
-                                <div class="team-logo-wrapper">${logoHtml}</div>
-                                <div class="team-name-text">${club.nome || club.name}</div>
-                            </div>`;
+                        html += `<div class="team-list-item"><div class="team-logo-wrapper">${logoHtml}</div><div class="team-name-text">${club.nome || club.name}</div></div>`;
                     }
                 });
                 html += '</div>';
                 teamsList.innerHTML = html;
-            } else {
-                teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>';
-            }
+            } else { teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>'; }
         }
 
+        // FUNZIONE MODIFICATA PER RICHIESTA
         function setupSubscribe(registrati, maxSquadre, costo) {
             const btn = document.getElementById('subscribe-btn');
             const userClub = allClubs.find(c => (c.membri || c.members || []).includes(user.id));
 
             if (userClub && registrati.includes(userClub.id)) {
+                // Già iscritto
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entra nella Lega';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
             } else if (!userClub) {
                 btn.innerHTML = '<i class="fas fa-users"></i> Unisciti a un Club';
                 btn.onclick = () => { window.location.href = '../club/club.html'; };
             } else {
+                // NUOVA LOGICA: Invia Richiesta
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA'; // Testo come richiesto
+                
                 btn.onclick = async () => {
                     if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
                     if (maxSquadre !== '∞' && registrati.length >= maxSquadre) { alert('Posti esauriti.'); return; }
-                    if (costo > 0) {
-                        alert(`Costo: ${costo} €. Contatta un admin per procedere.`);
-                        return;
-                    }
 
                     try {
                         btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio richiesta...';
+
+                        // Fetch data
                         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                         const d = await res.json();
-                        let list = d.record.competizioni || [];
-                        const idx = list.findIndex(c => c.id === compId);
                         
-                        if (idx !== -1) {
-                            if (!list[idx].club_registrati) list[idx].club_registrati = [];
-                            list[idx].club_registrati.push(userClub.id);
-                            if (!list[idx].classifica) list[idx].classifica = {};
-                            list[idx].classifica[userClub.id] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
+                        // Prepara struttura richieste
+                        if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
 
-                            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
-                                method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                                body: JSON.stringify({ "competizioni": list })
-                            });
-
-                            alert('Iscrizione completata!');
-                            location.reload();
+                        // Check se richiesta già esiste
+                        const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
+                        if (exists) {
+                            alert('Hai già inviato una richiesta per questa competizione.');
+                            btn.innerHTML = '<i class="fas fa-check"></i> Richiesta Inviata';
+                            return;
                         }
+
+                        // Crea oggetto richiesta
+                        const nuovaRichiesta = {
+                            id: 'req_' + Date.now(),
+                            competizioneId: compId,
+                            competizioneNome: currentComp.nome,
+                            clubId: userClub.id,
+                            clubNome: userClub.nome,
+                            userId: user.id,
+                            userNome: user.nomeEA,
+                            stato: 'in_attesa',
+                            data: new Date().toISOString()
+                        };
+
+                        d.record.richieste_iscrizione.push(nuovaRichiesta);
+
+                        // Salva
+                        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                            method: 'PUT', 
+                            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
+                            body: JSON.stringify(d.record) 
+                        });
+
+                        alert('Richiesta inviata con successo! Attendi l\'approvazione di un Admin.');
+                        btn.innerHTML = '<i class="fas fa-check"></i> Richiesta Inviata';
+
                     } catch(e) {
-                        alert("Errore iscrizione.");
+                        console.error(e);
+                        alert("Errore invio richiesta.");
                         btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
                     }
                 };
             }
