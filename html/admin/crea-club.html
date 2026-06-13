@@ -91,7 +91,6 @@
         // === CONFIGURAZIONE JSONBIN ===
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club
-        // FIX: Assicurati che questa chiave sia valida. Se hai ricevuto errori 401, genera una nuova chiave su JSONBin
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
         // === CONTROLLO SESSIONE ADMIN ===
@@ -104,9 +103,9 @@
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // FIX: Aggiunto cache: 'no-store' e X-Master-Key
+                // FIX: Usiamo X-Access-Key perché la tua chiave è una Access Key
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
+                    headers: { 'X-Access-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
@@ -125,7 +124,6 @@
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
                 select.innerHTML = '<option value="">Errore connessione DB</option>';
-                alert("Impossibile caricare gli utenti. Controlla la console per i dettagli.");
             }
         }
         loadUsersForSelect();
@@ -165,7 +163,7 @@
             try {
                 // 1. Prendi lista club attuali (FIX)
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
+                    headers: { 'X-Access-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
@@ -193,13 +191,13 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Salva nel Bin Club (FIX)
+                // 3. Salva nel Bin Club (FIX: X-Access-Key)
                 clubs.push(newClub);
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
+                        'X-Access-Key': API_KEY
                     },
                     body: JSON.stringify({ "clubs": clubs })
                 });
