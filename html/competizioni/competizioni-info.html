@@ -31,6 +31,8 @@
             .text-content { align-items: center; }
             .top-row { flex-direction: column; gap: 10px; }
             .organizer-inline { justify-content: center; }
+            /* Centra lo stato su mobile */
+            .status-container { align-self: center; }
         }
 
         /* LOGO FIX: Stile Cerchio */
@@ -77,7 +79,7 @@
         .title-group i { color: var(--accent-gold); font-size: 1.2rem; margin-top: -2px; }
         .comp-title-main { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
 
-        /* Organizzatore Inline (No Box) */
+        /* Organizzatore Inline */
         .organizer-inline {
             display: flex;
             align-items: center;
@@ -90,7 +92,18 @@
 
         .comp-date-small { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
         .comp-desc-small { color: var(--text-secondary); line-height: 1.5; margin-top: 5px; }
-        #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; align-self: flex-start; }
+        
+        /* Stato a destra */
+        .status-container {
+            margin-top: 10px;
+            align-self: flex-end; /* Spinge a destra */
+        }
+        #comp-status { 
+            color: white !important; 
+            font-weight: 600; 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+        }
 
         /* --- STATS GRID --- */
         .stats-grid-mod { grid-template-columns: repeat(3, 1fr); }
@@ -236,7 +249,7 @@
                                     <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
                                 </div>
                                 
-                                <!-- Organizzatore Inline (No Box) -->
+                                <!-- Organizzatore Inline -->
                                 <div class="organizer-inline">
                                     <i class="fas fa-user-tie"></i>
                                     <span>Organizzatore: <strong id="organizer-name">FC27</strong></span>
@@ -251,8 +264,8 @@
                             <!-- Descrizione -->
                             <div id="comp-desc-hero" class="comp-desc-small"></div>
                             
-                            <!-- Stato -->
-                            <div style="margin-top: 10px;">
+                            <!-- Stato (A Destra) -->
+                            <div class="status-container">
                                 <span id="comp-status" class="tag">Stato</span>
                             </div>
                         </div>
@@ -468,7 +481,11 @@
             // Status
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
-            statusEl.textContent = stato.toUpperCase();
+            
+            // Fix Testo: Sostituisce "_" con spazio (es. IN_CORSO -> IN CORSO)
+            let statusText = stato.replace(/_/g, ' ').toUpperCase();
+            statusEl.textContent = statusText;
+            
             statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
             // Stats Values
