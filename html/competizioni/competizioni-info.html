@@ -74,9 +74,10 @@
 
         /* Stili Bottoni Stato */
         .btn-pending {
-            background: var(--text-muted) !important;
+            background: #555 !important; /* Grigio scuro */
             cursor: default !important;
-            opacity: 0.8;
+            opacity: 0.9;
+            color: white !important;
         }
     </style>
 </head>
@@ -237,7 +238,7 @@
 
                     <div class="mt-4 mb-4 animate-slideUp stagger-5">
                         <button id="subscribe-btn" class="btn btn-primary btn-block btn-large">
-                            <i class="fas fa-sign-in-alt"></i> Iscrivi il Tuo Club
+                            <i class="fas fa-sign-in-alt"></i> Caricamento...
                         </button>
                     </div>
 
@@ -316,7 +317,7 @@
         const compId = urlParams.get('id');
         let currentComp = null;
         let allClubs = [];
-        let globalRequests = []; // Array globale per le richieste
+        let globalRequests = []; 
 
         async function loadData() {
             if (!compId) { showError(); return; }
@@ -329,7 +330,7 @@
                 const clubData = await clubRes.json();
                 
                 const competizioni = compData.record.competizioni || [];
-                globalRequests = compData.record.richieste_iscrizione || []; // Salva richieste globali
+                globalRequests = compData.record.richieste_iscrizione || []; 
                 
                 allClubs = clubData.record.club || [];
                 currentComp = competizioni.find(c => c.id === compId);
@@ -422,7 +423,6 @@
                 };
             }
 
-            // Passa le richieste globali alla funzione bottone
             setupSubscribe(registrati, maxSq, costo, globalRequests);
         }
 
@@ -444,7 +444,6 @@
             } else { teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>'; }
         }
 
-        // FUNZIONE BOTTONE CON LOGICA STATI
         function setupSubscribe(registrati, maxSquadre, costo, richieste) {
             const btn = document.getElementById('subscribe-btn');
             const userClub = allClubs.find(c => (c.membri || c.members || []).includes(user.id));
@@ -472,13 +471,13 @@
             if (pendingRequest) {
                 btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
                 btn.disabled = true;
-                btn.classList.add('btn-pending'); // Classe CSS per sfumo grigio
+                btn.classList.add('btn-pending'); 
                 btn.onclick = null;
                 return;
             }
 
             // 4. CASO: Invia Richiesta (Default)
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
             
             btn.onclick = async () => {
                 if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
@@ -530,7 +529,7 @@
                 } catch(e) {
                     console.error(e);
                     alert("Errore invio richiesta.");
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
                     btn.disabled = false;
                 }
             };
