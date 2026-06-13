@@ -58,14 +58,11 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <button onclick="history.back()" class="header-btn" style="background: transparent; border: none; margin-right: 10px;">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
+                <!-- FRECCIA RIMOSSA -->
                 <a href="../home.html" class="logo-container" style="text-decoration: none;">
                     <div class="logo">
                         <img src="../../estetica/logosito.png" alt="FC27 Logo">
                     </div>
-                    <!-- RIMOSSA SCRITTA FC27 -->
                 </a>
                 <span class="user-greeting">Benvenuto, <span id="username-display">Utente</span></span>
             </div>
@@ -155,7 +152,7 @@
     <script>
         // === CONFIGURAZIONE DATABASE ===
         const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // ID fornito
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // === SIDEBAR CONTROLLI ===
@@ -226,7 +223,7 @@
 
                 if (competitions.length > 0) {
                     emptyState.style.display = 'none';
-                    grid.innerHTML = ''; // Pulisci griglia
+                    grid.innerHTML = ''; 
 
                     competitions.forEach((comp, index) => {
                         const card = document.createElement('a');
@@ -235,12 +232,10 @@
                         card.style.textDecoration = 'none';
                         card.style.animationDelay = (index * 0.1) + 's';
                         
-                        // Adattamento nomi campi (Inglese -> Italiano)
                         const statusVal = comp.stato || comp.status || 'chiusa';
                         const statusColor = statusVal === 'aperta' ? 'var(--accent-green)' : statusVal === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
                         const statusText = statusVal === 'aperta' ? 'Aperta' : statusVal === 'chiusa' ? 'Chiusa' : 'In Corso';
                         
-                        // Immagine (campo 'immagine' in italiano)
                         const imgSrc = comp.immagine || comp.image || '';
                         let imageContent = '';
                         if (imgSrc) {
@@ -249,7 +244,6 @@
                             imageContent = `<span class="no-image-text">Nessuna foto</span>`;
                         }
 
-                        // Dati
                         const nomeComp = comp.nome || comp.name || 'Senza Nome';
                         const descComp = comp.descrizione || comp.description || '';
                         const costoComp = comp.costo || comp.cost || 0;
