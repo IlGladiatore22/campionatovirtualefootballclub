@@ -45,7 +45,7 @@
                         
                         <div class="input-group">
                             <label class="input-label">Nome Club *</label>
-                            <input type="text" id="name" class="input-field" placeholder="Es. FC Warriors" required>
+                            <input type="text" id="nome" class="input-field" placeholder="Es. FC Warriors" required>
                         </div>
 
                         <div class="input-group">
@@ -55,7 +55,7 @@
 
                         <div class="input-group">
                             <label class="input-label">Seleziona Capitano</label>
-                            <select id="captain" class="input-field">
+                            <select id="capitano" class="input-field">
                                 <option value="">-- Caricamento... --</option>
                             </select>
                         </div>
@@ -64,22 +64,22 @@
                             <div class="input-group">
                                 <label class="input-label">Colore Primario</label>
                                 <div class="color-sync">
-                                    <input type="color" id="color1" value="#f5a623">
-                                    <input type="text" id="color1-text" class="input-field" value="#f5a623" maxlength="7">
+                                    <input type="color" id="colore1" value="#f5a623">
+                                    <input type="text" id="colore1-testo" class="input-field" value="#f5a623" maxlength="7">
                                 </div>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Colore Secondario</label>
                                 <div class="color-sync">
-                                    <input type="color" id="color2" value="#1a1a24">
-                                    <input type="text" id="color2-text" class="input-field" value="#1a1a24" maxlength="7">
+                                    <input type="color" id="colore2" value="#1a1a24">
+                                    <input type="text" id="colore2-testo" class="input-field" value="#1a1a24" maxlength="7">
                                 </div>
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label class="input-label">Stadio</label>
-                            <input type="text" id="stadium" class="input-field" placeholder="Nome stadio">
+                            <input type="text" id="stadio" class="input-field" placeholder="Nome stadio">
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: var(--accent-orange);">Salva Modifiche</button>
@@ -103,7 +103,7 @@
         let currentClubData = null;
         let logoBase64 = '';
 
-        // === FUNZIONE CARICA DATI ===
+        // === FUNZIONE CARICA DATI (AGGIORNATA IN ITALIANO) ===
         async function loadClubData() {
             const urlParams = new URLSearchParams(window.location.search);
             const clubId = urlParams.get('id');
@@ -117,10 +117,13 @@
             try {
                 // Carica Dati Club
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
+                    headers: { 'X-Master-Key': API_KEY },
+                    cache: 'no-store'
                 });
                 const data = await res.json();
-                const clubs = data.record.clubs || [];
+                
+                // LEGGIAMO "club" (SINGOLARE)
+                const clubs = data.record.club || [];
                 
                 currentClubData = clubs.find(c => c.id === clubId);
                 
@@ -130,15 +133,20 @@
                     return;
                 }
 
-                // Popola Campi
+                // Popola Campi (USANDO NOMI ITALIANI)
                 document.getElementById('club-id').value = currentClubData.id;
-                document.getElementById('name').value = currentClubData.name || '';
+                document.getElementById('nome').value = currentClubData.nome || currentClubData.name || '';
                 document.getElementById('tag').value = currentClubData.tag || '';
-                document.getElementById('stadium').value = currentClubData.stadium || '';
-                document.getElementById('color1').value = currentClubData.colors?.primary || '#f5a623';
-                document.getElementById('color1-text').value = currentClubData.colors?.primary || '#f5a623';
-                document.getElementById('color2').value = currentClubData.colors?.secondary || '#1a1a24';
-                document.getElementById('color2-text').value = currentClubData.colors?.secondary || '#1a1a24';
+                document.getElementById('stadio').value = currentClubData.stadio || currentClubData.stadium || '';
+                
+                // Colori (USANDO COLORI.PRIMARIO/SECONDARIO)
+                const col1 = currentClubData.colori?.primario || currentClubData.colors?.primary || '#f5a623';
+                const col2 = currentClubData.colori?.secondario || currentClubData.colors?.secondary || '#1a1a24';
+                
+                document.getElementById('colore1').value = col1;
+                document.getElementById('colore1-testo').value = col1;
+                document.getElementById('colore2').value = col2;
+                document.getElementById('colore2-testo').value = col2;
 
                 // Popola Logo
                 if (currentClubData.logo) {
@@ -155,18 +163,19 @@
                 const usersData = await usersRes.json();
                 const users = usersData.record.users || [];
                 
-                const select = document.getElementById('captain');
+                const select = document.getElementById('capitano');
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
                 users.forEach(u => {
                     select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
                 });
                 
                 // Imposta Capitano corrente
-                document.getElementById('captain').value = currentClubData.captain || '';
+                const capId = currentClubData.capitano || currentClubData.captain || '';
+                select.value = capId;
 
             } catch (e) {
                 console.error(e);
-                alert("Errore caricamento dati.");
+                alert("Errore caricamento dati: " + e.message);
             }
         }
 
@@ -188,14 +197,14 @@
         });
 
         // Sync Color Inputs
-        ['color1', 'color2'].forEach(id => {
+        ['colore1', 'colore2'].forEach(id => {
             const color = document.getElementById(id);
-            const text = document.getElementById(id + '-text');
+            const text = document.getElementById(id + '-testo');
             color.oninput = () => text.value = color.value;
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
-        // Submit Modifiche
+        // Submit Modifiche (AGGIORNATO IN ITALIANO)
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -209,43 +218,44 @@
                     headers: { 'X-Master-Key': API_KEY }
                 });
                 const data = await res.json();
-                let clubs = data.record.clubs || [];
+                // LEGGIAMO "club" (SINGOLARE)
+                let listaClub = data.record.club || [];
 
                 // Trova indice
-                const index = clubs.findIndex(c => c.id === document.getElementById('club-id').value);
-                if (index === -1) throw new Error("Club non trovato.");
+                const index = listaClub.findIndex(c => c.id === document.getElementById('club-id').value);
+                if (index === -1) throw new Error("Club non trovato nel database.");
 
-                // Aggiorna oggetto
-                clubs[index] = {
-                    ...clubs[index], // Mantiene dati non modificati come createdAt
-                    name: document.getElementById('name').value,
+                // Aggiorna oggetto (SALVIAMO CON STRUTTURA ITALIANA)
+                listaClub[index] = {
+                    ...listaClub[index], // Mantiene ID, richieste, membri esistenti
+                    nome: document.getElementById('nome').value,
                     tag: document.getElementById('tag').value.toUpperCase(),
-                    logo: logoBase64 || clubs[index].logo, // Mantiene vecchio logo se non cambiato
-                    captain: document.getElementById('captain').value || null,
-                    colors: { 
-                        primary: document.getElementById('color1').value, 
-                        secondary: document.getElementById('color2').value 
+                    logo: logoBase64 || listaClub[index].logo, 
+                    capitano: document.getElementById('capitano').value || null,
+                    colori: { 
+                        primario: document.getElementById('colore1').value, 
+                        secondario: document.getElementById('colore2').value 
                     },
-                    stadium: document.getElementById('stadium').value,
-                    updatedAt: new Date().toISOString()
+                    stadio: document.getElementById('stadio').value,
+                    aggiornato_il: new Date().toISOString()
                 };
 
-                // Salva
+                // Salva (USANDO CHIAVE "club")
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': API_KEY
                     },
-                    body: JSON.stringify({ clubs: clubs })
+                    body: JSON.stringify({ "club": listaClub })
                 });
 
-                alert('Modifiche salvate!');
+                alert('Modifiche salvate con successo!');
                 window.location.href = 'lista-club.html';
 
             } catch (err) {
                 console.error(err);
-                alert("Errore durante il salvataggio.");
+                alert("Errore durante il salvataggio: " + err.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Salva Modifiche';
             }
