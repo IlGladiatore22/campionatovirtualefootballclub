@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVFC ADMIN - Modifica Torneo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css?v=2">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        body { background: var(--bg-primary); }
+        .form-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .form-section h3 { margin-bottom: 15px; color: #9b59b6; font-size: 1.1rem; }
+        
+        .format-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .format-option { padding: 15px; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .format-option:hover { border-color: #9b59b6; }
+        .format-option.active { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
+        .format-title { font-weight: bold; font-size: 1rem; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .format-title i { width: 20px; text-align: center; color: #9b59b6; }
+        .format-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+        .swiss-flag { width: 16px; height: 16px; background-color: #FF0000; position: relative; display: inline-block; border-radius: 2px; }
+        .swiss-flag::before, .swiss-flag::after { content: ''; position: absolute; background-color: #FFFFFF; }
+        .swiss-flag::before { width: 4px; height: 10px; left: 6px; top: 3px; }
+        .swiss-flag::after { width: 10px; height: 4px; left: 3px; top: 6px; }
+        .badge-3 { position: absolute; top: -6px; right: -8px; background-color: var(--accent-gold); color: white; font-size: 9px; font-weight: bold; padding: 1px 4px; border-radius: 50%; line-height: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+
+        .image-upload-area { border: 2px dashed var(--border-color); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(255,255,255,0.02); position: relative; overflow: hidden; }
+        .image-upload-area:hover { border-color: #9b59b6; }
+        .image-upload-area i { font-size: 2rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
+        .image-upload-area p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+        #imagePreview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; margin-left: auto; margin-right: auto; }
+        .remove-image-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: none; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <a href="gestione.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <span class="site-name" style="color: var(--accent-orange);">Modifica Torneo</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container" style="max-width: 600px; padding: 60px 20px;">
+                <div class="card animate-slideUp">
+                    <h2 class="mb-3 text-center"><i class="fas fa-edit text-gold"></i> Modifica Torneo</h2>
+                    
+                    <form id="form">
+                        <input type="hidden" id="tourn-id">
+                        
+                        <!-- IMMAGINE -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-image"></i> Copertina</h3>
+                            <div class="input-group">
+                                <div class="image-upload-area" id="uploadArea">
+                                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                                    <button type="button" class="remove-image-btn" id="removeBtn"><i class="fas fa-times"></i></button>
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p id="uploadText">Clicca per cambiare immagine</p>
+                                    <img id="imagePreview" src="#" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INFO -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Informazioni</h3>
+                            <div class="input-group">
+                                <label class="input-label">Nome Torneo *</label>
+                                <input type="text" id="nome" class="input-field" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Descrizione</label>
+                                <textarea id="descrizione" class="input-field" rows="2"></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Stato</label>
+                                <select id="stato" class="input-field">
+                                    <option value="aperta">Iscrizioni Aperte</option>
+                                    <option value="chiusa">Iscrizioni Chiuse</option>
+                                    <option value="in_corso">In Corso</option>
+                                    <option value="conclusa">Conclusa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- FORMATO -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-sitemap"></i> Formato</h3>
+                            <div class="format-selector">
+                                <div class="format-option" data-format="svizzero" onclick="selectFormat(this)">
+                                    <div class="format-title"><span class="swiss-flag"></span> SVIZZERO</div>
+                                </div>
+                                <div class="format-option" data-format="classic_top2" onclick="selectFormat(this)">
+                                    <div class="format-title"><i class="fas fa-table"></i> CLASSICO (GIRONI)</div>
+                                </div>
+                                <div class="format-option" data-format="classic_top2_3rds" onclick="selectFormat(this)">
+                                    <div class="format-title"><span style="position:relative; width:20px; display:inline-block;"><i class="fas fa-table" style="color:#9b59b6;"></i><span class="badge-3">3</span></span> ALLARGATO</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="formato" value="">
+
+                            <div id="group-settings" class="grid-2 mt-3" style="display:none;">
+                                <div class="input-group">
+                                    <label class="input-label">Numero Gironi</label>
+                                    <input type="number" id="num_gironi" class="input-field" min="1">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Squadre per Girone</label>
+                                    <input type="number" id="squadre_per_girone" class="input-field" min="3">
+                                </div>
+                            </div>
+                            <div id="max-teams-settings" class="input-group mt-3" style="display:none;">
+                                <label class="input-label">Max Partecipanti</label>
+                                <input type="number" id="max_squadre" class="input-field">
+                            </div>
+                        </div>
+
+                        <!-- IMPOSTAZIONI -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-cogs"></i> Impostazioni</h3>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Costo (€)</label>
+                                    <input type="number" id="costo" class="input-field" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Data Inizio</label>
+                                    <input type="date" id="data_inizio" class="input-field">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Premi</label>
+                                <textarea id="premi" class="input-field" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-large mt-3" style="background: #9b59b6;">Salva Modifiche</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        const admin = JSON.parse(localStorage.getItem('admin') || 'null');
+        if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
+
+        let currentData = null;
+        let newImageBase64 = '';
+
+        // Compressione
+        function comprimiImmagine(file, wMax, hMax, qualita) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > wMax) { h *= wMax / w; w = wMax; } }
+                        else { if (h > hMax) { w *= hMax / h; h = hMax; } }
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', qualita));
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Logica Formato
+        window.selectFormat = function(el) {
+            document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            const format = el.dataset.format;
+            document.getElementById('formato').value = format;
+
+            if (format.includes('classic')) {
+                document.getElementById('group-settings').style.display = 'grid';
+                document.getElementById('max-teams-settings').style.display = 'none';
+            } else {
+                document.getElementById('group-settings').style.display = 'none';
+                document.getElementById('max-teams-settings').style.display = 'block';
+            }
+        }
+
+        // Caricamento Dati
+        async function loadData() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) { alert('ID mancante'); window.location.href = 'gestione.html'; return; }
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
+                const data = await res.json();
+                const lista = data.record.tornei || [];
+                currentData = lista.find(t => t.id === id);
+
+                if (!currentData) { alert('Torneo non trovato'); window.location.href = 'gestione.html'; return; }
+
+                // Popola Form
+                document.getElementById('tourn-id').value = currentData.id;
+                document.getElementById('nome').value = currentData.nome || '';
+                document.getElementById('descrizione').value = currentData.descrizione || '';
+                document.getElementById('stato').value = currentData.stato || 'aperta';
+                document.getElementById('costo').value = currentData.costo || 0;
+                document.getElementById('data_inizio').value = currentData.data_inizio || '';
+                document.getElementById('premi').value = currentData.premi || '';
+                
+                // Gestione Immagine
+                if (currentData.immagine) {
+                    document.getElementById('imagePreview').src = currentData.immagine;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('uploadText').style.display = 'none';
+                    document.getElementById('uploadArea').querySelector('i').style.display = 'none';
+                    document.getElementById('removeBtn').style.display = 'block';
+                }
+
+                // Gestione Formato
+                const format = currentData.formato || 'svizzero';
+                document.getElementById('formato').value = format;
+                
+                // Simula click per attivare logica visibilità
+                const opt = document.querySelector(`.format-option[data-format="${format}"]`);
+                if(opt) selectFormat(opt);
+
+                // Compila campi specifici
+                document.getElementById('num_gironi').value = currentData.num_gironi || 4;
+                document.getElementById('squadre_per_girone').value = currentData.squadre_per_girone || 4;
+                document.getElementById('max_squadre').value = currentData.max_squadre || 16;
+
+            } catch(e) { console.error(e); alert('Errore caricamento'); }
+        }
+
+        loadData();
+
+        // Gestione Immagine
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const removeBtn = document.getElementById('removeBtn');
+        const imagePreview = document.getElementById('imagePreview');
+
+        uploadArea.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                newImageBase64 = await comprimiImmagine(file, 400, 400, 0.7);
+                imagePreview.src = newImageBase64;
+                imagePreview.style.display = 'block';
+                removeBtn.style.display = 'block';
+                document.getElementById('uploadText').style.display = 'none';
+                uploadArea.querySelector('i').style.display = 'none';
+            }
+        });
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            newImageBase64 = null; // Segnala rimozione
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+            removeBtn.style.display = 'none';
+            document.getElementById('uploadText').style.display = 'block';
+            uploadArea.querySelector('i').style.display = 'block';
+        });
+
+        // Submit
+        document.getElementById('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                const data = await res.json();
+                let lista = data.record.tornei || [];
+
+                const index = lista.findIndex(t => t.id === document.getElementById('tourn-id').value);
+                if (index === -1) throw new Error("Torneo non trovato nel DB");
+
+                const formato = document.getElementById('formato').value;
+                let maxSquadre = 0;
+                if (formato.includes('classic')) {
+                    maxSquadre = (parseInt(document.getElementById('num_gironi').value) || 4) * (parseInt(document.getElementById('squadre_per_girone').value) || 4);
+                } else {
+                    maxSquadre = parseInt(document.getElementById('max_squadre').value) || 16;
+                }
+
+                // Gestione immagine: se newImageBase64 è stringa vuota non facciamo nulla, se è null significa che è stata rimossa
+                let immagineFinale = lista[index].immagine;
+                if (newImageBase64) immagineFinale = newImageBase64; // Nuova immagine
+                if (newImageBase64 === null) immagineFinale = ''; // Rimossa
+
+                lista[index] = {
+                    ...lista[index],
+                    nome: document.getElementById('nome').value,
+                    descrizione: document.getElementById('descrizione').value,
+                    stato: document.getElementById('stato').value,
+                    formato: formato,
+                    immagine: immagineFinale,
+                    num_gironi: parseInt(document.getElementById('num_gironi').value) || 0,
+                    squadre_per_girone: parseInt(document.getElementById('squadre_per_girone').value) || 0,
+                    max_squadre: maxSquadre,
+                    costo: parseInt(document.getElementById('costo').value) || 0,
+                    data_inizio: document.getElementById('data_inizio').value,
+                    premi: document.getElementById('premi').value,
+                    aggiornato_il: new Date().toISOString()
+                };
+
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify({ "tornei": lista })
+                });
+
+                alert('Torneo aggiornato!');
+                window.location.href = 'gestione.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Salva Modifiche';
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('admin');
+            window.location.href = 'accesso-admin.html';
+        });
+    </script>
+</body>
+</html>
