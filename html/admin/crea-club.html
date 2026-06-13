@@ -88,20 +88,55 @@
     </div>
 
     <script>
-        // === CONFIGURAZIONE JSONBIN ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
-        
-        // !!! AZIONE RICHIESTA !!!
-        // Il vecchio ID (6a2bea...) è bloccato. Creane uno nuovo su JSONBin.io 
-        // con contenuto {"clubs": []} e incolla l'ID qui sotto:
-        const BIN_ID_CLUBS = 'NUOVO_BIN_ID_DA_INCOLLARE_QUI'; 
-        
-        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
+        // === CONFIGURAZIONE ===
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Assicurati sia quello nuovo se l'hai cambiato
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-        // === CONTROLLO SESSIONE ADMIN ===
+        // === CONTROLLO SESSIONE ===
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
             window.location.href = 'accesso-admin.html';
+        }
+
+        // === FUNZIONE CRUCIALE: COMPRESSIONE IMMAGINE ===
+        // Questa funzione ridimensiona l'immagine per non far scoppiare il DB
+        function compressImage(file, maxWidth, maxHeight, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calcolo proporzioni
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Restituisce la stringa Base64 compressa (JPEG)
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         // === CARICA UTENTI ===
@@ -112,8 +147,7 @@
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
-                
-                if (!res.ok) throw new Error(`Errore Server: ${res.status}`);
+                if (!res.ok) throw new Error("Errore caricamento utenti");
                 
                 const data = await res.json();
                 const users = data.record.users || [];
@@ -123,29 +157,35 @@
                     select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
                 });
             } catch (e) {
-                console.error("Errore caricamento utenti:", e);
-                select.innerHTML = '<option value="">Errore connessione DB</option>';
+                console.error(e);
+                select.innerHTML = '<option value="">Errore DB</option>';
             }
         }
         loadUsersForSelect();
 
-        // Preview Logo
+        // === GESTIONE LOGO (CON COMPRESSIONE) ===
         let logoBase64 = '';
-        document.getElementById('logo-input').addEventListener('change', function(e) {
+        
+        document.getElementById('logo-input').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    logoBase64 = ev.target.result;
+                try {
+                    // Chiamiamo la funzione di compressione: max 200px, qualità 70%
+                    // Questo riduce un'immagine da 2MB a circa 15-20KB
+                    const compressedImage = await compressImage(file, 200, 200, 0.7);
+                    
+                    logoBase64 = compressedImage;
                     document.getElementById('preview-img').src = logoBase64;
                     document.getElementById('preview-img').style.display = 'block';
                     document.getElementById('placeholder-icon').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
+                } catch (err) {
+                    console.error("Errore elaborazione immagine", err);
+                    alert("Impossibile caricare l'immagine.");
+                }
             }
         });
 
-        // Sync Color Inputs
+        // Sync Color
         ['color1', 'color2'].forEach(id => {
             const color = document.getElementById(id);
             const text = document.getElementById(id + '-text');
@@ -153,7 +193,7 @@
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
-        // Submit
+        // === SUBMIT ===
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -162,28 +202,26 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Leggi club attuali
+                // 1. Prendi lista club
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
-                if (getRes.status === 403) {
-                    throw new Error("ERRORE 403: Il Bin dei Club non accetta questa chiave. Hai creato un nuovo Bin?");
-                }
-                if (!getRes.ok) throw new Error("Impossibile leggere il database.");
+                if (getRes.status === 403) throw new Error("Errore 403: Bin non valido o chiave errata.");
+                if (!getRes.ok) throw new Error("Impossibile leggere il DB.");
                 
                 const getData = await getRes.json();
                 let clubs = getData.record.clubs || [];
 
                 const captainId = document.getElementById('captain').value;
                 
-                // 2. Crea oggetto Club
+                // 2. Crea oggetto
                 const newClub = {
                     id: 'club_' + Date.now(),
                     name: document.getElementById('name').value,
                     tag: document.getElementById('tag').value.toUpperCase(),
-                    logo: logoBase64, 
+                    logo: logoBase64, // Qui ora c'è l'immagine compressa (leggera)
                     captain: captainId || null,
                     members: captainId ? [captainId] : [],
                     colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
@@ -197,6 +235,7 @@
 
                 // 3. Salva
                 clubs.push(newClub);
+                
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
@@ -207,11 +246,9 @@
                 });
 
                 if (saveRes.status === 403) {
-                    throw new Error("ERRORE 403: Permesso negato in scrittura.");
+                    throw new Error("Errore 403: Immagine ancora troppo grande o permessi mancanti.");
                 }
-                if (!saveRes.ok) {
-                    throw new Error("Errore generico nel salvataggio.");
-                }
+                if (!saveRes.ok) throw new Error("Errore salvataggio.");
 
                 alert('Club creato con successo!');
                 window.location.href = 'dashboard.html';
@@ -224,7 +261,7 @@
             }
         });
 
-        // Logout Admin
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('admin');
             window.location.href = 'accesso-admin.html';
