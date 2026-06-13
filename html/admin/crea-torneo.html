@@ -26,7 +26,7 @@
             border: 2px solid var(--border-color); 
             border-radius: 8px; 
             cursor: pointer; 
-            text-align: center; /* CENTRATO */
+            text-align: center;
             transition: all 0.2s; 
         }
         .format-option:hover { border-color: #9b59b6; }
@@ -77,18 +77,7 @@
         .image-upload-area:hover { border-color: #9b59b6; }
         .image-upload-area i { font-size: 2rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
         .image-upload-area p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-        
-        /* FIX CENTRATURA IMMAGINE CARICATA */
-        #imagePreview { 
-            max-width: 100%; 
-            max-height: 200px; 
-            border-radius: 8px; 
-            margin-top: 10px; 
-            display: none; /* Nascosto di default */
-            margin-left: auto; /* Centrato */
-            margin-right: auto; /* Centrato */
-        }
-        
+        #imagePreview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; margin-left: auto; margin-right: auto; }
         .remove-image-btn {
             position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
             border: none; color: white; width: 30px; height: 30px; border-radius: 50%;
@@ -171,7 +160,8 @@
                             </div>
                             <input type="hidden" id="formato" value="svizzero">
 
-                            <div class="grid-2 mt-3">
+                            <!-- CAMPI DINAMICI: Visibili solo per i formati con Gironi -->
+                            <div id="group-settings" class="grid-2 mt-3" style="display: none;">
                                 <div class="input-group">
                                     <label class="input-label">Numero Gironi</label>
                                     <input type="number" id="num_gironi" class="input-field" value="4" min="1" max="16">
@@ -181,23 +171,27 @@
                                     <input type="number" id="squadre_per_girone" class="input-field" value="4" min="3" max="6">
                                 </div>
                             </div>
+
+                            <!-- CAMPI DINAMICI: Visibili solo per formati senza Gironi (Svizzero/Knockout) -->
+                            <div id="max-teams-settings" class="input-group mt-3">
+                                <label class="input-label">Max Partecipanti</label>
+                                <input type="number" id="max_squadre" class="input-field" placeholder="Es. 16">
+                            </div>
                         </div>
 
                         <div class="form-section">
                             <h3><i class="fas fa-cogs"></i> Impostazioni</h3>
                             <div class="grid-2">
-                                <div class="input-group">
-                                    <label class="input-label">Max Partecipanti</label>
-                                    <input type="number" id="max_squadre" class="input-field" placeholder="Es. 16">
-                                </div>
+                                <!-- MODIFICA: Campo Costo aggiornato a € -->
                                 <div class="input-group">
                                     <label class="input-label">Costo (€)</label>
                                     <input type="number" id="costo" class="input-field" value="0" min="0">
                                 </div>
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">Data Inizio</label>
-                                <input type="text" id="data_inizio" class="input-field" placeholder="Es. 25 Dicembre">
+                                <!-- MODIFICA: Campo Data con Calendario -->
+                                <div class="input-group">
+                                    <label class="input-label">Data Inizio</label>
+                                    <input type="date" id="data_inizio" class="input-field">
+                                </div>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Premi (uno per riga)</label>
@@ -243,11 +237,32 @@
             });
         }
 
+        // === GESTIONE FORMATO (LOGICA VISIBILITÀ) ===
         window.selectFormat = function(el) {
             document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
             el.classList.add('active');
-            document.getElementById('formato').value = el.dataset.format;
+            
+            const format = el.dataset.format;
+            document.getElementById('formato').value = format;
+
+            // Logica per mostrare/nascondere campi
+            const groupSettings = document.getElementById('group-settings');
+            const maxTeamsSettings = document.getElementById('max-teams-settings');
+
+            // Se il formato contiene "classic" (gironi), mostro i settaggi gironi e calcolo auto i partecipanti
+            if (format.includes('classic')) {
+                groupSettings.style.display = 'grid';
+                maxTeamsSettings.style.display = 'none'; // Nascondo perché si calcola da solo
+            } else {
+                // Se è Svizzero o Knockout, nascondo i gironi e chiedo i partecipanti
+                groupSettings.style.display = 'none';
+                maxTeamsSettings.style.display = 'block';
+            }
         }
+        
+        // Init: Setta la visualizzazione corretta all'inizio (Svizzero è default)
+        document.getElementById('group-settings').style.display = 'none';
+        document.getElementById('max-teams-settings').style.display = 'block';
 
         // === GESTIONE IMMAGINE ===
         const uploadArea = document.getElementById('uploadArea');
@@ -264,7 +279,7 @@
                 try {
                     savedImageData = await comprimiImmagine(file, 400, 400, 0.7);
                     imagePreview.src = savedImageData;
-                    imagePreview.style.display = 'block'; // Mostra come blocco centrato
+                    imagePreview.style.display = 'block';
                     removeBtn.style.display = 'block';
                     uploadText.style.display = 'none';
                     uploadArea.querySelector('i').style.display = 'none';
@@ -300,16 +315,30 @@
                 const data = await res.json();
                 let lista = data.record.tornei || [];
 
+                // Calcolo intelligente partecipanti
+                const formato = document.getElementById('formato').value;
+                let maxSquadre = 0;
+
+                if (formato.includes('classic')) {
+                    // Se è un formato a gironi, moltiplico
+                    const numGironi = parseInt(document.getElementById('num_gironi').value) || 4;
+                    const sqPerGirone = parseInt(document.getElementById('squadre_per_girone').value) || 4;
+                    maxSquadre = numGironi * sqPerGirone;
+                } else {
+                    // Se è svizzero o altro, prendo il valore manuale
+                    maxSquadre = parseInt(document.getElementById('max_squadre').value) || 16;
+                }
+
                 const nuovoTorneo = {
                     id: 'tourn_' + Date.now(),
                     nome: document.getElementById('nome').value,
                     descrizione: document.getElementById('descrizione').value,
                     stato: 'aperta',
-                    formato: document.getElementById('formato').value,
+                    formato: formato,
                     immagine: savedImageData,
-                    num_gironi: parseInt(document.getElementById('num_gironi').value) || 4,
-                    squadre_per_girone: parseInt(document.getElementById('squadre_per_girone').value) || 4,
-                    max_squadre: parseInt(document.getElementById('max_squadre').value) || 16,
+                    num_gironi: parseInt(document.getElementById('num_gironi').value) || 0,
+                    squadre_per_girone: parseInt(document.getElementById('squadre_per_girone').value) || 0,
+                    max_squadre: maxSquadre, // Valore calcolato o manuale
                     costo: parseInt(document.getElementById('costo').value) || 0,
                     data_inizio: document.getElementById('data_inizio').value,
                     premi: document.getElementById('premi').value,
