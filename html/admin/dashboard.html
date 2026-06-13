@@ -279,7 +279,7 @@
         // CONFIGURAZIONE JSONBIN
         // =============================================
         const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // NUOVO ID BIN CLUB
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // ID Bin Club
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; // Master Key
 
         // =============================================
@@ -304,16 +304,14 @@
         async function loadAdminData() {
             let users = [];
             let clubs = [];
-            let sortedUsers = [];
 
             try {
-                // AGGIUNTO CACHE BUSTER (?t=...) per forzare l'aggiornamento
                 const ts = '?t=' + new Date().getTime();
 
                 // 1. FETCH UTENTI
                 const usersRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest${ts}`, {
                     headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store' // Forza il browser a non usare la cache
+                    cache: 'no-store'
                 });
                 const usersData = await usersRes.json();
                 users = usersData.record.users || [];
@@ -321,12 +319,14 @@
                 // 2. FETCH CLUB
                 const clubsRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest${ts}`, {
                     headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store' // Forza il browser a non usare la cache
+                    cache: 'no-store'
                 });
                 const clubsData = await clubsRes.json();
-                clubs = clubsData.record.clubs || [];
+                
+                // LEGGIAMO "club" (SINGOLARE) come salvato nel nuovo form
+                clubs = clubsData.record.club || []; 
 
-                // Altri dati (rimangono locali per ora)
+                // Altri dati
                 const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
                 const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
 
@@ -336,14 +336,18 @@
                 document.getElementById('stat-tournaments').textContent = tournaments.filter(t => t.status !== 'chiusa').length;
                 
                 let pending = 0;
-                clubs.forEach(c => { if(c.requests) pending += c.requests.filter(r => r.status === 'pending').length; });
+                // Controlliamo sia 'richieste' (IT) che 'requests' (EN) per compatibilità
+                clubs.forEach(c => {
+                    const reqs = c.richieste || c.requests || [];
+                    pending += reqs.filter(r => r.status === 'pending').length;
+                });
                 document.getElementById('stat-pending').textContent = pending;
                 document.getElementById('stat-notifications').textContent = notifications.filter(n => !n.read).length;
 
                 // 4. Popola Tabella Utenti
                 const tbody = document.getElementById('users-table-body');
                 tbody.innerHTML = '';
-                sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const sortedUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                 if (sortedUsers.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun utente</td></tr>';
@@ -364,11 +368,9 @@
                     });
                 }
 
-                // 5. Popola Attività Recenti (Misto Utenti + Club)
+                // 5. Popola Attività Recenti
                 const activityList = document.getElementById('activity-list');
                 activityList.innerHTML = '';
-
-                // Creiamo un'unica lista di attività
                 let activities = [];
 
                 // Aggiungi utenti
@@ -389,28 +391,33 @@
                     });
                 });
 
-                // Aggiungi club
+                // Aggiungi club (ADATTATO IN ITALIANO)
                 clubs.forEach(c => {
+                    // Usiamo 'creato_il' se esiste, altrimenti 'createdAt'
+                    const dateObj = new Date(c.creato_il || c.createdAt);
+                    // Usiamo 'nome' se esiste, altrimenti 'name'
+                    const clubName = c.nome || c.name;
+
                     activities.push({
                         type: 'club',
-                        date: new Date(c.createdAt),
+                        date: dateObj,
                         html: `
                             <div class="activity-item">
                                 <div class="activity-icon" style="background: rgba(245, 166, 35, 0.1); color: var(--accent-gold);">
                                     <i class="fas fa-shield-alt"></i>
                                 </div>
                                 <div class="activity-info">
-                                    <p><strong>${c.name}</strong> è stato creato</p>
-                                    <span>${c.createdAt ? new Date(c.createdAt).toLocaleString('it-IT') : ''}</span>
+                                    <p><strong>${clubName}</strong> è stato creato</p>
+                                    <span>${dateObj.toLocaleString('it-IT')}</span>
                                 </div>
                             </div>`
                     });
                 });
 
-                // Ordina per data (più recenti prima)
+                // Ordina per data
                 activities.sort((a, b) => b.date - a.date);
 
-                // Mostra solo gli ultimi 5
+                // Mostra ultimi 5
                 const recentActivities = activities.slice(0, 5);
 
                 if(recentActivities.length === 0){
