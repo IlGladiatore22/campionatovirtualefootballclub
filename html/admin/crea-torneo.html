@@ -141,7 +141,8 @@
                                     <input type="number" id="max_squadre" class="input-field" placeholder="Es. 16">
                                 </div>
                                 <div class="input-group">
-                                    <label class="input-label">Costo (Crediti)</label>
+                                    <!-- MODIFICA QUI: Da Crediti a € -->
+                                    <label class="input-label">Costo (€)</label>
                                     <input type="number" id="costo" class="input-field" value="0" min="0">
                                 </div>
                             </div>
@@ -255,7 +256,7 @@
                     nome: document.getElementById('nome').value,
                     descrizione: document.getElementById('descrizione').value,
                     stato: 'aperta',
-                    formato: document.getElementById('formato').value, // svizzero, classic_top2, classic_top2_3rds
+                    formato: document.getElementById('formato').value,
                     immagine: savedImageData,
                     num_gironi: parseInt(document.getElementById('num_gironi').value) || 4,
                     squadre_per_girone: parseInt(document.getElementById('squadre_per_girone').value) || 4,
@@ -264,7 +265,6 @@
                     data_inizio: document.getElementById('data_inizio').value,
                     premi: document.getElementById('premi').value,
                     club_registrati: [],
-                    // Strutture dati vuote pronte per essere popolate
                     gironi: [], 
                     svizzera: { rounds: [], standings: [] }, 
                     knockout: [],
