@@ -71,6 +71,13 @@
         .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
+
+        /* Stili Bottoni Stato */
+        .btn-pending {
+            background: var(--text-muted) !important;
+            cursor: default !important;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -309,6 +316,7 @@
         const compId = urlParams.get('id');
         let currentComp = null;
         let allClubs = [];
+        let globalRequests = []; // Array globale per le richieste
 
         async function loadData() {
             if (!compId) { showError(); return; }
@@ -319,9 +327,13 @@
                 ]);
                 const compData = await compRes.json();
                 const clubData = await clubRes.json();
+                
                 const competizioni = compData.record.competizioni || [];
+                globalRequests = compData.record.richieste_iscrizione || []; // Salva richieste globali
+                
                 allClubs = clubData.record.club || [];
                 currentComp = competizioni.find(c => c.id === compId);
+                
                 if (!currentComp) { showError(); return; }
                 renderUI();
             } catch (error) {
@@ -410,7 +422,8 @@
                 };
             }
 
-            setupSubscribe(registrati, maxSq, costo);
+            // Passa le richieste globali alla funzione bottone
+            setupSubscribe(registrati, maxSq, costo, globalRequests);
         }
 
         function renderTeams(registrati) {
@@ -431,78 +444,96 @@
             } else { teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>'; }
         }
 
-        // FUNZIONE MODIFICATA PER RICHIESTA
-        function setupSubscribe(registrati, maxSquadre, costo) {
+        // FUNZIONE BOTTONE CON LOGICA STATI
+        function setupSubscribe(registrati, maxSquadre, costo, richieste) {
             const btn = document.getElementById('subscribe-btn');
             const userClub = allClubs.find(c => (c.membri || c.members || []).includes(user.id));
 
-            if (userClub && registrati.includes(userClub.id)) {
-                // Già iscritto
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entra nella Lega';
-                btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
-            } else if (!userClub) {
+            // Reset stile bottone
+            btn.className = 'btn btn-primary btn-block btn-large';
+            btn.disabled = false;
+
+            // 1. CASO: Nessun Club
+            if (!userClub) {
                 btn.innerHTML = '<i class="fas fa-users"></i> Unisciti a un Club';
                 btn.onclick = () => { window.location.href = '../club/club.html'; };
-            } else {
-                // NUOVA LOGICA: Invia Richiesta
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA'; // Testo come richiesto
-                
-                btn.onclick = async () => {
-                    if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
-                    if (maxSquadre !== '∞' && registrati.length >= maxSquadre) { alert('Posti esauriti.'); return; }
-
-                    try {
-                        btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio richiesta...';
-
-                        // Fetch data
-                        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
-                        const d = await res.json();
-                        
-                        // Prepara struttura richieste
-                        if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
-
-                        // Check se richiesta già esiste
-                        const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
-                        if (exists) {
-                            alert('Hai già inviato una richiesta per questa competizione.');
-                            btn.innerHTML = '<i class="fas fa-check"></i> Richiesta Inviata';
-                            return;
-                        }
-
-                        // Crea oggetto richiesta
-                        const nuovaRichiesta = {
-                            id: 'req_' + Date.now(),
-                            competizioneId: compId,
-                            competizioneNome: currentComp.nome,
-                            clubId: userClub.id,
-                            clubNome: userClub.nome,
-                            userId: user.id,
-                            userNome: user.nomeEA,
-                            stato: 'in_attesa',
-                            data: new Date().toISOString()
-                        };
-
-                        d.record.richieste_iscrizione.push(nuovaRichiesta);
-
-                        // Salva
-                        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
-                            method: 'PUT', 
-                            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
-                            body: JSON.stringify(d.record) 
-                        });
-
-                        alert('Richiesta inviata con successo! Attendi l\'approvazione di un Admin.');
-                        btn.innerHTML = '<i class="fas fa-check"></i> Richiesta Inviata';
-
-                    } catch(e) {
-                        console.error(e);
-                        alert("Errore invio richiesta.");
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
-                    }
-                };
+                return;
             }
+
+            // 2. CASO: Già Iscritto (Approvato)
+            if (registrati.includes(userClub.id)) {
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
+                btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
+                return;
+            }
+
+            // 3. CASO: Richiesta in attesa
+            const pendingRequest = richieste.find(r => r.clubId === userClub.id && r.competizioneId === compId && r.stato === 'in_attesa');
+            if (pendingRequest) {
+                btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
+                btn.disabled = true;
+                btn.classList.add('btn-pending'); // Classe CSS per sfumo grigio
+                btn.onclick = null;
+                return;
+            }
+
+            // 4. CASO: Invia Richiesta (Default)
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
+            
+            btn.onclick = async () => {
+                if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
+                if (maxSquadre !== '∞' && registrati.length >= maxSquadre) { alert('Posti esauriti.'); return; }
+
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
+
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                    const d = await res.json();
+                    
+                    if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
+
+                    // Controllo doppio sicurezza
+                    const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
+                    if (exists) {
+                        btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
+                        btn.classList.add('btn-pending');
+                        return;
+                    }
+
+                    const nuovaRichiesta = {
+                        id: 'req_' + Date.now(),
+                        competizioneId: compId,
+                        competizioneNome: currentComp.nome,
+                        clubId: userClub.id,
+                        clubNome: userClub.nome,
+                        userId: user.id,
+                        userNome: user.nomeEA,
+                        stato: 'in_attesa',
+                        data: new Date().toISOString()
+                    };
+
+                    d.record.richieste_iscrizione.push(nuovaRichiesta);
+
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
+                        body: JSON.stringify(d.record) 
+                    });
+
+                    // SUCCESSO: Aggiorna UI senza ricaricare
+                    alert('Richiesta inviata con successo! Attendi risposta dagli admin.');
+                    btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
+                    btn.classList.add('btn-pending');
+                    btn.disabled = true;
+
+                } catch(e) {
+                    console.error(e);
+                    alert("Errore invio richiesta.");
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> ENTRA NELLA LEGA';
+                    btn.disabled = false;
+                }
+            };
         }
 
         loadData();
