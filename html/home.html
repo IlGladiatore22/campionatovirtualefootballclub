@@ -6,7 +6,6 @@
     <title>FC27 - Home</title>
     
     <!-- IMMAGINE PERSONALIZZATA (FAVICON) -->
-    <!-- Metti la tua immagine chiamata 'favicon.png' dentro la cartella 'estetica' -->
     <link rel="icon" type="image/png" href="../estetica/logosito.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -17,36 +16,28 @@
         html, body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
         .main-content { padding-bottom: 60px; }
 
+        /* Stili per il Logo Immagine */
+        .logo {
+            overflow: hidden;
+            /* Puoi regolare width/height qui se necessario, di solito sono definiti in style.css */
+        }
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* O cover, a seconda di come vuoi che appaia il logo */
+            border-radius: 50%; /* Se vuoi che l'immagine sia tonda come il contenitore */
+        }
+
         /* Stili per la sezione Social */
-        .social-section {
-            margin-top: 40px;
-            text-align: center;
-        }
-        .social-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 15px;
-        }
+        .social-section { margin-top: 40px; text-align: center; }
+        .social-buttons { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 15px; }
         .btn-social {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 12px 25px;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 12px 25px; border-radius: 8px; color: white; text-decoration: none;
+            font-weight: 600; font-size: 0.95rem; transition: transform 0.2s, box-shadow 0.2s;
             min-width: 160px;
         }
-        .btn-social:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        .btn-social:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .btn-social i { font-size: 1.2rem; }
 
         /* Colori Brand */
@@ -60,10 +51,13 @@
     <!-- HEADER -->
     <header class="header">
         <div class="header-left">
-            <div class="logo-container">
-                <div class="logo">FC</div>
-                <span class="site-name">FC27</span>
-            </div>
+            <a href="home.html" class="logo-container" style="text-decoration: none;">
+                <!-- LOGO IMMAGINE -->
+                <div class="logo">
+                    <img src="../estetica/logosito.png" alt="FC27 Logo">
+                </div>
+                <!-- RIMOSSA SCRITTA FC27 -->
+            </a>
             <span class="user-greeting">Benvenuto, <span id="username-display">Utente</span></span>
         </div>
         <div class="header-right">
@@ -84,8 +78,11 @@
     <aside id="sidebar" class="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo">FC</div>
-                <span class="site-name">FC27</span>
+                <!-- LOGO IMMAGINE SIDEBAR -->
+                <div class="logo">
+                    <img src="../estetica/logosito.png" alt="FC27 Logo">
+                </div>
+                <!-- RIMOSSA SCRITTA FC27 -->
             </div>
             <button id="close-btn" class="sidebar-close">
                 <i class="fas fa-times"></i>
@@ -149,7 +146,7 @@
                 </div>
             </section>
 
-            <!-- Stats -->
+            <!-- Stats (COLLEGATO AL DATABASE) -->
             <section class="stats-grid mt-4 animate-slideUp stagger-1">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-players">0</div>
@@ -202,7 +199,6 @@
                     <a href="https://discord.gg/CmqMcY64ke" target="_blank" class="btn-social btn-discord">
                         <i class="fab fa-discord"></i> Discord
                     </a>
-                    </a>
                 </div>
             </section>
 
@@ -224,7 +220,12 @@
         overlay.addEventListener('click', closeSidebar);
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
-        // AUTENTICAZIONE E DATI
+        // === CONFIGURAZIONE DATABASE ===
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        // AUTENTICAZIONE
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
 
@@ -254,11 +255,8 @@
             
             document.getElementById('profile-tags').innerHTML = tags;
 
-            const users = JSON.parse(localStorage.getItem('fc27_users') || '[]');
-            const clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
-            document.getElementById('stat-players').textContent = users.length;
-            document.getElementById('stat-clubs').textContent = clubs.length;
-
+            // Notifiche (rimosso da localStorage perché ora usiamo il DB per gli utenti, ma teniamo se le gestite altrove)
+            // Se le notifiche sono nel DB, andrebbero caricate async qui. Per ora lascio com'era.
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
             const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
             if (unread > 0) {
@@ -266,6 +264,36 @@
                 document.getElementById('notif-badge').textContent = unread;
             }
         }
+
+        // === FUNZIONE CARICAMENTO STATISTICHE DAL DATABASE ===
+        async function loadStats() {
+            try {
+                // Carichiamo Utenti e Club in parallelo
+                const [usersRes, clubsRes] = await Promise.all([
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY } }),
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY } })
+                ]);
+
+                const usersData = await usersRes.json();
+                const clubsData = await clubsRes.json();
+
+                // Calcolo quantità
+                const usersCount = usersData.record.users ? usersData.record.users.length : 0;
+                const clubsCount = clubsData.record.club ? clubsData.record.club.length : 0;
+
+                // Aggiornamento UI
+                document.getElementById('stat-players').textContent = usersCount;
+                document.getElementById('stat-clubs').textContent = clubsCount;
+
+            } catch (error) {
+                console.error("Errore caricamento statistiche:", error);
+                document.getElementById('stat-players').textContent = "N/D";
+                document.getElementById('stat-clubs').textContent = "N/D";
+            }
+        }
+
+        // Eseguiamo il caricamento delle stats
+        loadStats();
 
         // Logout
         document.getElementById('logout-btn').addEventListener('click', () => {
