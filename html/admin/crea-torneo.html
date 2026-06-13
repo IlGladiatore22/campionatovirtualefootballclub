@@ -206,11 +206,12 @@
         </main>
     </div>
 
-    <script>
-        // === CONFIGURAZIONE ===
-        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797';
-        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
-
+    <!-- ... tutto il codice precedente rimane uguale fino a <script> ... -->
+<script>
+    // === CONFIGURAZIONE ===
+    const BIN_ID_TORNEI = '6a2dc84ada38895dfebbe465'; // NUOVO ID
+    const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+    
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
 
