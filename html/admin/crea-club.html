@@ -89,8 +89,9 @@
 
     <script>
         // === CONFIGURAZIONE JSONBIN ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Database Utenti
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Database Club
+        // Controlla che questi ID siano corretti! Vai su JSONBin.io e verifica che siano tuoi.
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
         // === CONTROLLO SESSIONE ADMIN ===
@@ -99,16 +100,20 @@
             window.location.href = 'accesso-admin.html';
         }
 
-        // === CARICA UTENTI DAL CLOUD (FIX) ===
+        // === CARICA UTENTI DAL CLOUD ===
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // FIX: Usiamo X-Access-Key perché la tua chiave è una Access Key
+                // FIX: Torniamo a X-Master-Key perché la tua chiave ($2a$10...) è una Master Key.
+                // Se ricevi 403, significa che il BIN_ID_USERS è sbagliato o non è tuo.
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
-                    headers: { 'X-Access-Key': API_KEY },
+                    headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
+                if (res.status === 403) {
+                    throw new Error("Errore 403: La chiave non ha accesso a questo Bin (ID Utenti). Controlla l'ID.");
+                }
                 if (!res.ok) {
                     throw new Error(`Errore Server: ${res.status}`);
                 }
@@ -124,6 +129,7 @@
             } catch (e) {
                 console.error("Errore caricamento utenti:", e);
                 select.innerHTML = '<option value="">Errore connessione DB</option>';
+                alert(e.message);
             }
         }
         loadUsersForSelect();
@@ -161,12 +167,13 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Prendi lista club attuali (FIX)
+                // 1. Prendi lista club attuali
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
-                    headers: { 'X-Access-Key': API_KEY },
+                    headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
+                if (getRes.status === 403) throw new Error("Errore 403: La chiave non ha accesso al Bin Club.");
                 if (!getRes.ok) throw new Error("Impossibile leggere il database.");
                 
                 const getData = await getRes.json();
@@ -191,13 +198,13 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Salva nel Bin Club (FIX: X-Access-Key)
+                // 3. Salva nel Bin Club
                 clubs.push(newClub);
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Access-Key': API_KEY
+                        'X-Master-Key': API_KEY
                     },
                     body: JSON.stringify({ "clubs": clubs })
                 });
