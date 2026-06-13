@@ -16,32 +16,37 @@
         .logo { overflow: hidden; }
         .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 
-        /* --- NUOVO LAYOUT HERO CARD --- */
+        /* --- LAYOUT HERO CARD --- */
         .hero-card {
             display: flex;
             align-items: flex-start;
-            gap: 20px;
-            text-align: left; /* Tutto allineato a sinistra */
+            gap: 25px;
+            text-align: left;
         }
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .hero-card { flex-direction: column; align-items: center; text-align: center; }
-            .hero-card .text-content { align-items: center; }
+            .text-content { align-items: center; }
+            .top-row { flex-direction: column; gap: 10px; }
+            .organizer-box { margin: 0 auto; }
         }
 
+        /* LOGO FIX: Non più tondo */
         .site-logo-wrapper {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--bg-tertiary);
-            padding: 5px;
+            width: 70px;
+            height: auto;
+            max-height: 70px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            /* Rimossa forma tonda */
+            border-radius: 0; 
+            background: transparent;
         }
         .site-logo-wrapper img {
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-height: 70px;
             object-fit: contain;
         }
 
@@ -49,48 +54,47 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
 
-        .comp-header-row {
+        /* Riga superiore: Titolo a sinistra, Organizzatore a destra */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .title-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 5px;
         }
-        .comp-header-row i { color: var(--accent-gold); font-size: 1.2rem; }
+        .title-group i { color: var(--accent-gold); font-size: 1.2rem; margin-top: -2px; }
         .comp-title-main { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
-        .comp-date-small { font-size: 0.85rem; color: var(--text-muted); }
-        .comp-desc-small { color: var(--text-secondary); line-height: 1.5; }
+
+        /* Box Organizzatore a destra */
+        .organizer-box {
+            text-align: right;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .organizer-label { font-size: 0.7rem; color: var(--text-muted); display: block; text-transform: uppercase; }
+        .organizer-name { font-weight: 700; color: var(--accent-gold); font-size: 0.9rem; }
+
+        .comp-date-small { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+        .comp-desc-small { color: var(--text-secondary); line-height: 1.5; margin-top: 5px; }
+        #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; align-self: flex-start; }
 
         /* --- STATS GRID MODIFICATO --- */
         .stats-grid-mod { grid-template-columns: repeat(3, 1fr); }
         
-        .stat-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* Header con Icona + Titolo */
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
+        .stat-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .stat-header { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
         .stat-header i { font-size: 1rem; }
-
-        /* Valore Grande sotto */
-        .stat-value-big {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--accent-gold);
-            font-family: 'Orbitron', sans-serif;
-        }
+        .stat-value-big { font-size: 1.8rem; font-weight: 800; color: var(--accent-gold); font-family: 'Orbitron', sans-serif; }
 
         /* Premi */
         .prize-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-size: 1rem; }
@@ -106,9 +110,6 @@
         .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
-
-        /* Admin Controls */
-        #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -141,7 +142,6 @@
                 </a>
                 <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
             </div>
-            
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Menu</div>
@@ -180,31 +180,37 @@
                     
                     <!-- NUOVO HERO CARD -->
                     <div class="card animate-slideUp hero-card">
-                        <!-- Site Logo -->
+                        <!-- Site Logo (Sinistra) -->
                         <div class="site-logo-wrapper">
                             <img src="../../estetica/logosito.png" alt="Logo">
                         </div>
                         
-                        <!-- Text Content -->
+                        <!-- Contentuto Centrale -->
                         <div class="text-content">
-                            <!-- Top: Icon + Name -->
-                            <div class="comp-header-row">
-                                <i class="fas fa-trophy"></i>
-                                <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
+                            <!-- Riga Superiore: Titolo a Sinistra, Organizzatore a Destra -->
+                            <div class="top-row">
+                                <div class="title-group">
+                                    <i class="fas fa-trophy"></i>
+                                    <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
+                                </div>
+                                
+                                <!-- Box Organizzatore (Destra) -->
+                                <div class="organizer-box">
+                                    <span class="organizer-label">Organizzatore</span>
+                                    <span class="organizer-name" id="organizer-name">FC27</span>
+                                </div>
                             </div>
                             
-                            <!-- Date -->
+                            <!-- Data Creazione -->
                             <div class="comp-date-small">
                                 <i class="far fa-calendar-alt"></i> Creata il: <span id="comp-created">-</span>
                             </div>
                             
-                            <!-- Description -->
-                            <div id="comp-desc-hero" class="comp-desc-small mt-2">
-                                Descrizione breve...
-                            </div>
+                            <!-- Descrizione -->
+                            <div id="comp-desc-hero" class="comp-desc-small"></div>
                             
-                            <!-- Status Badge -->
-                            <div class="mt-2">
+                            <!-- Stato -->
+                            <div style="margin-top: 10px;">
                                 <span id="comp-status" class="tag">Stato</span>
                             </div>
                         </div>
@@ -219,30 +225,18 @@
                         </div>
                     </div>
 
-                    <!-- NUOVO STATS GRID -->
+                    <!-- STATS GRID -->
                     <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
-                        <!-- Costo -->
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <i class="fas fa-euro-sign"></i>
-                                <span>Costo</span>
-                            </div>
+                            <div class="stat-header"><i class="fas fa-euro-sign"></i><span>Costo</span></div>
                             <div id="comp-cost" class="stat-value-big">0 €</div>
                         </div>
-                        <!-- Squadre -->
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <i class="fas fa-users"></i>
-                                <span>Squadre</span>
-                            </div>
+                            <div class="stat-header"><i class="fas fa-users"></i><span>Squadre</span></div>
                             <div id="comp-teams" class="stat-value-big">0</div>
                         </div>
-                        <!-- Data Inizio -->
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <i class="fas fa-calendar"></i>
-                                <span>Inizio</span>
-                            </div>
+                            <div class="stat-header"><i class="fas fa-calendar"></i><span>Inizio</span></div>
                             <div id="comp-date" class="stat-value-big" style="font-size: 1.2rem;">-</div>
                         </div>
                     </div>
@@ -255,7 +249,7 @@
 
                     <!-- Dettagli Extra -->
                     <div class="card mt-4 animate-slideUp stagger-3">
-                        <h4 class="mb-3"><i class="fas fa-info-circle text-gold"></i> Dettagli Aggiuntivi</h4>
+                        <h4 class="mb-3"><i class="fas fa-info-circle text-gold"></i> Dettagli</h4>
                         <div id="comp-details"><p class="text-muted">-</p></div>
                     </div>
 
@@ -378,6 +372,9 @@
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             
+            // Organizzatore (Default FC27, se vuoi cambiarlo puoi aggiungere un campo nel DB)
+            document.getElementById('organizer-name').textContent = "FC27";
+
             // Date
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
             document.getElementById('comp-created').textContent = created;
