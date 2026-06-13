@@ -38,7 +38,7 @@
             gap: 20px;
             margin-bottom: 40px;
         }
-        /* Desktop: 4 colonne per riempire bene la riga */
+        /* Desktop: 4 colonne */
         @media (min-width: 1024px) { .stats-grid-admin { grid-template-columns: repeat(4, 1fr); } }
 
         /* Griglia Azioni Rapide */
@@ -210,19 +210,10 @@
                         <div><div class="action-title">Crea Torneo</div><div class="action-subtitle">Nuovo torneo</div></div>
                     </a>
 
-                    <a href="gestisci-tornei.html" class="action-card animate-slideUp">
-                        <div class="action-icon" style="background: rgba(231, 76, 60, 0.1);"><i class="fas fa-table" style="color: var(--accent-red);"></i></div>
-                        <div><div class="action-title">Gestione Tornei</div><div class="action-subtitle">Gironi e Bracket</div></div>
-                    </a>
-
-                    <a href="gestisci-competizione.html" class="action-card animate-slideUp">
-                        <div class="action-icon" style="background: rgba(26, 188, 156, 0.1);"><i class="fas fa-cogs" style="color: #1abc9c;"></i></div>
-                        <div><div class="action-title">Gestione Leghe</div><div class="action-subtitle">Calendari</div></div>
-                    </a>
-
-                    <a href="lista-club.html" class="action-card animate-slideUp">
-                        <div class="action-icon" style="background: rgba(52, 152, 219, 0.1);"><i class="fas fa-tasks" style="color: var(--accent-blue);"></i></div>
-                        <div><div class="action-title">Gestione Club</div><div class="action-subtitle">Modifica o Elimina</div></div>
+                    <!-- PULSANTE GESTIONE UNIFICATA -->
+                    <a href="gestione.html" class="action-card animate-slideUp">
+                        <div class="action-icon" style="background: rgba(231, 76, 60, 0.1);"><i class="fas fa-cogs" style="color: var(--accent-red);"></i></div>
+                        <div><div class="action-title">Gestione Dati</div><div class="action-subtitle">Modifica o Elimina</div></div>
                     </a>
 
                     <a href="../club/club.html" class="action-card animate-slideUp">
