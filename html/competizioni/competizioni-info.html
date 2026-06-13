@@ -27,27 +27,26 @@
             .hero-card { flex-direction: column; align-items: center; text-align: center; }
             .text-content { align-items: center; }
             .top-row { flex-direction: column; gap: 10px; }
-            .organizer-box { margin: 0 auto; }
+            .organizer-inline { justify-content: center; }
         }
 
-        /* LOGO FIX: Non più tondo */
+        /* LOGO FIX: Stile Cerchio */
         .site-logo-wrapper {
-            width: 70px;
-            height: auto;
-            max-height: 70px;
+            width: 80px; /* Dimensione fissa */
+            height: 80px; /* Dimensione fissa uguale a width per il cerchio */
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Rimossa forma tonda */
-            border-radius: 0; 
-            background: transparent;
+            background: rgba(255, 255, 255, 0.1); /* Opzionale: sfondo leggero */
+            border-radius: 50%; /* Cerchio perfetto */
+            overflow: hidden; /* Taglia l'immagine fuori dai bordi */
+            border: 2px solid var(--accent-gold); /* Bordo opzionale */
         }
         .site-logo-wrapper img {
             width: 100%;
-            height: auto;
-            max-height: 70px;
-            object-fit: contain;
+            height: 100%;
+            object-fit: cover; /* Copre l'area circolare */
         }
 
         .text-content {
@@ -57,12 +56,14 @@
             gap: 8px;
         }
 
-        /* Riga superiore: Titolo a sinistra, Organizzatore a destra */
+        /* Riga superiore */
         .top-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .title-group {
@@ -73,16 +74,20 @@
         .title-group i { color: var(--accent-gold); font-size: 1.2rem; margin-top: -2px; }
         .comp-title-main { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
 
-        /* Box Organizzatore a destra */
-        .organizer-box {
-            text-align: right;
-            background: rgba(255,255,255,0.05);
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+        /* Organizzatore Inline (No Box) */
+        .organizer-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
-        .organizer-label { font-size: 0.7rem; color: var(--text-muted); display: block; text-transform: uppercase; }
-        .organizer-name { font-weight: 700; color: var(--accent-gold); font-size: 0.9rem; }
+        .organizer-inline i {
+            color: var(--accent-gold);
+        }
+        .organizer-inline strong {
+            color: var(--text-primary);
+        }
 
         .comp-date-small { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
         .comp-desc-small { color: var(--text-secondary); line-height: 1.5; margin-top: 5px; }
@@ -100,6 +105,26 @@
         .prize-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-size: 1rem; }
         .prize-item:last-child { border-bottom: none; }
         .prize-item i { font-size: 1.2rem; width: 25px; text-align: center; }
+
+        /* Regolamento Accordion */
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+        .accordion-header h4 { margin: 0; display: flex; align-items: center; gap: 10px; }
+        .accordion-arrow { transition: transform 0.3s ease; }
+        .accordion-arrow.open { transform: rotate(180deg); }
+        .accordion-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
 
         /* Lista Squadre */
         .teams-container-list { display: flex; flex-direction: column; width: 100%; }
@@ -180,7 +205,7 @@
                     
                     <!-- NUOVO HERO CARD -->
                     <div class="card animate-slideUp hero-card">
-                        <!-- Site Logo (Sinistra) -->
+                        <!-- Site Logo (Sinistra) - Ora Circolare -->
                         <div class="site-logo-wrapper">
                             <img src="../../estetica/logosito.png" alt="Logo">
                         </div>
@@ -194,10 +219,10 @@
                                     <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
                                 </div>
                                 
-                                <!-- Box Organizzatore (Destra) -->
-                                <div class="organizer-box">
-                                    <span class="organizer-label">Organizzatore</span>
-                                    <span class="organizer-name" id="organizer-name">FC27</span>
+                                <!-- Organizzatore Inline (No Box) -->
+                                <div class="organizer-inline">
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>Organizzatore: <strong id="organizer-name">FC27</strong></span>
                                 </div>
                             </div>
                             
@@ -245,6 +270,17 @@
                     <div class="card mt-4 animate-slideUp stagger-2">
                         <h4 class="mb-3"><i class="fas fa-gift text-gold"></i> Premi</h4>
                         <div id="comp-prizes"><p class="text-muted">-</p></div>
+                    </div>
+
+                    <!-- Regolamento (Nuovo Riquadro Espandibile) -->
+                    <div class="card mt-4 animate-slideUp stagger-3">
+                        <div class="accordion-header" onclick="toggleRegolamento()">
+                            <h4><i class="fas fa-book text-gold"></i> Regolamento</h4>
+                            <i class="fas fa-chevron-down accordion-arrow" id="reg-arrow"></i>
+                        </div>
+                        <div class="accordion-content" id="reg-content">
+                            <p id="comp-rules">Nessun regolamento caricato.</p>
+                        </div>
                     </div>
 
                     <!-- Dettagli Extra -->
@@ -299,6 +335,19 @@
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
+
+        // Funzione per accordion regolamento
+        function toggleRegolamento() {
+            const content = document.getElementById('reg-content');
+            const arrow = document.getElementById('reg-arrow');
+            if (content.style.display === 'none' || content.style.display === '') {
+                content.style.display = 'block';
+                arrow.classList.add('open');
+            } else {
+                content.style.display = 'none';
+                arrow.classList.remove('open');
+            }
+        }
 
         // =============================================
         // AUTH
@@ -372,8 +421,8 @@
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             
-            // Organizzatore (Default FC27, se vuoi cambiarlo puoi aggiungere un campo nel DB)
-            document.getElementById('organizer-name').textContent = "FC27";
+            // Organizzatore
+            document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
 
             // Date
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
@@ -393,7 +442,21 @@
             const maxSq = currentComp.max_squadre || '∞';
             document.getElementById('comp-teams').textContent = registrati.length + '/' + maxSq;
             
-            document.getElementById('comp-date').textContent = currentComp.data_inizio || 'N/D';
+            // Data Inizio Formattata (GG/MM/AAAA)
+            if (currentComp.data_inizio) {
+                const dataObj = new Date(currentComp.data_inizio);
+                if (!isNaN(dataObj)) {
+                    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                    document.getElementById('comp-date').textContent = dataObj.toLocaleDateString('it-IT', options);
+                } else {
+                    document.getElementById('comp-date').textContent = currentComp.data_inizio;
+                }
+            } else {
+                document.getElementById('comp-date').textContent = 'N/D';
+            }
+
+            // Regolamento
+            document.getElementById('comp-rules').textContent = currentComp.regolamento || 'Nessun regolamento specificato.';
 
             // Details List
             let detailsHTML = '<ul style="list-style: none; padding: 0; line-height: 2;">';
