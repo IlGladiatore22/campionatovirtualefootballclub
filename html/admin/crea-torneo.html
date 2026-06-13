@@ -39,11 +39,11 @@
                             <h3><i class="fas fa-info-circle"></i> Informazioni</h3>
                             <div class="input-group">
                                 <label class="input-label">Nome Torneo *</label>
-                                <input type="text" id="name" class="input-field" placeholder="Es. Torneo del Venerdì" required>
+                                <input type="text" id="nome" class="input-field" placeholder="Es. Torneo del Venerdì" required>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Descrizione</label>
-                                <textarea id="description" class="input-field" rows="2"></textarea>
+                                <textarea id="descrizione" class="input-field" rows="2"></textarea>
                             </div>
                         </div>
 
@@ -65,16 +65,16 @@
                                     <div style="font-size: 0.8rem; margin-top: 5px;">Solo Eliminazione</div>
                                 </div>
                             </div>
-                            <input type="hidden" id="format" value="groups_knockout">
+                            <input type="hidden" id="formato" value="groups_knockout">
 
                             <div class="grid-2 mt-3">
                                 <div class="input-group">
                                     <label class="input-label">Numero Gironi</label>
-                                    <input type="number" id="numGroups" class="input-field" value="4" min="1" max="16">
+                                    <input type="number" id="num_gironi" class="input-field" value="4" min="1" max="16">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">Qualificati per Girone</label>
-                                    <input type="number" id="qualifyPerGroup" class="input-field" value="2" min="1" max="4">
+                                    <input type="number" id="qualificati_per_girone" class="input-field" value="2" min="1" max="4">
                                 </div>
                             </div>
                         </div>
@@ -84,20 +84,20 @@
                             <div class="grid-2">
                                 <div class="input-group">
                                     <label class="input-label">Max Partecipanti</label>
-                                    <input type="number" id="maxTeams" class="input-field" placeholder="Es. 16">
+                                    <input type="number" id="max_squadre" class="input-field" placeholder="Es. 16">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">Costo (Crediti)</label>
-                                    <input type="number" id="cost" class="input-field" value="0" min="0">
+                                    <input type="number" id="costo" class="input-field" value="0" min="0">
                                 </div>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Data Inizio</label>
-                                <input type="text" id="startDate" class="input-field" placeholder="Es. 25 Dicembre">
+                                <input type="text" id="data_inizio" class="input-field" placeholder="Es. 25 Dicembre">
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Premi (uno per riga)</label>
-                                <textarea id="prizes" class="input-field" rows="2"></textarea>
+                                <textarea id="premi" class="input-field" rows="2"></textarea>
                             </div>
                         </div>
 
@@ -109,42 +109,84 @@
     </div>
 
     <script>
+        // === CONFIGURAZIONE ===
+        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
 
         window.selectFormat = function(el) {
             document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
             el.classList.add('active');
-            document.getElementById('format').value = el.dataset.format;
+            document.getElementById('formato').value = el.dataset.format;
         }
 
-        document.getElementById('form').addEventListener('submit', function(e) {
+        document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const tournaments = JSON.parse(localStorage.getItem('fc27_tournaments') || '[]');
             
-            tournaments.push({
-                id: 'tourn_' + Date.now(),
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                status: 'aperta',
-                format: document.getElementById('format').value,
-                numGroups: parseInt(document.getElementById('numGroups').value) || 4,
-                qualifyPerGroup: parseInt(document.getElementById('qualifyPerGroup').value) || 2,
-                maxTeams: parseInt(document.getElementById('maxTeams').value) || 16,
-                cost: parseInt(document.getElementById('cost').value) || 0,
-                startDate: document.getElementById('startDate').value,
-                prizes: document.getElementById('prizes').value,
-                registeredClubs: [],
-                // Dati Gironi
-                groups: [], 
-                // Dati Eliminazione
-                knockoutRounds: [], // Array di array di match
-                createdAt: new Date().toISOString()
-            });
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creazione...';
 
-            localStorage.setItem('fc27_tournaments', JSON.stringify(tournaments));
-            alert('Torneo creato!');
-            window.location.href = 'dashboard.html';
+            try {
+                // 1. Leggi tornei esistenti
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY },
+                    cache: 'no-store'
+                });
+
+                if (res.status === 404) throw new Error("Bin Tornei non trovato. Inizializzalo su JSONBin.");
+                if (!res.ok) throw new Error("Errore connessione database.");
+
+                const data = await res.json();
+                let listaTornei = data.record.tornei || [];
+
+                // 2. Crea oggetto in italiano
+                const nuovoTorneo = {
+                    id: 'tourn_' + Date.now(),
+                    nome: document.getElementById('nome').value,
+                    descrizione: document.getElementById('descrizione').value,
+                    stato: 'aperta',
+                    formato: document.getElementById('formato').value,
+                    num_gironi: parseInt(document.getElementById('num_gironi').value) || 4,
+                    qualificati_per_girone: parseInt(document.getElementById('qualificati_per_girone').value) || 2,
+                    max_squadre: parseInt(document.getElementById('max_squadre').value) || 16,
+                    costo: parseInt(document.getElementById('costo').value) || 0,
+                    data_inizio: document.getElementById('data_inizio').value,
+                    premi: document.getElementById('premi').value,
+                    club_registrati: [],
+                    // Dati Gironi
+                    gironi: [], 
+                    // Dati Eliminazione
+                    turni_eliminatoria: [],
+                    creato_il: new Date().toISOString()
+                };
+
+                // 3. Pusha e salva
+                listaTornei.push(nuovoTorneo);
+
+                const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ "tornei": listaTornei })
+                });
+
+                if (saveRes.status === 403) throw new Error("Errore 403: Permesso negato.");
+                if (!saveRes.ok) throw new Error("Errore salvataggio.");
+
+                alert('Torneo creato con successo!');
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Crea Torneo';
+            }
         });
 
         document.getElementById('logout-btn').addEventListener('click', () => {
