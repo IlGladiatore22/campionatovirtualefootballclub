@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC27 - Richieste Competizioni</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../estetica/style.css">
+    <link rel="stylesheet" href="../../estetica/animations.css">
+    <link rel="stylesheet" href="../../estetica/components.css">
+    <style>
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        .logo { overflow: hidden; }
+        .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        
+        .request-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .request-info { flex: 1; min-width: 250px; }
+        .request-info h4 { margin: 0 0 5px 0; color: var(--text-primary); }
+        .request-info p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        .request-info span { display: block; font-size: 0.8rem; margin-top: 5px; }
+        
+        .request-actions { display: flex; gap: 10px; }
+        .btn-approve { background: var(--accent-green); color: white; }
+        .btn-reject { background: var(--accent-red); color: white; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <a href="../home.html" class="logo-container" style="text-decoration: none;">
+                    <div class="logo"><img src="../../estetica/logosito.png" alt="Logo"></div>
+                </a>
+                <span class="user-greeting">Admin Dashboard</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </header>
+
+        <div class="sidebar-overlay" id="overlay"></div>
+
+        <!-- SIDEBAR (uguale alle altre pagine admin) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="../home.html" class="logo-container" style="text-decoration: none;">
+                    <div class="logo"><img src="../../estetica/logosito.png" alt="Logo"></div>
+                </a>
+                <button class="sidebar-close" id="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="richieste-competizioni.html" class="nav-link active"><i class="fas fa-inbox"></i><span>Richieste Competizioni</span></a>
+                    <a href="crea-competizione.html" class="nav-link"><i class="fas fa-plus"></i><span>Crea Competizione</span></a>
+                </div>
+                <div class="nav-section">
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container" style="padding-top: 30px;">
+                <h2><i class="fas fa-inbox text-gold"></i> Richieste di Iscrizione</h2>
+                <p class="text-muted mb-4">Gestisci le richieste dei club per entrare nelle competizioni.</p>
+
+                <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
+                
+                <div id="requests-list"></div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon"><i class="fas fa-check-circle" style="color: var(--accent-green);"></i></div>
+                    <h3 class="empty-state-title">Tutto pulito!</h3>
+                    <p class="empty-state-text">Non ci sono richieste in sospeso.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const BIN_ID_COMP = '6a2d7dcbf5f4af5e29ec21b0';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        // Sidebar Logic
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.getElementById('overlay');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+
+        // Auth Check
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user || !user.isAdmin) {
+            window.location.href = '../home.html';
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = '../home-non-loggato.html';
+        });
+
+        // Load Requests
+        async function loadRequests() {
+            const listContainer = document.getElementById('requests-list');
+            const emptyState = document.getElementById('empty-state');
+            const loading = document.getElementById('loading-state');
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }, cache: 'no-store'
+                });
+                const data = await res.json();
+                
+                // Trova richieste in attesa
+                const richieste = (data.record.richieste_iscrizione || []).filter(r => r.stato === 'in_attesa');
+
+                loading.style.display = 'none';
+
+                if (richieste.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                listContainer.innerHTML = '';
+
+                richieste.forEach(req => {
+                    const card = document.createElement('div');
+                    card.className = 'request-card animate-slideUp';
+                    card.innerHTML = `
+                        <div class="request-info">
+                            <h4><i class="fas fa-user text-gold"></i> ${req.userNome}</h4>
+                            <p><strong>Club:</strong> ${req.clubNome}</p>
+                            <p><strong>Competizione:</strong> ${req.competizioneNome}</p>
+                            <span class="text-muted">Richiesta il: ${new Date(req.data).toLocaleString('it-IT')}</span>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn-approve" onclick="approveRequest('${req.id}', '${req.competizioneId}', '${req.clubId}')">
+                                <i class="fas fa-check"></i> Approva
+                            </button>
+                            <button class="btn btn-reject" onclick="rejectRequest('${req.id}')">
+                                <i class="fas fa-times"></i> Rifiuta
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                });
+
+            } catch (e) {
+                console.error(e);
+                loading.innerHTML = '<p style="color:red;">Errore caricamento.</p>';
+            }
+        }
+
+        // Approve
+        async function approveRequest(reqId, compId, clubId) {
+            if(!confirm('Approvare questa richiesta? Il club verrà aggiunto alla competizione.')) return;
+
+            try {
+                // 1. Fetch Data
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const d = await res.json();
+                
+                // 2. Aggiungi Club alla Competizione
+                const compIdx = d.record.competizioni.findIndex(c => c.id === compId);
+                if (compIdx !== -1) {
+                    if (!d.record.competizioni[compIdx].club_registrati) d.record.competizioni[compIdx].club_registrati = [];
+                    
+                    // Evita duplicati
+                    if (!d.record.competizioni[compIdx].club_registrati.includes(clubId)) {
+                        d.record.competizioni[compIdx].club_registrati.push(clubId);
+                    }
+                    
+                    // Init classifica
+                    if (!d.record.competizioni[compIdx].classifica) d.record.competizioni[compIdx].classifica = {};
+                    d.record.competizioni[compIdx].classifica[clubId] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
+                }
+
+                // 3. Rimuovi Richiesta
+                d.record.richieste_iscrizione = d.record.richieste_iscrizione.filter(r => r.id !== reqId);
+
+                // 4. Salva
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(d.record)
+                });
+
+                alert('Club approvato con successo!');
+                location.reload();
+
+            } catch(e) {
+                console.error(e);
+                alert('Errore durante l\'approvazione.');
+            }
+        }
+
+        // Reject
+        async function rejectRequest(reqId) {
+            if(!confirm('Sei sicuro di rifiutare questa richiesta?')) return;
+
+             try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const d = await res.json();
+                
+                d.record.richieste_iscrizione = d.record.richieste_iscrizione.filter(r => r.id !== reqId);
+
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(d.record)
+                });
+
+                alert('Richiesta rifiutata.');
+                location.reload();
+
+            } catch(e) {
+                console.error(e);
+                alert('Errore durante il rifiuto.');
+            }
+        }
+
+        loadRequests();
+    </script>
+</body>
+</html>
