@@ -82,7 +82,7 @@
                         <div class="form-section">
                             <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
                             
-                            <!-- CAMPO IMMAGINE AGGIUNTO QUI -->
+                            <!-- CAMPO IMMAGINE -->
                             <div class="input-group">
                                 <label class="input-label">Foto Competizione</label>
                                 <div class="image-upload-area" id="uploadArea">
@@ -93,19 +93,18 @@
                                     <img id="imagePreview" src="#" alt="Preview">
                                 </div>
                             </div>
-                            <!-- FINE CAMPO IMMAGINE -->
 
                             <div class="input-group">
                                 <label class="input-label">Nome Competizione *</label>
-                                <input type="text" id="name" class="input-field" placeholder="Es. Champions League FC27" required>
+                                <input type="text" id="nome" class="input-field" placeholder="Es. Champions League FC27" required>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Descrizione</label>
-                                <textarea id="description" class="input-field" rows="3" placeholder="Descrizione breve..."></textarea>
+                                <textarea id="descrizione" class="input-field" rows="3" placeholder="Descrizione breve..."></textarea>
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Stato</label>
-                                <select id="status" class="input-field">
+                                <select id="stato" class="input-field">
                                     <option value="aperta">Iscrizioni Aperte</option>
                                     <option value="chiusa">Iscrizioni Chiuse</option>
                                     <option value="in_corso">In Corso</option>
@@ -118,21 +117,21 @@
                             <div class="grid-2">
                                 <div class="input-group">
                                     <label class="input-label">Max Squadre</label>
-                                    <input type="number" id="maxTeams" class="input-field" placeholder="Es. 16" min="2">
+                                    <input type="number" id="max_squadre" class="input-field" placeholder="Es. 16" min="2">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">Costo Iscrizione (Crediti)</label>
-                                    <input type="number" id="cost" class="input-field" placeholder="0" min="0">
+                                    <input type="number" id="costo" class="input-field" placeholder="0" min="0">
                                 </div>
                             </div>
                             <div class="grid-2">
                                 <div class="input-group">
                                     <label class="input-label">Data Inizio</label>
-                                    <input type="date" id="startDate" class="input-field">
+                                    <input type="date" id="data_inizio" class="input-field">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">Ora Inizio</label>
-                                    <input type="time" id="startTime" class="input-field">
+                                    <input type="time" id="ora_inizio" class="input-field">
                                 </div>
                             </div>
                         </div>
@@ -141,7 +140,7 @@
                             <h3><i class="fas fa-gift"></i> Premi</h3>
                             <div class="input-group">
                                 <label class="input-label">Lista Premi (uno per riga)</label>
-                                <textarea id="prizes" class="input-field" rows="3" placeholder="1° Posto: 500 Crediti&#10;2° Posto: 200 Crediti"></textarea>
+                                <textarea id="premi" class="input-field" rows="3" placeholder="1° Posto: 500 Crediti&#10;2° Posto: 200 Crediti"></textarea>
                             </div>
                         </div>
 
@@ -153,44 +152,86 @@
     </div>
 
     <script>
-        // === CONTROLLO SESSIONE ADMIN ===
+        // ==========================================
+        // CONFIGURAZIONE JSONBIN
+        // ==========================================
+        const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+        // ==========================================
+        // CONTROLLO SESSIONE ADMIN
+        // ==========================================
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
             window.location.href = 'accesso-admin.html';
         }
 
-        // === GESTIONE IMMAGINE ===
+        // ==========================================
+        // FUNZIONE COMPRESSIONE IMMAGINE
+        // ==========================================
+        function comprimiImmagine(file, larghezzaMax, altezzaMax, qualita) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+
+                        if (w > h) {
+                            if (w > larghezzaMax) { h *= larghezzaMax / w; w = larghezzaMax; }
+                        } else {
+                            if (h > altezzaMax) { w *= altezzaMax / h; h = altezzaMax; }
+                        }
+                        
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', qualita));
+                    };
+                    img.onerror = (err) => reject(err);
+                    img.src = event.target.result;
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==========================================
+        // GESTIONE IMMAGINE
+        // ==========================================
         const uploadArea = document.getElementById('uploadArea');
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
         const uploadText = document.getElementById('uploadText');
         const removeBtn = document.getElementById('removeBtn');
-        let savedImageData = null; // Variabile per salvare l'immagine
+        let savedImageData = '';
 
-        // Click sull'area per aprire il selettore file
         uploadArea.addEventListener('click', () => imageInput.click());
 
-        // Quando viene selezionato un file
-        imageInput.addEventListener('change', function(e) {
+        imageInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    savedImageData = event.target.result; // Salva Base64
+                try {
+                    // Comprimi l'immagine prima di salvarla (max 400px per competizioni)
+                    savedImageData = await comprimiImmagine(file, 400, 400, 0.7);
                     imagePreview.src = savedImageData;
                     imagePreview.style.display = 'block';
                     removeBtn.style.display = 'block';
                     uploadText.style.display = 'none';
                     uploadArea.querySelector('i').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
+                } catch (err) {
+                    console.error("Errore elaborazione immagine", err);
+                    alert("Impossibile caricare l'immagine.");
+                }
             }
         });
 
-        // Rimuovi immagine
         removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Evita che riapra il selettore file
-            savedImageData = null;
+            e.stopPropagation();
+            savedImageData = '';
             imageInput.value = '';
             imagePreview.src = '#';
             imagePreview.style.display = 'none';
@@ -199,40 +240,75 @@
             uploadArea.querySelector('i').style.display = 'block';
         });
 
-        // === SUBMIT FORM ===
-        document.getElementById('form').addEventListener('submit', function(e) {
+        // ==========================================
+        // SUBMIT FORM
+        // ==========================================
+        document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
-            
-            // ID univoco
-            const newId = 'comp_' + Date.now();
-            
-            // Creazione oggetto
-            competitions.push({
-                id: newId,
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                status: document.getElementById('status').value,
-                // Salva l'immagine (se c'è) o stringa vuota
-                image: savedImageData || '', 
-                maxTeams: parseInt(document.getElementById('maxTeams').value) || null,
-                cost: parseInt(document.getElementById('cost').value) || 0,
-                startDate: document.getElementById('startDate').value,
-                startTime: document.getElementById('startTime').value,
-                startDateTime: document.getElementById('startDate').value + 'T' + document.getElementById('startTime').value,
-                prizes: document.getElementById('prizes').value,
-                registeredClubs: [],
-                standings: {},
-                createdAt: new Date().toISOString()
-            });
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creazione...';
 
-            localStorage.setItem('fc27_competitions', JSON.stringify(competitions));
-            alert('Competizione creata con successo!');
-            window.location.href = 'dashboard.html';
+            try {
+                // 1. Leggi competizioni esistenti
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY },
+                    cache: 'no-store'
+                });
+                
+                if (res.status === 404) throw new Error("Bin Competizioni non trovato. Crealo su JSONBin.");
+                if (!res.ok) throw new Error("Errore lettura database.");
+                
+                const data = await res.json();
+                let listaCompetizioni = data.record.competizioni || [];
+
+                // 2. Crea oggetto competizione in italiano
+                const nuovaCompetizione = {
+                    id: 'comp_' + Date.now(),
+                    nome: document.getElementById('nome').value,
+                    descrizione: document.getElementById('descrizione').value,
+                    stato: document.getElementById('stato').value,
+                    immagine: savedImageData,
+                    max_squadre: parseInt(document.getElementById('max_squadre').value) || null,
+                    costo: parseInt(document.getElementById('costo').value) || 0,
+                    data_inizio: document.getElementById('data_inizio').value,
+                    ora_inizio: document.getElementById('ora_inizio').value,
+                    premi: document.getElementById('premi').value,
+                    club_registrati: [],
+                    classifica: {},
+                    creato_il: new Date().toISOString()
+                };
+
+                // 3. Aggiungi e salva
+                listaCompetizioni.push(nuovaCompetizione);
+                
+                const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ "competizioni": listaCompetizioni })
+                });
+
+                if (saveRes.status === 403) throw new Error("Errore 403: Permesso negato.");
+                if (!saveRes.ok) throw new Error("Errore salvataggio.");
+
+                alert('Competizione creata con successo!');
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Crea Competizione';
+            }
         });
 
-        // Logout Admin
+        // ==========================================
+        // LOGOUT
+        // ==========================================
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('admin');
             window.location.href = 'accesso-admin.html';
