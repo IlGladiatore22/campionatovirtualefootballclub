@@ -89,12 +89,12 @@
 
     <script>
         // === CONFIGURAZIONE JSONBIN ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Tuo Bin Utenti (sembra funzionare)
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; 
         
-        // !!! IMPORTANTE !!!
-        // L'ID qui sotto è quello che ti dà errore 403. Significa che NON è tuo.
-        // Creane uno NUOVO su JSONBin.io con contenuto { "clubs": [] } e incolla qui l'ID nuovo.
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; 
+        // !!! AZIONE RICHIESTA !!!
+        // Il vecchio ID (6a2bea...) è bloccato. Creane uno nuovo su JSONBin.io 
+        // con contenuto {"clubs": []} e incolla l'ID qui sotto:
+        const BIN_ID_CLUBS = 'NUOVO_BIN_ID_DA_INCOLLARE_QUI'; 
         
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
@@ -104,24 +104,21 @@
             window.location.href = 'accesso-admin.html';
         }
 
-        // === CARICA UTENTI DAL CLOUD (FIX) ===
+        // === CARICA UTENTI ===
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
-                // Usiamo X-Master-Key perché la tua chiave è una Master Key
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
                 if (!res.ok) throw new Error(`Errore Server: ${res.status}`);
-                if (res.status === 403) throw new Error("Permesso negato (403). Il Bin Utenti non appartiene a questo account.");
-
+                
                 const data = await res.json();
                 const users = data.record.users || [];
                 
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
-                
                 users.forEach(u => {
                     select.innerHTML += `<option value="${u.id}">${u.nomeEA} (${u.gamertag})</option>`;
                 });
@@ -165,15 +162,14 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Prendi lista club attuali
+                // 1. Leggi club attuali
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
-                // Gestione errori specifica
                 if (getRes.status === 403) {
-                    throw new Error("ERRORE 403: Il Bin ID dei Club non appartiene al tuo account JSONBin. Creane uno nuovo e aggiorna il codice.");
+                    throw new Error("ERRORE 403: Il Bin dei Club non accetta questa chiave. Hai creato un nuovo Bin?");
                 }
                 if (!getRes.ok) throw new Error("Impossibile leggere il database.");
                 
@@ -199,7 +195,7 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. Salva nel Bin Club
+                // 3. Salva
                 clubs.push(newClub);
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
@@ -211,7 +207,7 @@
                 });
 
                 if (saveRes.status === 403) {
-                    throw new Error("ERRORE 403: Non hai i permessi per scrivere su questo Bin. Usa un Bin creato dal tuo account.");
+                    throw new Error("ERRORE 403: Permesso negato in scrittura.");
                 }
                 if (!saveRes.ok) {
                     throw new Error("Errore generico nel salvataggio.");
