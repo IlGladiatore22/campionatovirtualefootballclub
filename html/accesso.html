@@ -19,6 +19,13 @@
             margin-bottom: 16px;
             display: none;
         }
+        /* Fix per adattare il logo dentro il cerchio */
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* O 'contain' se preferisci vedere tutto il logo senza tagliare */
+            border-radius: 50%; /* Mantiene la forma tonda */
+        }
     </style>
 </head>
 <body>
@@ -26,7 +33,10 @@
         <header class="header">
             <div class="header-left">
                 <a href="home-non-loggato.html" class="logo-container" style="text-decoration: none;">
-                    <div class="logo">FC</div>
+                    <!-- LOGO HEADER -->
+                    <div class="logo">
+                        <img src="../estetica/logosito.png" alt="FC27 Logo">
+                    </div>
                     <span class="site-name">FC27</span>
                 </a>
             </div>
@@ -36,7 +46,10 @@
             <div class="container" style="max-width: 450px; padding: 60px 20px;">
                 <div class="card animate-slideUp">
                     <div class="text-center mb-3">
-                        <div class="logo" style="width: 60px; height: 60px; font-size: 1.3rem; margin: 0 auto 16px;">FC</div>
+                        <!-- LOGO CENTRALE -->
+                        <div class="logo" style="width: 60px; height: 60px; margin: 0 auto 16px;">
+                            <img src="../estetica/logosito.png" alt="FC27 Logo">
+                        </div>
                         <h2>Accedi</h2>
                         <p class="text-muted mt-1">Entra nel tuo account FC27</p>
                     </div>
@@ -90,8 +103,6 @@
     <script>
         // --- CONFIGURAZIONE ---
         const BIN_ID = '6a2ae33cda38895dfeaee508';
-        
-        // USA LA MASTER KEY PER ACCESSO TOTALE (COPIATA DALLA TUA FOTO)
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // Toggle password
@@ -128,7 +139,6 @@
             }
 
             try {
-                // 1. Leggi dal Database usando X-Master-Key
                 const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': API_KEY }
                 });
@@ -139,7 +149,6 @@
                 const data = await response.json();
                 const users = data.record.users || [];
 
-                // 2. Cerca Utente
                 const foundUser = users.find(u => 
                     u.gamertag.toLowerCase() === gamertagInput.toLowerCase() && 
                     u.password === passwordInput
@@ -151,7 +160,6 @@
                     return;
                 }
 
-                // 3. Successo
                 localStorage.setItem('user', JSON.stringify(foundUser));
                 localStorage.setItem('auth_token', 'token_' + Date.now());
                 window.location.href = 'home.html';
