@@ -88,19 +88,24 @@
     </div>
 
     <script>
-        // === CONFIGURAZIONE ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
-        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a'; // Assicurati sia quello nuovo se l'hai cambiato
+        // ==========================================
+        // CONFIGURAZIONE
+        // ==========================================
+        const BIN_ID_USERS = 'INSERISCI_ID_BIN_UTENTI_QUI'; 
+        const BIN_ID_CLUBS = 'INSERISCI_ID_BIN_CLUB_QUI'; 
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-        // === CONTROLLO SESSIONE ===
+        // ==========================================
+        // CONTROLLO SESSIONE
+        // ==========================================
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) {
             window.location.href = 'accesso-admin.html';
         }
 
-        // === FUNZIONE CRUCIALE: COMPRESSIONE IMMAGINE ===
-        // Questa funzione ridimensiona l'immagine per non far scoppiare il DB
+        // ==========================================
+        // FUNZIONI UTILITA
+        // ==========================================
         function compressImage(file, maxWidth, maxHeight, quality) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -111,35 +116,29 @@
                         let width = img.width;
                         let height = img.height;
 
-                        // Calcolo proporzioni
                         if (width > height) {
-                            if (width > maxWidth) {
-                                height *= maxWidth / width;
-                                width = maxWidth;
-                            }
+                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
                         } else {
-                            if (height > maxHeight) {
-                                width *= maxHeight / height;
-                                height = maxHeight;
-                            }
+                            if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
                         }
                         
                         canvas.width = width;
                         canvas.height = height;
-                        
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Restituisce la stringa Base64 compressa (JPEG)
                         resolve(canvas.toDataURL('image/jpeg', quality));
                     };
+                    img.onerror = (err) => reject(err);
                     img.src = event.target.result;
                 };
+                reader.onerror = (err) => reject(err);
                 reader.readAsDataURL(file);
             });
         }
 
-        // === CARICA UTENTI ===
+        // ==========================================
+        // CARICA UTENTI
+        // ==========================================
         async function loadUsersForSelect() {
             const select = document.getElementById('captain');
             try {
@@ -150,7 +149,7 @@
                 if (!res.ok) throw new Error("Errore caricamento utenti");
                 
                 const data = await res.json();
-                const users = data.record.users || [];
+                const users = data.record.users || []; // Assumendo che gli utenti restino in inglese nel DB
                 
                 select.innerHTML = '<option value="">-- Seleziona Utente --</option>';
                 users.forEach(u => {
@@ -163,24 +162,20 @@
         }
         loadUsersForSelect();
 
-        // === GESTIONE LOGO (CON COMPRESSIONE) ===
+        // ==========================================
+        // GESTIONE LOGO
+        // ==========================================
         let logoBase64 = '';
-        
         document.getElementById('logo-input').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
                 try {
-                    // Chiamiamo la funzione di compressione: max 200px, qualità 70%
-                    // Questo riduce un'immagine da 2MB a circa 15-20KB
-                    const compressedImage = await compressImage(file, 200, 200, 0.7);
-                    
-                    logoBase64 = compressedImage;
+                    logoBase64 = await compressImage(file, 200, 200, 0.7);
                     document.getElementById('preview-img').src = logoBase64;
                     document.getElementById('preview-img').style.display = 'block';
                     document.getElementById('placeholder-icon').style.display = 'none';
                 } catch (err) {
                     console.error("Errore elaborazione immagine", err);
-                    alert("Impossibile caricare l'immagine.");
                 }
             }
         });
@@ -193,7 +188,9 @@
             text.oninput = () => { if(/^#[0-9A-Fa-f]{6}$/.test(text.value)) color.value = text.value; };
         });
 
-        // === SUBMIT ===
+        // ==========================================
+        // SUBMIT FORM (STRUTTURA ITALIANO)
+        // ==========================================
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -202,39 +199,44 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 1. Prendi lista club
+                // 1. Leggi lista club esistente
                 const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 
-                if (getRes.status === 403) throw new Error("Errore 403: Bin non valido o chiave errata.");
-                if (!getRes.ok) throw new Error("Impossibile leggere il DB.");
+                if (getRes.status === 404) throw new Error("Bin non trovato (404). Controlla l'ID.");
+                if (!getRes.ok) throw new Error("Errore lettura database.");
                 
                 const getData = await getRes.json();
-                let clubs = getData.record.clubs || [];
+                
+                // Leggiamo la lista "club" (in italiano)
+                let listaClub = getData.record.club || [];
 
                 const captainId = document.getElementById('captain').value;
                 
-                // 2. Crea oggetto
-                const newClub = {
+                // 2. Crea oggetto in italiano
+                const nuovoClub = {
                     id: 'club_' + Date.now(),
-                    name: document.getElementById('name').value,
+                    nome: document.getElementById('name').value, // In italiano
                     tag: document.getElementById('tag').value.toUpperCase(),
-                    logo: logoBase64, // Qui ora c'è l'immagine compressa (leggera)
-                    captain: captainId || null,
-                    members: captainId ? [captainId] : [],
-                    colors: { primary: document.getElementById('color1').value, secondary: document.getElementById('color2').value },
-                    stadium: document.getElementById('stadium').value,
-                    formation: '4-3-3',
-                    tactics: {},
-                    lineup: {}, 
-                    requests: [],
-                    createdAt: new Date().toISOString()
+                    logo: logoBase64, 
+                    capitano: captainId || null, // In italiano
+                    membri: captainId ? [captainId] : [], // In italiano
+                    colori: { // In italiano
+                        primario: document.getElementById('color1').value, 
+                        secondario: document.getElementById('color2').value
+                    },
+                    stadio: document.getElementById('stadium').value, // In italiano
+                    formazione: '4-3-3', // In italiano
+                    tattiche: {}, // In italiano
+                    schieramento: {}, // In italiano (ex lineup)
+                    richieste: [], // In italiano
+                    creatoIl: new Date().toISOString() // In italiano
                 };
 
-                // 3. Salva
-                clubs.push(newClub);
+                // 3. Aggiungi e salva
+                listaClub.push(nuovoClub);
                 
                 const saveRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
@@ -242,12 +244,11 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': API_KEY
                     },
-                    body: JSON.stringify({ "clubs": clubs })
+                    // Salviamo con la chiave "club"
+                    body: JSON.stringify({ "club": listaClub }) 
                 });
 
-                if (saveRes.status === 403) {
-                    throw new Error("Errore 403: Immagine ancora troppo grande o permessi mancanti.");
-                }
+                if (saveRes.status === 403) throw new Error("Errore 403: Permesso negato.");
                 if (!saveRes.ok) throw new Error("Errore salvataggio.");
 
                 alert('Club creato con successo!');
