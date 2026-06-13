@@ -97,7 +97,7 @@
                 <!-- SEZIONE TORNEI -->
                 <div id="tornei" class="content-section">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3>Tornei</h3> <!-- Rimosso "(Locale)" -->
+                        <h3>Tornei</h3>
                         <button class="btn btn-small btn-secondary" onclick="loadTorneiData()"><i class="fas fa-sync-alt"></i></button>
                     </div>
                     <div id="tornei-list">
@@ -113,7 +113,7 @@
         // === CONFIGURAZIONE ===
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
-        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797'; // NUOVO BIN TORNEI
+        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
@@ -247,7 +247,6 @@
                 if (!res.ok) throw new Error("Errore connessione.");
 
                 const data = await res.json();
-                // Leggiamo l'array "tornei" (in italiano)
                 const tornei = data.record.tornei || [];
                 
                 container.innerHTML = '';
@@ -257,19 +256,23 @@
                 }
 
                 tornei.forEach(t => {
-                    // Usiamo i campi in italiano
                     const nomeTorneo = t.nome || t.name || 'Senza Nome';
                     const statoTorneo = t.stato || t.status || 'N/D';
 
+                    // LOGICA IMMAGINE: Se c'è immagine la mostro, altrimenti l'icona
+                    const imgHtml = t.immagine 
+                        ? `<img src="${t.immagine}" alt="${nomeTorneo}">` 
+                        : `<i class="fas fa-medal"></i>`;
+
                     container.innerHTML += `
                         <div class="item-row">
-                            <div class="item-logo"><i class="fas fa-medal"></i></div>
+                            <div class="item-logo">${imgHtml}</div>
                             <div class="item-info">
                                 <h4>${nomeTorneo}</h4>
                                 <p>Stato: ${statoTorneo}</p>
                             </div>
                             <div class="item-actions">
-                                <button class="btn-sm btn-edit" onclick="alert('Modifica tornei in arrivo')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-sm btn-edit" onclick="modificaTorneo('${t.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-sm btn-delete" onclick="eliminaTorneo('${t.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>`;
@@ -280,26 +283,22 @@
             }
         }
 
+        function modificaTorneo(id) { window.location.href = `modifica-torneo.html?id=${id}`; }
+
         async function eliminaTorneo(id) {
             if(!confirm("Eliminare questo torneo?")) return;
             try {
-                // 1. Leggi lista attuale
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { 
                     headers: { 'X-Master-Key': API_KEY } 
                 });
                 const data = await res.json();
                 let lista = data.record.tornei || [];
-                
-                // 2. Filtra
                 lista = lista.filter(t => t.id !== id);
-                
-                // 3. Salva
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                     body: JSON.stringify({ "tornei": lista })
                 });
-                
                 loadTorneiData();
             } catch(e) {
                 console.error(e);
