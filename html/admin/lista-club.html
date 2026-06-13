@@ -39,6 +39,15 @@
         .club-actions { display: flex; gap: 10px; flex-shrink: 0; }
         .btn-modify { background: var(--accent-blue); color: white; }
         .btn-delete { background: var(--accent-red); color: white; }
+        
+        /* Stile per le icane small */
+        .info-icon {
+            font-size: 0.75rem; /* Piccoline */
+            margin-right: 5px;
+            width: 12px;
+            text-align: center;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -82,7 +91,7 @@
             container.innerHTML = '<p style="text-align:center; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Caricamento...</p>';
             
             try {
-                // CACHE BUSTER per aggiornamento immediato
+                // CACHE BUSTER
                 const ts = '?t=' + new Date().getTime();
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest${ts}`, {
                     headers: { 'X-Master-Key': API_KEY },
@@ -90,7 +99,6 @@
                 });
                 
                 const data = await res.json();
-                // LEGGIAMO "club" (SINGOLARE) come salvato nel nuovo form
                 const clubs = data.record.club || [];
 
                 container.innerHTML = '';
@@ -105,7 +113,6 @@
                         ? `<img src="${club.logo}" alt="${club.nome || club.name}">` 
                         : `<i class="fas fa-shield-alt"></i>`;
 
-                    // Usiamo i campi in Italiano con fallback in inglese
                     const nomeClub = club.nome || club.name || 'Senza Nome';
                     const stadioClub = club.stadio || club.stadium || '-';
 
@@ -116,7 +123,13 @@
                         <div class="club-details">
                             <h4 style="margin:0; color:var(--text-primary);">${nomeClub}</h4>
                             <p style="margin:0; color:var(--text-muted); font-size:0.8rem;">
-                                Tag: ${club.tag || '-'} | Stadio: ${stadioClub}
+                                <!-- Icona Tag -->
+                                <i class="fas fa-tag info-icon"></i> Tag: ${club.tag || '-'}
+                                
+                                &nbsp;|&nbsp;
+                                
+                                <!-- Icona Stadio -->
+                                <i class="fas fa-map-marker-alt info-icon"></i> Stadio: ${stadioClub}
                             </p>
                         </div>
                         <div class="club-actions">
@@ -137,26 +150,21 @@
             if(!confirm("Sei sicuro di voler eliminare questo club?")) return;
 
             try {
-                // 1. Leggi
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                 const data = await res.json();
-                // Leggiamo la lista "club"
                 let clubs = data.record.club || [];
                 
-                // 2. Filtra
                 const newClubs = clubs.filter(c => c.id !== id);
 
-                // 3. Salva (ripristinando la struttura corretta)
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ "club": newClubs }) // Salviamo con chiave "club"
+                    body: JSON.stringify({ "club": newClubs })
                 });
 
                 alert('Club eliminato!');
-                loadClubs(); // Ricarica lista
+                loadClubs();
             } catch (e) {
-                console.error(e);
                 alert("Errore durante l'eliminazione.");
             }
         }
