@@ -27,7 +27,6 @@
             gap: 15px;
         }
 
-        /* Stile Logo/Icona */
         .item-logo {
             width: 45px; height: 45px;
             border-radius: 8px;
@@ -65,44 +64,34 @@
         <main class="main-content">
             <div class="container" style="padding: 30px 20px;">
                 
-                <!-- Tab Navigation -->
                 <div class="tabs-container">
                     <button class="tab-btn active" onclick="openTab('club')"><i class="fas fa-shield-alt"></i> Club</button>
                     <button class="tab-btn" onclick="openTab('competizioni')"><i class="fas fa-trophy"></i> Competizioni</button>
                     <button class="tab-btn" onclick="openTab('tornei')"><i class="fas fa-medal"></i> Tornei</button>
                 </div>
 
-                <!-- SEZIONE CLUB -->
                 <div id="club" class="content-section active">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                         <h3>Club Registrati</h3>
                         <button class="btn btn-small btn-secondary" onclick="loadClubData()"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div id="club-list">
-                        <p style="text-align:center; color:var(--text-muted);">Caricamento...</p>
-                    </div>
+                    <div id="club-list"><p style="text-align:center; color:var(--text-muted);">Caricamento...</p></div>
                 </div>
 
-                <!-- SEZIONE COMPETIZIONI -->
                 <div id="competizioni" class="content-section">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                         <h3>Competizioni Attive</h3>
                         <button class="btn btn-small btn-secondary" onclick="loadCompetizioniData()"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div id="competizioni-list">
-                        <p style="text-align:center; color:var(--text-muted);">Caricamento...</p>
-                    </div>
+                    <div id="competizioni-list"><p style="text-align:center; color:var(--text-muted);">Caricamento...</p></div>
                 </div>
 
-                <!-- SEZIONE TORNEI -->
                 <div id="tornei" class="content-section">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                         <h3>Tornei</h3>
                         <button class="btn btn-small btn-secondary" onclick="loadTorneiData()"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div id="tornei-list">
-                        <p style="text-align:center; color:var(--text-muted);">Caricamento...</p>
-                    </div>
+                    <div id="tornei-list"><p style="text-align:center; color:var(--text-muted);">Caricamento...</p></div>
                 </div>
 
             </div>
@@ -113,26 +102,23 @@
         // === CONFIGURAZIONE ===
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const BIN_ID_COMPETIZIONI = '6a2d7dcbf5f4af5e29ec21b0';
-        const BIN_ID_TORNEI = '6a2da647da38895dfebb4797';
+        const BIN_ID_TORNEI = '6a2dc84ada38895dfebbe465'; // NUOVO ID BIN TORNEI
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         const admin = JSON.parse(localStorage.getItem('admin') || 'null');
         if (!admin || !admin.isAdmin) window.location.href = 'accesso-admin.html';
 
-        // === FUNZIONI TAB ===
         function openTab(tabName) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabName).classList.add('active');
             event.target.closest('.tab-btn').classList.add('active');
-
             if(tabName === 'club') loadClubData();
             if(tabName === 'competizioni') loadCompetizioniData();
             if(tabName === 'tornei') loadTorneiData();
         }
 
-        // === GESTIONE CLUB ===
+        // === CLUB ===
         async function loadClubData() {
             const container = document.getElementById('club-list');
             container.innerHTML = '<p style="text-align:center;">Caricamento...</p>';
@@ -140,22 +126,14 @@
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
                 const data = await res.json();
                 const clubs = data.record.club || [];
-                
                 container.innerHTML = '';
                 if(clubs.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun club.</p>'; return; }
-
                 clubs.forEach(c => {
-                    const logoHtml = c.logo 
-                        ? `<img src="${c.logo}" alt="${c.nome || c.name}">` 
-                        : `<i class="fas fa-shield-alt"></i>`;
-
+                    const logoHtml = c.logo ? `<img src="${c.logo}" alt="${c.nome || c.name}">` : `<i class="fas fa-shield-alt"></i>`;
                     container.innerHTML += `
                         <div class="item-row">
                             <div class="item-logo">${logoHtml}</div>
-                            <div class="item-info">
-                                <h4>${c.nome || c.name}</h4>
-                                <p>Tag: ${c.tag || '-'}</p>
-                            </div>
+                            <div class="item-info"><h4>${c.nome || c.name}</h4><p>Tag: ${c.tag || '-'}</p></div>
                             <div class="item-actions">
                                 <button class="btn-sm btn-edit" onclick="modificaClub('${c.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-sm btn-delete" onclick="eliminaClub('${c.id}')"><i class="fas fa-trash"></i></button>
@@ -164,7 +142,6 @@
                 });
             } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento.</p>'; }
         }
-
         async function eliminaClub(id) {
             if(!confirm("Eliminare questo club?")) return;
             try {
@@ -172,17 +149,13 @@
                 const data = await res.json();
                 let lista = data.record.club || [];
                 lista = lista.filter(c => c.id !== id);
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ "club": lista })
-                });
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, body: JSON.stringify({ "club": lista }) });
                 loadClubData();
             } catch(e) { alert("Errore eliminazione."); }
         }
-        
         function modificaClub(id) { window.location.href = `modifica-club.html?id=${id}`; }
 
-        // === GESTIONE COMPETIZIONI ===
+        // === COMPETIZIONI ===
         async function loadCompetizioniData() {
             const container = document.getElementById('competizioni-list');
             container.innerHTML = '<p style="text-align:center;">Caricamento...</p>';
@@ -190,22 +163,14 @@
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
                 const data = await res.json();
                 const comps = data.record.competizioni || [];
-                
                 container.innerHTML = '';
                 if(comps.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessuna competizione.</p>'; return; }
-
                 comps.forEach(c => {
-                    const imgHtml = c.immagine 
-                        ? `<img src="${c.immagine}" alt="${c.nome || c.name}">` 
-                        : `<i class="fas fa-trophy"></i>`;
-
+                    const imgHtml = c.immagine ? `<img src="${c.immagine}" alt="${c.nome || c.name}">` : `<i class="fas fa-trophy"></i>`;
                     container.innerHTML += `
                         <div class="item-row">
                             <div class="item-logo">${imgHtml}</div>
-                            <div class="item-info">
-                                <h4>${c.nome || c.name}</h4>
-                                <p>Stato: ${c.stato || c.status}</p>
-                            </div>
+                            <div class="item-info"><h4>${c.nome || c.name}</h4><p>Stato: ${c.stato || c.status}</p></div>
                             <div class="item-actions">
                                 <button class="btn-sm btn-edit" onclick="modificaCompetizione('${c.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-sm btn-delete" onclick="eliminaCompetizione('${c.id}')"><i class="fas fa-trash"></i></button>
@@ -214,7 +179,6 @@
                 });
             } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento.</p>'; }
         }
-
         async function eliminaCompetizione(id) {
             if(!confirm("Eliminare questa competizione?")) return;
             try {
@@ -222,97 +186,53 @@
                 const data = await res.json();
                 let lista = data.record.competizioni || [];
                 lista = lista.filter(c => c.id !== id);
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ "competizioni": lista })
-                });
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, body: JSON.stringify({ "competizioni": lista }) });
                 loadCompetizioniData();
             } catch(e) { alert("Errore eliminazione."); }
         }
-
         function modificaCompetizione(id) { window.location.href = `modifica-competizione.html?id=${id}`; }
 
-        // === GESTIONE TORNEI (DATABASE) ===
+        // === TORNEI ===
         async function loadTorneiData() {
             const container = document.getElementById('tornei-list');
             container.innerHTML = '<p style="text-align:center;">Caricamento...</p>';
-            
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { 
-                    headers: { 'X-Master-Key': API_KEY }, 
-                    cache: 'no-store' 
-                });
-                
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
                 if (res.status === 404) throw new Error("Bin Tornei non trovato.");
-                if (!res.ok) throw new Error("Errore connessione.");
-
                 const data = await res.json();
                 const tornei = data.record.tornei || [];
-                
                 container.innerHTML = '';
-                if(tornei.length === 0) { 
-                    container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun torneo.</p>'; 
-                    return; 
-                }
-
+                if(tornei.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nessun torneo.</p>'; return; }
                 tornei.forEach(t => {
-                    const nomeTorneo = t.nome || t.name || 'Senza Nome';
-                    const statoTorneo = t.stato || t.status || 'N/D';
-
-                    // LOGICA IMMAGINE: Se c'è immagine la mostro, altrimenti l'icona
-                    const imgHtml = t.immagine 
-                        ? `<img src="${t.immagine}" alt="${nomeTorneo}">` 
-                        : `<i class="fas fa-medal"></i>`;
-
+                    const nomeTorneo = t.nome || 'Senza Nome';
+                    const imgHtml = t.immagine ? `<img src="${t.immagine}" alt="${nomeTorneo}">` : `<i class="fas fa-medal"></i>`;
                     container.innerHTML += `
                         <div class="item-row">
                             <div class="item-logo">${imgHtml}</div>
-                            <div class="item-info">
-                                <h4>${nomeTorneo}</h4>
-                                <p>Stato: ${statoTorneo}</p>
-                            </div>
+                            <div class="item-info"><h4>${nomeTorneo}</h4><p>Stato: ${t.stato || 'N/D'}</p></div>
                             <div class="item-actions">
                                 <button class="btn-sm btn-edit" onclick="modificaTorneo('${t.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-sm btn-delete" onclick="eliminaTorneo('${t.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>`;
                 });
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento tornei.</p>';
-            }
+            } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento tornei.</p>'; }
         }
-
         function modificaTorneo(id) { window.location.href = `modifica-torneo.html?id=${id}`; }
-
         async function eliminaTorneo(id) {
             if(!confirm("Eliminare questo torneo?")) return;
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { 
-                    headers: { 'X-Master-Key': API_KEY } 
-                });
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                 const data = await res.json();
                 let lista = data.record.tornei || [];
                 lista = lista.filter(t => t.id !== id);
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ "tornei": lista })
-                });
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_TORNEI}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, body: JSON.stringify({ "tornei": lista }) });
                 loadTorneiData();
-            } catch(e) {
-                console.error(e);
-                alert("Errore eliminazione torneo.");
-            }
+            } catch(e) { alert("Errore eliminazione torneo."); }
         }
 
-        // Init
         loadClubData();
-
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('admin');
-            window.location.href = 'accesso-admin.html';
-        });
+        document.getElementById('logout-btn').addEventListener('click', () => { localStorage.removeItem('admin'); window.location.href = 'accesso-admin.html'; });
     </script>
 </body>
 </html>
