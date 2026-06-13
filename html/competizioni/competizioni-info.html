@@ -11,33 +11,104 @@
     <link rel="stylesheet" href="../../estetica/components.css">
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        
+        /* Stili Sidebar e Header */
+        .logo { overflow: hidden; }
+        .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+        /* --- NUOVO LAYOUT HERO CARD --- */
+        .hero-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            text-align: left; /* Tutto allineato a sinistra */
+        }
+        @media (max-width: 600px) {
+            .hero-card { flex-direction: column; align-items: center; text-align: center; }
+            .hero-card .text-content { align-items: center; }
+        }
+
+        .site-logo-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            padding: 5px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .site-logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .text-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .comp-header-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .comp-header-row i { color: var(--accent-gold); font-size: 1.2rem; }
+        .comp-title-main { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .comp-date-small { font-size: 0.85rem; color: var(--text-muted); }
+        .comp-desc-small { color: var(--text-secondary); line-height: 1.5; }
+
+        /* --- STATS GRID MODIFICATO --- */
+        .stats-grid-mod { grid-template-columns: repeat(3, 1fr); }
+        
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Header con Icona + Titolo */
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .stat-header i { font-size: 1rem; }
+
+        /* Valore Grande sotto */
+        .stat-value-big {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Premi */
         .prize-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-size: 1rem; }
         .prize-item:last-child { border-bottom: none; }
         .prize-item i { font-size: 1.2rem; width: 25px; text-align: center; }
-        
-        #comp-status { color: white !important; font-weight: 600; }
 
+        /* Lista Squadre */
         .teams-container-list { display: flex; flex-direction: column; width: 100%; }
         .teams-container-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-
-        .team-list-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        .team-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .team-list-item:last-child { border-bottom: none; }
-
-        .team-logo-wrapper {
-            width: 28px; height: 28px; border-radius: 50%;
-            background: var(--bg-primary); display: flex; align-items: center; justify-content: center;
-            overflow: hidden; flex-shrink: 0; opacity: 0.9;
-        }
+        .team-logo-wrapper { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
         .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
-        .team-name-text { font-size: 0.95rem; font-weight: 400; color: var(--text-primary); }
+        .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
-        /* Logo Header */
-        .logo { overflow: hidden; }
-        .logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        /* Admin Controls */
+        #comp-status { color: white !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -73,21 +144,15 @@
             
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Menu Principale</div>
+                    <div class="nav-section-title">Menu</div>
                     <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
                     <a href="competizioni.html" class="nav-link active"><i class="fas fa-trophy"></i><span>Competizioni</span></a>
                     <a href="../tornei/tornei.html" class="nav-link"><i class="fas fa-medal"></i><span>Tornei</span></a>
                     <a href="../club/club.html" class="nav-link"><i class="fas fa-users"></i><span>Club</span></a>
                 </div>
                 <div class="nav-section">
-                    <div class="nav-section-title">Comunicazioni</div>
-                    <a href="../messaggi.html" class="nav-link"><i class="fas fa-envelope"></i><span>Messaggi</span></a>
-                    <a href="../notifiche.html" class="nav-link"><i class="fas fa-bell"></i><span>Notifiche</span></a>
-                </div>
-                <div class="nav-section">
                     <div class="nav-section-title">Account</div>
                     <a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a>
-                    <a href="../impostazioni.html" class="nav-link"><i class="fas fa-cog"></i><span>Impostazioni</span></a>
                 </div>
                 <div class="nav-section" id="admin-nav" style="display: none;">
                     <div class="nav-section-title">Admin</div>
@@ -108,18 +173,41 @@
             <div class="container" style="padding-top: 30px;">
                 
                 <!-- Loading State -->
-                <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento competizione...</p></div>
+                <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
 
                 <!-- Content -->
                 <div id="main-content" style="display: none;">
-                    <!-- Hero -->
-                    <div class="card animate-slideUp" style="text-align: center; padding: 40px;">
-                        <div style="width: 100px; height: 100px; background: var(--bg-tertiary); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-trophy" style="font-size: 2.5rem; color: var(--accent-gold);"></i>
+                    
+                    <!-- NUOVO HERO CARD -->
+                    <div class="card animate-slideUp hero-card">
+                        <!-- Site Logo -->
+                        <div class="site-logo-wrapper">
+                            <img src="../../estetica/logosito.png" alt="Logo">
                         </div>
-                        <h1 id="comp-name">Caricamento...</h1>
-                        <p class="text-muted mt-1" id="comp-desc"></p>
-                        <span class="tag" id="comp-status" style="margin-top: 15px;">-</span>
+                        
+                        <!-- Text Content -->
+                        <div class="text-content">
+                            <!-- Top: Icon + Name -->
+                            <div class="comp-header-row">
+                                <i class="fas fa-trophy"></i>
+                                <h1 id="comp-name" class="comp-title-main">Nome Competizione</h1>
+                            </div>
+                            
+                            <!-- Date -->
+                            <div class="comp-date-small">
+                                <i class="far fa-calendar-alt"></i> Creata il: <span id="comp-created">-</span>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div id="comp-desc-hero" class="comp-desc-small mt-2">
+                                Descrizione breve...
+                            </div>
+                            
+                            <!-- Status Badge -->
+                            <div class="mt-2">
+                                <span id="comp-status" class="tag">Stato</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Admin Controls -->
@@ -131,46 +219,59 @@
                         </div>
                     </div>
 
-                    <!-- Info Grid -->
-                    <div class="grid-2 mt-4">
-                        <div class="card animate-slideUp stagger-1">
-                            <h4 class="mb-2"><i class="fas fa-info-circle text-gold"></i> Dettagli</h4>
-                            <div id="comp-details"><p class="text-muted">-</p></div>
+                    <!-- NUOVO STATS GRID -->
+                    <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
+                        <!-- Costo -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <i class="fas fa-euro-sign"></i>
+                                <span>Costo</span>
+                            </div>
+                            <div id="comp-cost" class="stat-value-big">0 €</div>
                         </div>
-                        <div class="card animate-slideUp stagger-2">
-                            <h4 class="mb-2"><i class="fas fa-gift text-gold"></i> Premi</h4>
-                            <div id="comp-prizes"><p class="text-muted">-</p></div>
+                        <!-- Squadre -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <i class="fas fa-users"></i>
+                                <span>Squadre</span>
+                            </div>
+                            <div id="comp-teams" class="stat-value-big">0</div>
+                        </div>
+                        <!-- Data Inizio -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <i class="fas fa-calendar"></i>
+                                <span>Inizio</span>
+                            </div>
+                            <div id="comp-date" class="stat-value-big" style="font-size: 1.2rem;">-</div>
                         </div>
                     </div>
 
-                    <!-- Stats -->
-                    <div class="stats-grid mt-4 animate-slideUp stagger-3" style="grid-template-columns: repeat(3, 1fr);">
-                        <div class="stat-card">
-                            <div class="stat-value" id="comp-cost">-</div>
-                            <div class="stat-label">Costo</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="comp-teams">0/0</div>
-                            <div class="stat-label">Squadre</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="comp-date">-</div>
-                            <div class="stat-label">Data Inizio</div>
-                        </div>
+                    <!-- Premi -->
+                    <div class="card mt-4 animate-slideUp stagger-2">
+                        <h4 class="mb-3"><i class="fas fa-gift text-gold"></i> Premi</h4>
+                        <div id="comp-prizes"><p class="text-muted">-</p></div>
+                    </div>
+
+                    <!-- Dettagli Extra -->
+                    <div class="card mt-4 animate-slideUp stagger-3">
+                        <h4 class="mb-3"><i class="fas fa-info-circle text-gold"></i> Dettagli Aggiuntivi</h4>
+                        <div id="comp-details"><p class="text-muted">-</p></div>
                     </div>
 
                     <!-- Squadre Registrate -->
-                    <div class="card mt-4 animate-slideUp">
-                        <h4 class="mb-3"><i class="fas fa-users text-gold"></i> Squadre Registrate (<span id="teams-count">0</span>)</h4>
+                    <div class="card mt-4 animate-slideUp stagger-4">
+                        <h4 class="mb-3"><i class="fas fa-shield-alt text-gold"></i> Squadre Registrate (<span id="teams-count">0</span>)</h4>
                         <div id="teams-list"><p class="text-muted">-</p></div>
                     </div>
 
                     <!-- Action -->
-                    <div class="mt-4 animate-slideUp stagger-4">
+                    <div class="mt-4 mb-4 animate-slideUp stagger-5">
                         <button id="subscribe-btn" class="btn btn-primary btn-block btn-large">
                             <i class="fas fa-sign-in-alt"></i> Iscrivi il Tuo Club
                         </button>
                     </div>
+
                 </div>
 
                 <!-- Error State -->
@@ -186,29 +287,27 @@
 
     <script>
         // =============================================
-        // CONFIGURAZIONE DATABASE
+        // CONFIGURAZIONE
         // =============================================
         const BIN_ID_COMP = '6a2d7dcbf5f4af5e29ec21b0';
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         // =============================================
-        // INIZIALIZZAZIONE UI
+        // UI SETUP
         // =============================================
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
         const sidebar = document.getElementById('sidebar');
-
         function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
 
         // =============================================
-        // AUTENTICAZIONE
+        // AUTH
         // =============================================
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
@@ -229,23 +328,17 @@
         });
 
         // =============================================
-        // CARICAMENTO DATI DAL DATABASE
+        // LOAD DATA
         // =============================================
         const urlParams = new URLSearchParams(window.location.search);
         const compId = urlParams.get('id');
-
         let currentComp = null;
         let allClubs = [];
 
         async function loadData() {
-            if (!compId) {
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('error-state').style.display = 'block';
-                return;
-            }
+            if (!compId) { showError(); return; }
 
             try {
-                // Fetch Competizioni e Club in parallelo
                 const [compRes, clubRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
@@ -257,62 +350,62 @@
                 const competizioni = compData.record.competizioni || [];
                 allClubs = clubData.record.club || [];
 
-                // Trova la competizione
                 currentComp = competizioni.find(c => c.id === compId);
 
-                if (!currentComp) {
-                    document.getElementById('loading-state').style.display = 'none';
-                    document.getElementById('error-state').style.display = 'block';
-                    return;
-                }
+                if (!currentComp) { showError(); return; }
 
                 renderUI();
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading-state').innerHTML = '<p style="color:red;">Errore connessione database.</p>';
+                document.getElementById('loading-state').innerHTML = '<p style="color:red;">Errore database.</p>';
             }
         }
 
+        function showError() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'block';
+        }
+
         // =============================================
-        // RENDER UI
+        // RENDER
         // =============================================
         function renderUI() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
 
-            // Dati base
-            document.getElementById('comp-name').textContent = currentComp.nome || 'Senza Nome';
-            document.getElementById('comp-desc').textContent = currentComp.descrizione || '';
+            // Title & Header
+            document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
+            document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
+            
+            // Date
+            const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
+            document.getElementById('comp-created').textContent = created;
 
-            // Stato
+            // Status
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
-            if (stato === 'aperta') {
-                statusEl.textContent = 'Iscrizioni Aperte';
-                statusEl.style.background = 'var(--accent-green)';
-            } else if (stato === 'chiusa') {
-                statusEl.textContent = 'Iscrizioni Chiuse';
-                statusEl.style.background = 'var(--accent-red)';
-            } else {
-                statusEl.textContent = 'In Corso';
-                statusEl.style.background = 'var(--accent-orange)';
-            }
+            statusEl.textContent = stato.toUpperCase();
+            statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
-            // Dettagli
-            let detailsHTML = '<ul style="list-style: none; padding: 0; line-height: 2;">';
-            const maxSquadre = currentComp.max_squadre || '∞';
-            detailsHTML += `<li><i class="fas fa-users text-muted"></i> Massimo ${maxSquadre} squadre</li>`;
+            // Stats Values
             const costo = currentComp.costo || 0;
-            if (costo > 0) {
-                detailsHTML += `<li><i class="fas fa-euro-sign text-gold"></i> Costo: ${costo} €</li>`;
-            } else {
-                detailsHTML += '<li><i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Iscrizione Gratuita</li>';
-            }
+            document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
+            
+            const registrati = currentComp.club_registrati || [];
+            const maxSq = currentComp.max_squadre || '∞';
+            document.getElementById('comp-teams').textContent = registrati.length + '/' + maxSq;
+            
+            document.getElementById('comp-date').textContent = currentComp.data_inizio || 'N/D';
+
+            // Details List
+            let detailsHTML = '<ul style="list-style: none; padding: 0; line-height: 2;">';
+            detailsHTML += `<li><i class="fas fa-users text-muted"></i> Max Squadre: ${maxSq}</li>`;
+            if (currentComp.formato) detailsHTML += `<li><i class="fas fa-sitemap text-muted"></i> Formato: ${currentComp.formato}</li>`;
             detailsHTML += '</ul>';
             document.getElementById('comp-details').innerHTML = detailsHTML;
 
-            // Premi
+            // Prizes
             const prizesDiv = document.getElementById('comp-prizes');
             const premi = currentComp.premi || '';
             if (premi.trim() !== '') {
@@ -323,30 +416,22 @@
                     if (i === 0) { icon = 'fa-trophy'; color = '#FFD700'; }
                     else if (i === 1) { icon = 'fa-medal'; color = '#C0C0C0'; }
                     else if (i === 2) { icon = 'fa-medal'; color = '#CD7F32'; }
-                    html += `<div class="prize-item" style="color: ${color}; font-weight: 600;"><i class="fas ${icon}"></i> ${p}</div>`;
+                    html += `<div class="prize-item" style="color: ${color};"><i class="fas ${icon}"></i> ${p}</div>`;
                 });
                 prizesDiv.innerHTML = html;
             } else {
-                prizesDiv.innerHTML = '<p class="text-muted">Nessun premio</p>';
+                prizesDiv.innerHTML = '<p class="text-muted">Nessun premio specificato.</p>';
             }
 
-            // Statistiche
-            document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
-            const registrati = currentComp.club_registrati || [];
-            document.getElementById('comp-teams').textContent = registrati.length + '/' + maxSquadre;
-            document.getElementById('comp-date').textContent = currentComp.data_inizio || 'N/D';
-
-            // Lista Squadre
+            // Teams List
             renderTeams(registrati);
 
-            // Admin Controls
+            // Admin
             if (user.isAdmin) {
                 document.getElementById('admin-controls').style.display = 'block';
                 document.getElementById('edit-link').href = `../admin/modifica-competizione.html?id=${compId}`;
-                
                 document.getElementById('toggle-status-btn').onclick = async () => {
                     try {
-                        // Recupera dati aggiornati
                         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                         const d = await res.json();
                         let list = d.record.competizioni || [];
@@ -363,8 +448,7 @@
                 };
             }
 
-            // Pulsante Iscrizione
-            setupSubscribeButton(registrati, maxSquadre, costo);
+            setupSubscribe(registrati, maxSq, costo);
         }
 
         function renderTeams(registrati) {
@@ -393,10 +477,8 @@
             }
         }
 
-        function setupSubscribeButton(registrati, maxSquadre, costo) {
+        function setupSubscribe(registrati, maxSquadre, costo) {
             const btn = document.getElementById('subscribe-btn');
-            
-            // Cerca il club dell'utente
             const userClub = allClubs.find(c => (c.membri || c.members || []).includes(user.id));
 
             if (userClub && registrati.includes(userClub.id)) {
@@ -410,17 +492,12 @@
                     if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
                     if (maxSquadre !== '∞' && registrati.length >= maxSquadre) { alert('Posti esauriti.'); return; }
                     if (costo > 0) {
-                        if (!confirm(`Questa competizione costa ${costo} €. Procedere?`)) return;
-                        // Gestione pagamento simulata o redirect
-                        alert('Per pagare contatta un admin.');
+                        alert(`Costo: ${costo} €. Contatta un admin per procedere.`);
                         return;
                     }
 
                     try {
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-                        // Recupera dati aggiornati
                         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                         const d = await res.json();
                         let list = d.record.competizioni || [];
@@ -429,8 +506,6 @@
                         if (idx !== -1) {
                             if (!list[idx].club_registrati) list[idx].club_registrati = [];
                             list[idx].club_registrati.push(userClub.id);
-                            
-                            // Init classifica
                             if (!list[idx].classifica) list[idx].classifica = {};
                             list[idx].classifica[userClub.id] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
 
@@ -443,15 +518,13 @@
                             location.reload();
                         }
                     } catch(e) {
-                        alert("Errore durante l'iscrizione.");
+                        alert("Errore iscrizione.");
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iscrivi il Tuo Club';
                     }
                 };
             }
         }
 
-        // Start
         loadData();
 
     </script>
