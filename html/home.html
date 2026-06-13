@@ -17,15 +17,12 @@
         .main-content { padding-bottom: 60px; }
 
         /* Stili per il Logo Immagine */
-        .logo {
-            overflow: hidden;
-            /* Puoi regolare width/height qui se necessario, di solito sono definiti in style.css */
-        }
+        .logo { overflow: hidden; }
         .logo img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* O cover, a seconda di come vuoi che appaia il logo */
-            border-radius: 50%; /* Se vuoi che l'immagine sia tonda come il contenitore */
+            object-fit: contain;
+            border-radius: 50%;
         }
 
         /* Stili per la sezione Social */
@@ -42,9 +39,9 @@
 
         /* Colori Brand */
         .btn-discord { background: #5865F2; }
-        .btn-instagram { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
-        .btn-tiktok { background: #000000; border: 1px solid #333; }
-        .btn-x { background: #000000; }
+        
+        /* Spazio tra icona e testo nei tag */
+        .tag i { margin-right: 6px; }
     </style>
 </head>
 <body>
@@ -52,11 +49,9 @@
     <header class="header">
         <div class="header-left">
             <a href="home.html" class="logo-container" style="text-decoration: none;">
-                <!-- LOGO IMMAGINE -->
                 <div class="logo">
                     <img src="../estetica/logosito.png" alt="FC27 Logo">
                 </div>
-                <!-- RIMOSSA SCRITTA FC27 -->
             </a>
             <span class="user-greeting">Benvenuto, <span id="username-display">Utente</span></span>
         </div>
@@ -78,11 +73,9 @@
     <aside id="sidebar" class="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <!-- LOGO IMMAGINE SIDEBAR -->
                 <div class="logo">
                     <img src="../estetica/logosito.png" alt="FC27 Logo">
                 </div>
-                <!-- RIMOSSA SCRITTA FC27 -->
             </div>
             <button id="close-btn" class="sidebar-close">
                 <i class="fas fa-times"></i>
@@ -146,7 +139,7 @@
                 </div>
             </section>
 
-            <!-- Stats (COLLEGATO AL DATABASE) -->
+            <!-- Stats -->
             <section class="stats-grid mt-4 animate-slideUp stagger-1">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-players">0</div>
@@ -189,13 +182,12 @@
                 </div>
             </section>
 
-            <!-- NUOVA SEZIONE SOCIAL -->
+            <!-- Social Section -->
             <section class="social-section animate-slideUp stagger-3">
                 <h3 class="mb-2">Resta Connesso</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Unisciti alla community e seguici sui social per aggiornamenti in tempo reale.</p>
                 
                 <div class="social-buttons">
-                    <!-- Bottone Discord -->
                     <a href="https://discord.gg/CmqMcY64ke" target="_blank" class="btn-social btn-discord">
                         <i class="fab fa-discord"></i> Discord
                     </a>
@@ -237,8 +229,18 @@
             document.getElementById('profile-gamertag').textContent = '@' + user.gamertag;
             document.getElementById('profile-avatar').textContent = user.nomeEA.substring(0, 2).toUpperCase();
 
+            // Mapping Classi CSS e ICONE
             const platformClasses = { 'PC': 'tag-pc', 'XBOX': 'tag-xbox', 'PS': 'tag-ps' };
-            let tags = '<span class="tag ' + (platformClasses[user.piattaforma] || '') + '">' + user.piattaforma + '</span>';
+            const platformIcons = {
+                'PC': '<i class="fas fa-desktop"></i>',      // Icona PC
+                'XBOX': '<i class="fab fa-xbox"></i>',       // Icona Xbox
+                'PS': '<i class="fab fa-playstation"></i>'   // Icona PlayStation
+            };
+
+            // Costruzione Tag Piattaforma con Icona
+            let tags = '<span class="tag ' + (platformClasses[user.piattaforma] || '') + '">' + 
+                       (platformIcons[user.piattaforma] || '') + ' ' + user.piattaforma + 
+                       '</span>';
             
             // Logica Admin
             const adminNav = document.getElementById('admin-nav');
@@ -255,8 +257,7 @@
             
             document.getElementById('profile-tags').innerHTML = tags;
 
-            // Notifiche (rimosso da localStorage perché ora usiamo il DB per gli utenti, ma teniamo se le gestite altrove)
-            // Se le notifiche sono nel DB, andrebbero caricate async qui. Per ora lascio com'era.
+            // Notifiche
             const notifications = JSON.parse(localStorage.getItem('fc27_notifications') || '[]');
             const unread = notifications.filter(n => n.userId === user.id && !n.read).length;
             if (unread > 0) {
@@ -268,7 +269,6 @@
         // === FUNZIONE CARICAMENTO STATISTICHE DAL DATABASE ===
         async function loadStats() {
             try {
-                // Carichiamo Utenti e Club in parallelo
                 const [usersRes, clubsRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY } }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY } })
@@ -277,11 +277,9 @@
                 const usersData = await usersRes.json();
                 const clubsData = await clubsRes.json();
 
-                // Calcolo quantità
                 const usersCount = usersData.record.users ? usersData.record.users.length : 0;
                 const clubsCount = clubsData.record.club ? clubsData.record.club.length : 0;
 
-                // Aggiornamento UI
                 document.getElementById('stat-players').textContent = usersCount;
                 document.getElementById('stat-clubs').textContent = clubsCount;
 
@@ -292,7 +290,6 @@
             }
         }
 
-        // Eseguiamo il caricamento delle stats
         loadStats();
 
         // Logout
