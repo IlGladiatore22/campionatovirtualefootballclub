@@ -26,17 +26,17 @@
             border: 2px solid var(--border-color); 
             border-radius: 8px; 
             cursor: pointer; 
-            text-align: left; 
+            text-align: center; /* CENTRATO */
             transition: all 0.2s; 
         }
         .format-option:hover { border-color: #9b59b6; }
         .format-option.active { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
         
-        .format-title { font-weight: bold; font-size: 1rem; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+        .format-title { font-weight: bold; font-size: 1rem; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .format-title i { width: 20px; text-align: center; color: #9b59b6; }
-        .format-desc { font-size: 0.8rem; color: var(--text-muted); padding-left: 30px; }
+        .format-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* ICONA BANDIERA SVIZZERA (CUSTOM CSS) */
+        /* ICONA BANDIERA SVIZZERA */
         .swiss-flag {
             width: 16px;
             height: 16px;
@@ -45,14 +45,13 @@
             display: inline-block;
             border-radius: 2px;
         }
-        /* Croce bianca */
         .swiss-flag::before, .swiss-flag::after {
             content: '';
             position: absolute;
             background-color: #FFFFFF;
         }
-        .swiss-flag::before { width: 4px; height: 10px; left: 6px; top: 3px; } /* Braccio verticale */
-        .swiss-flag::after { width: 10px; height: 4px; left: 3px; top: 6px; } /* Braccio orizzontale */
+        .swiss-flag::before { width: 4px; height: 10px; left: 6px; top: 3px; }
+        .swiss-flag::after { width: 10px; height: 4px; left: 3px; top: 6px; }
 
         /* BADGE NUMERO 3 */
         .badge-3 {
@@ -78,7 +77,18 @@
         .image-upload-area:hover { border-color: #9b59b6; }
         .image-upload-area i { font-size: 2rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
         .image-upload-area p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-        #imagePreview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; }
+        
+        /* FIX CENTRATURA IMMAGINE CARICATA */
+        #imagePreview { 
+            max-width: 100%; 
+            max-height: 200px; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+            display: none; /* Nascosto di default */
+            margin-left: auto; /* Centrato */
+            margin-right: auto; /* Centrato */
+        }
+        
         .remove-image-btn {
             position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
             border: none; color: white; width: 30px; height: 30px; border-radius: 50%;
@@ -135,19 +145,19 @@
                             <h3><i class="fas fa-sitemap"></i> Formato Torneo</h3>
                             
                             <div class="format-selector">
-                                <!-- OPZIONE 1: SVIZZERO (Bandiera) -->
+                                <!-- OPZIONE 1: SVIZZERO -->
                                 <div class="format-option active" data-format="svizzero" onclick="selectFormat(this)">
                                     <div class="format-title"><span class="swiss-flag"></span> SVIZZERO</div>
                                     <div class="format-desc">Accoppiamenti dinamici basati sul punteggio.</div>
                                 </div>
 
-                                <!-- OPZIONE 2: CLASSICO (Tabella) -->
+                                <!-- OPZIONE 2: CLASSICO -->
                                 <div class="format-option" data-format="classic_top2" onclick="selectFormat(this)">
                                     <div class="format-title"><i class="fas fa-table"></i> CLASSICO (CON GIRONI)</div>
                                     <div class="format-desc">Le prime 2 per girone si qualificano alle fasi finali.</div>
                                 </div>
 
-                                <!-- OPZIONE 3: ALLARGATO (Tabella con 3) -->
+                                <!-- OPZIONE 3: ALLARGATO -->
                                 <div class="format-option" data-format="classic_top2_3rds" onclick="selectFormat(this)">
                                     <div class="format-title">
                                         <span style="position: relative; width: 20px; display: inline-block;">
@@ -254,7 +264,7 @@
                 try {
                     savedImageData = await comprimiImmagine(file, 400, 400, 0.7);
                     imagePreview.src = savedImageData;
-                    imagePreview.style.display = 'block';
+                    imagePreview.style.display = 'block'; // Mostra come blocco centrato
                     removeBtn.style.display = 'block';
                     uploadText.style.display = 'none';
                     uploadArea.querySelector('i').style.display = 'none';
