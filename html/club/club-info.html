@@ -130,14 +130,11 @@
                         </div>
                     </div>
 
-                    <!-- Sezione Admin (Visibile solo al Capitano) -->
+                    <!-- Sezione Admin -->
                     <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
                         <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
-                        <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata dei nuovi membri.</p>
-                        
-                        <div id="requests-list" class="mt-3">
-                            <p class="text-muted">Nessuna richiesta in sospeso.</p>
-                        </div>
+                        <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata.</p>
+                        <div id="requests-list" class="mt-3"><p class="text-muted">Nessuna richiesta in sospeso.</p></div>
                     </div>
 
                     <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
@@ -175,9 +172,8 @@
     </div>
 
     <script>
-        // CONFIG
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Aggiunto per i nomi utenti
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -186,7 +182,7 @@
 
         let currentClub = null;
         let allData = null;
-        let usersList = []; // Lista globale utenti
+        let usersList = [];
 
         // UI SETUP
         document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
@@ -194,7 +190,6 @@
         document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
         document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.href = '../home-non-loggato.html'; };
 
-        // FUNZIONI UTILITA
         function getLogo(club) {
             if (!club) return null;
             const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
@@ -214,7 +209,6 @@
             if (!clubId) { showError(); return; }
 
             try {
-                // Carico sia Club che Utenti in parallelo
                 const [clubRes, userRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
@@ -226,7 +220,6 @@
                 usersList = userData.record.users || [];
                 allData = clubData.record;
 
-                // FIX: Gestione flessibile struttura dati
                 let clubs = [];
                 if (Array.isArray(allData)) clubs = allData;
                 else clubs = allData.clubs || allData.club || [];
@@ -234,7 +227,7 @@
                 currentClub = clubs.find(c => c.id === clubId);
 
                 if (!currentClub) {
-                    console.error("Club ID cercato:", clubId, "Lista disponibile:", clubs);
+                    console.error("Club ID cercato:", clubId);
                     showError();
                 } else {
                     renderUI();
@@ -264,7 +257,7 @@
 
             // Stadio
             const stadium = currentClub.stadium || currentClub.stadio;
-            document.getElementById('club-stadium').textContent = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : 'Stadio non specificato';
+            document.getElementById('club-stadium').innerHTML = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : '';
 
             // Data
             if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
@@ -275,7 +268,6 @@
             
             let membersHtml = '';
             members.forEach(m => {
-                // Gestisce sia ID stringa che oggetto
                 let mId = (typeof m === 'object' && m !== null && m.id) ? m.id : m;
                 const u = usersList.find(u => String(u.id) === String(mId));
                 const name = u ? u.nomeEA : `ID: ${mId}`;
@@ -287,37 +279,51 @@
             });
             document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
 
-            // --- FIX: CONTROLLO CAPITANO / MEMBRO ROBUSTO ---
-            
-            // 1. Controllo Capitano (converte tutto in stringa per confronto sicuro)
-            const isCaptain = user && (
-                String(currentClub.captain) === String(user.id) ||
-                String(currentClub.owner) === String(user.id) ||
-                String(currentClub.presidente) === String(user.id) ||
-                String(currentClub.createdBy) === String(user.id) ||
-                String(currentClub.founder) === String(user.id)
-            );
+            // --- REPORT ACCESSO (DEBUG) ---
+            console.log("------------------------------------------------");
+            console.log("REPORT ACCESSO CLUB");
+            console.log("1. Tuo ID Utente (Locale):", String(user.id));
+            console.log("2. Capitano nel DB:", currentClub.captain, "-> Convertito:", String(currentClub.captain));
+            console.log("3. Membri nel DB:", currentClub.members);
+            console.log("4. Owner/Founder nel DB:", currentClub.owner, currentClub.createdBy);
+            console.log("------------------------------------------------");
 
-            // 2. Controllo Membro (itera l'array e confronta stringhe)
+            // --- LOGICA ACCESSO ---
+            
+            // 1. Controllo Capitano
+            let isCaptain = false;
+            const capProps = ['captain', 'owner', 'createdBy', 'founder', 'presidente'];
+            capProps.forEach(p => {
+                if(currentClub[p] && String(currentClub[p]) === String(user.id)) {
+                    isCaptain = true;
+                    console.log(`%c TROVATO CAPITANO tramite proprietà: ${p}`, "color: green; font-weight: bold;");
+                }
+            });
+
+            // 2. Controllo Membro
             let isMember = false;
-            if (user && members.length > 0) {
+            if (members.length > 0) {
                 members.forEach(m => {
                     let mId = (typeof m === 'object' && m !== null && m.id) ? m.id : m;
-                    if (String(mId) === String(user.id)) isMember = true;
+                    if (String(mId) === String(user.id)) {
+                        isMember = true;
+                        console.log("%c TROVATO MEMBRO", "color: orange; font-weight: bold;");
+                    }
                 });
             }
 
-            console.log("Permessi:", "Capitano?", isCaptain, "Membro?", isMember, "User ID:", user.id);
-
+            // 3. Visualizzazione Elementi
             if (isCaptain) {
                 document.getElementById('captain-badge').style.display = 'inline-flex';
                 document.getElementById('admin-panel').style.display = 'block';
-                document.getElementById('leave-btn').style.display = 'block'; // Opzionale
+                document.getElementById('leave-btn').style.display = 'none'; // Il capo non si caccia
+                document.getElementById('join-btn').style.display = 'none';
                 renderRequests();
             } else if (isMember) {
                 document.getElementById('leave-btn').style.display = 'block';
+                document.getElementById('join-btn').style.display = 'none';
             } else {
-                // Se non è né capitano né membro
+                // Se non è nulla
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-btn').onclick = () => requestJoin();
             }
@@ -334,7 +340,6 @@
 
             let html = '';
             requests.forEach(req => {
-                // Gestisce ID stringa o oggetto
                 let rId = (typeof req === 'object' && req !== null && req.id) ? req.id : req;
                 const u = usersList.find(u => String(u.id) === String(rId));
                 const name = u ? u.nomeEA : `ID: ${rId}`;
@@ -350,7 +355,6 @@
             listEl.innerHTML = html;
         }
 
-        // Azioni Admin
         window.accept = async (userId) => {
             if(!confirm("Accettare questo membro?")) return;
             
@@ -372,12 +376,10 @@
             location.reload();
         };
 
-        // Richiesta utente normale
         async function requestJoin() {
             if(!user) return alert("Accedi per unirti.");
             
             if(!currentClub.requests) currentClub.requests = [];
-            // Evita duplicati
             if(currentClub.requests.some(r => String(r) === String(user.id))) return alert("Richiesta già inviata.");
 
             currentClub.requests.push(user.id);
@@ -386,7 +388,6 @@
             location.reload();
         }
 
-        // Salva dati (Mantenendo struttura originale)
         async function saveData() {
             let payload;
             if (Array.isArray(allData)) {
