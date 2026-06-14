@@ -357,8 +357,9 @@
                 const clubData = await clubRes.json();
                 
                 const competizioni = compData.record.competizioni || [];
-                // Supporto per 'club' o 'clubs'
+                // Supporto per 'club' E 'clubs'
                 allClubs = clubData.record.club || clubData.record.clubs || [];
+                
                 currentComp = competizioni.find(c => c.id === compId);
                 
                 if (!currentComp) { showError(); return; }
@@ -374,11 +375,41 @@
             document.getElementById('error-state').style.display = 'block';
         }
 
+        // Funzione helper per trovare il logo in qualsiasi proprietà
+        function getClubLogo(club) {
+            if (!club) return '';
+            
+            // 1. Controlla proprietà comuni
+            const commonProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'logoURL', 'pic', 'avatar', 'teamLogo', 'shield'];
+            for (let prop of commonProps) {
+                if (club[prop] && typeof club[prop] === 'string' && club[prop].trim() !== '') {
+                    console.log(`Logo trovato nella proprietà standard: '${prop}' per ${club.nome || club.name}`);
+                    return club[prop];
+                }
+            }
+            
+            // 2. Se non trovato, cerca in TUTTE le proprietà una stringa che sembri un link immagine
+            for (let key in club) {
+                if (club.hasOwnProperty(key)) {
+                    const val = club[key];
+                    // Se è una stringa, non troppo corta, e contiene punto o http (esclude ID brevi)
+                    if (typeof val === 'string' && val.length > 5) {
+                        if (val.includes('http') || val.includes('.png') || val.includes('.jpg') || val.includes('.webp') || val.includes('data:image')) {
+                             console.log(`Logo trovato nella proprietà generica: '${key}' per ${club.nome || club.name}`);
+                             return val;
+                        }
+                    }
+                }
+            }
+            
+            console.log("Nessun logo trovato per:", club.nome || club.name, club);
+            return '';
+        }
+
         function renderUI() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             
-            // Popola dati competizione
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
@@ -457,7 +488,7 @@
             setupSubscribe(registrati, maxSq, costo);
         }
 
-        // --- FUNZIONE RENDER TEAMS MODIFICATA PER TROVARE IL LOGO ---
+        // --- RENDER TEAMS CON FUNZIONE LOGO AVANZATA ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -469,15 +500,15 @@
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
-                        // Cerca il logo in varie proprietà possibili
-                        const logoSrc = club.logo || club.immagine || club.image || '';
+                        // USA LA FUNZIONE AVANZATA
+                        const logoSrc = getClubLogo(club);
                         
                         let logoHtml = '';
                         if (logoSrc) {
-                            // Se c'è un link, prova a caricarlo. Se fallisce, mostra icona.
+                            // Se ho un link, metto l'immagine. Se non carica, metto l'icona.
                             logoHtml = `<img src="${logoSrc}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
                         } else {
-                            // Se non c'è link, mostra direttamente l'icona
+                            // Se non ho nulla, metto l'icona
                             logoHtml = '<i class="fas fa-shield-alt"></i>';
                         }
                         
