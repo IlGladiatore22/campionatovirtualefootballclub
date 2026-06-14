@@ -52,7 +52,7 @@
 
         <div class="sidebar-overlay" id="overlay"></div>
 
-        <!-- SIDEBAR (uguale alle altre pagine admin) -->
+        <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="../home.html" class="logo-container" style="text-decoration: none;">
@@ -104,9 +104,20 @@
         closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
         overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
 
-        // Auth Check
-        const user = JSON.parse(localStorage.getItem('user') || 'null');
-        if (!user || !user.isAdmin) {
+        // Auth Check - CORRETTO PER CONTROLLARE ENTRAMBE LE SESSIONI
+        const adminSession = JSON.parse(localStorage.getItem('admin') || 'null');
+        const userSession = JSON.parse(localStorage.getItem('user') || 'null');
+        let currentSession = null;
+
+        // Controlla se esiste una sessione admin valida (sia da 'admin' che da 'user' con flag isAdmin)
+        if (adminSession && adminSession.isAdmin) { 
+            currentSession = adminSession; 
+        } else if (userSession && userSession.isAdmin) { 
+            currentSession = userSession; 
+        }
+
+        if (!currentSession) {
+            // Se non c'è sessione admin, rimanda alla home (o al login)
             window.location.href = '../home.html';
         }
 
