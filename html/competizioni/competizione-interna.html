@@ -109,31 +109,35 @@
         <!-- MAIN CONTENT -->
         <main class="main-content">
             <div class="container" style="padding-top: 20px;">
-                <div class="tabs-container mb-4 animate-slideUp">
-                    <button class="tab-btn active" data-tab="classifica">Classifica</button>
-                    <button class="tab-btn" data-tab="calendario">Calendario</button>
-                    <button class="tab-btn" data-tab="statistiche">Statistiche</button>
-                </div>
+                <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
 
-                <div id="tab-classifica" class="tab-content active">
-                    <div class="card animate-slideUp" style="overflow-x: auto;">
-                        <table class="standings-table">
-                            <thead><tr><th style="text-align: left;">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>GF</th><th>GS</th><th>DR</th></tr></thead>
-                            <tbody id="standings-body"></tbody>
-                        </table>
+                <div id="main-content" style="display:none;">
+                    <div class="tabs-container mb-4 animate-slideUp">
+                        <button class="tab-btn active" data-tab="classifica">Classifica</button>
+                        <button class="tab-btn" data-tab="calendario">Calendario</button>
+                        <button class="tab-btn" data-tab="statistiche">Statistiche</button>
                     </div>
-                </div>
 
-                <div id="tab-calendario" class="tab-content" style="display: none;">
-                    <div id="matchdays-container"></div>
-                </div>
+                    <div id="tab-classifica" class="tab-content active">
+                        <div class="card animate-slideUp" style="overflow-x: auto;">
+                            <table class="standings-table">
+                                <thead><tr><th style="text-align: left;">Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>GF</th><th>GS</th><th>DR</th></tr></thead>
+                                <tbody id="standings-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                <div id="tab-statistiche" class="tab-content" style="display: none;">
-                    <div class="grid-2 gap-3">
-                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-futbol text-gold"></i> Marcatori</h4><ul id="stats-scorers" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
-                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-hands-helping text-blue"></i> Assist</h4><ul id="stats-assists" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
-                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-square text-red"></i> Cartellini</h4><ul id="stats-cards" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
-                        <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-medal text-gold"></i> MVP</h4><p class="text-muted" style="font-size: 0.85rem;">N/D</p></div>
+                    <div id="tab-calendario" class="tab-content" style="display: none;">
+                        <div id="matchdays-container"></div>
+                    </div>
+
+                    <div id="tab-statistiche" class="tab-content" style="display: none;">
+                        <div class="grid-2 gap-3">
+                            <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-futbol text-gold"></i> Marcatori</h4><ul id="stats-scorers" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                            <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-hands-helping text-blue"></i> Assist</h4><ul id="stats-assists" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                            <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-square text-red"></i> Cartellini</h4><ul id="stats-cards" class="stats-list"><li class="text-muted">Nessun dato</li></ul></div>
+                            <div class="card"><h4 style="margin-bottom: 10px;"><i class="fas fa-medal text-gold"></i> MVP</h4><p class="text-muted" style="font-size: 0.85rem;">N/D</p></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -141,6 +145,11 @@
     </div>
 
     <script>
+        // CONFIG
+        const BIN_ID_COMP = '6a2d7dcbf5f4af5e29ec21b0';
+        const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
+        const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
         // SIDEBAR CONTROLLI
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
@@ -149,23 +158,19 @@
 
         function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
-        // AUTENTICAZIONE E DATI
+        // AUTH
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
 
         if (!user || !token) {
             window.location.href = '../accesso.html';
         } else {
-            // Logica visibilità Admin/Staff
             const adminNav = document.getElementById('admin-nav');
             const guestAdminNav = document.getElementById('guest-admin-nav');
-
             if (user.isAdmin) {
                 adminNav.style.display = 'block';
                 guestAdminNav.style.display = 'none';
@@ -175,26 +180,19 @@
             }
         }
 
-        // Logout
         document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('user');
-            localStorage.removeItem('auth_token');
+            localStorage.clear();
             window.location.href = '../home-non-loggato.html';
         });
 
         // SETUP PAGINA
         const urlParams = new URLSearchParams(window.location.search);
         const cId = urlParams.get('id');
-        if (!cId) window.location.href = 'competizioni.html';
+        
+        let currentComp = null;
+        let allClubs = [];
 
-        let competitions = JSON.parse(localStorage.getItem('fc27_competitions') || '[]');
-        let clubs = JSON.parse(localStorage.getItem('fc27_clubs') || '[]');
-        let comp = competitions.find(c => c.id === cId);
-        if (!comp) window.location.href = 'competizioni.html';
-
-        document.getElementById('comp-name').textContent = comp.name;
-
-        // UI Events (Tabs)
+        // TABS LOGIC
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -204,47 +202,112 @@
             };
         });
 
+        // DATA LOAD
+        async function loadData() {
+            if (!cId) { window.location.href = 'competizioni.html'; return; }
+
+            try {
+                const [compRes, clubRes] = await Promise.all([
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
+                ]);
+
+                const compData = await compRes.json();
+                const clubData = await clubRes.json();
+
+                const competizioni = compData.record.competizioni || [];
+                allClubs = clubData.record.club || [];
+
+                currentComp = competizioni.find(c => c.id === cId);
+
+                if (!currentComp) {
+                    alert('Competizione non trovata.');
+                    window.location.href = 'competizioni.html';
+                    return;
+                }
+
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+
+                document.getElementById('comp-name').textContent = currentComp.nome || 'Lega';
+
+                renderStandings();
+                renderMatchdays();
+                renderStats();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading-state').innerHTML = '<p style="color:red;">Errore caricamento dati.</p>';
+            }
+        }
+
         // --- LOGICA CLASSIFICA ---
         function renderStandings() {
             const tbody = document.getElementById('standings-body');
             tbody.innerHTML = '';
-            let registeredIds = comp.registeredClubs || [];
-            if (registeredIds.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-4">Nessuna squadra.</td></tr>'; return; }
+            
+            // Usa club_registrati
+            let registeredIds = currentComp.club_registrati || [];
+            
+            if (registeredIds.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted p-4">Nessuna squadra iscritta.</td></tr>'; 
+                return; 
+            }
 
+            // Mapping dati dal DB (classifica) -> UI
             let arr = registeredIds.map(teamId => {
-                let stats = (comp.standings && comp.standings[teamId]) ? comp.standings[teamId] : { points: 0, played: 0, wins: 0, draws: 0, losses: 0, gf: 0, gs: 0 };
-                return { id: teamId, ...stats };
+                // Usa classifica invece di standings
+                let stats = (currentComp.classifica && currentComp.classifica[teamId]) ? currentComp.classifica[teamId] : { punti: 0, vinte: 0, pareggi: 0, perse: 0, gf: 0, gs: 0 };
+                
+                // Calcola partite giocate
+                let played = (stats.vinte || 0) + (stats.pareggi || 0) + (stats.perse || 0);
+
+                return { 
+                    id: teamId, 
+                    points: stats.punti || 0, 
+                    played: played,
+                    wins: stats.vinte || 0, 
+                    draws: stats.pareggi || 0, 
+                    losses: stats.perse || 0, 
+                    gf: stats.gf || 0, 
+                    gs: stats.gs || 0 
+                };
             });
 
+            // Sort
             arr.sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
-                let dA = (a.gf || 0) - (a.gs || 0); let dB = (b.gf || 0) - (b.gs || 0);
+                let dA = a.gf - a.gs; let dB = b.gf - b.gs;
                 if (dB !== dA) return dB - dA;
-                return (b.gf || 0) - (a.gf || 0);
+                return b.gf - a.gf;
             });
 
             arr.forEach((s, i) => {
-                const clubData = clubs.find(c => c.id === s.id);
-                const name = clubData ? clubData.name : 'Sconosciuta';
+                const clubData = allClubs.find(c => c.id === s.id);
+                const name = clubData ? (clubData.nome || clubData.name) : 'Sconosciuta';
                 const logo = clubData && clubData.logo ? clubData.logo : null;
-                const gf = s.gf || 0; const gs = s.gs || 0; const dr = gf - gs;
+                const dr = s.gf - s.gs;
                 let logoHtml = logo ? `<img src="${logo}" class="team-logo-row" onerror="this.outerHTML='<div class=\\'team-logo-placeholder\\'>'"></img>` : `<div class="team-logo-placeholder"></div>`;
                 
-                tbody.innerHTML += `<tr><td><span class="pos-badge pos-${i+1}">${i + 1}</span>${logoHtml}<span>${name}</span></td><td class="text-gold">${s.points || 0}</td><td>${s.played || 0}</td><td>${s.wins || 0}</td><td>${s.draws || 0}</td><td>${s.losses || 0}</td><td>${gf}</td><td>${gs}</td><td>${dr > 0 ? '+'+dr : dr}</td></tr>`;
+                tbody.innerHTML += `<tr><td><span class="pos-badge pos-${i+1}">${i + 1}</span>${logoHtml}<span>${name}</span></td><td class="text-gold">${s.points}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.draws}</td><td>${s.losses}</td><td>${s.gf}</td><td>${s.gs}</td><td>${dr > 0 ? '+'+dr : dr}</td></tr>`;
             });
         }
 
-        // --- CALENDARIO (Progressivo) ---
+        // --- CALENDARIO ---
         function renderMatchdays() {
             const container = document.getElementById('matchdays-container');
             container.innerHTML = '';
-            if (!comp.matchdays || comp.matchdays.length === 0) { container.innerHTML = '<div class="card p-4 text-center text-muted">Calendario non generato.</div>'; return; }
+            
+            if (!currentComp.matchdays || currentComp.matchdays.length === 0) { 
+                container.innerHTML = '<div class="card p-4 text-center text-muted">Calendario non generato.</div>'; 
+                return; 
+            }
 
-            let activeIndex = comp.matchdays.findIndex(md => !md.every(m => m.played));
-            if (activeIndex === -1) activeIndex = comp.matchdays.length;
+            let activeIndex = currentComp.matchdays.findIndex(md => !md.every(m => m.played));
+            if (activeIndex === -1) activeIndex = currentComp.matchdays.length;
 
-            comp.matchdays.forEach((md, idx) => {
-                if (idx > activeIndex) return; // Nascondi future
+            currentComp.matchdays.forEach((md, idx) => {
+                if (idx > activeIndex) return; 
                 const allPlayed = md.every(m => m.played);
                 const isCurrent = (idx === activeIndex);
                 let headerContent = `Giornata ${idx + 1}`;
@@ -254,9 +317,9 @@
                 let html = `<div class="card mb-3 animate-slideUp"><div class="matchday-header">${headerContent}</div><div style="padding: 15px;">`;
                 md.forEach(m => {
                     if(!m.home || !m.away) return;
-                    const homeName = clubs.find(c => c.id === m.home)?.name || 'N/D';
-                    const awayName = clubs.find(c => c.id === m.away)?.name || 'N/D';
-                    html += `<div class="match-card"><div class="team-name text-right">${homeName}</div><div class="score-box">${m.homeScore !== null ? m.homeScore : '-'}</div><div class="score-box">${m.awayScore !== null ? m.awayScore : '-'}</div><div class="team-name">${awayName}</div></div>`;
+                    const homeName = allClubs.find(c => c.id === m.home)?.nome || 'N/D';
+                    const awayName = allClubs.find(c => c.id === m.away)?.nome || 'N/D';
+                    html += `<div class="match-card"><div class="team-name text-right">${homeName}</div><div class="score-box">${m.homeScore !== null && m.homeScore !== undefined ? m.homeScore : '-'}</div><div class="score-box">${m.awayScore !== null && m.awayScore !== undefined ? m.awayScore : '-'}</div><div class="team-name">${awayName}</div></div>`;
                 });
                 html += `</div></div>`;
                 container.innerHTML += html;
@@ -266,8 +329,8 @@
         // --- STATISTICHE ---
         function renderStats() {
             let scorersMap = {}; let assistsMap = {}; let cardsList = [];
-            if (comp.matchdays) {
-                comp.matchdays.forEach(md => { md.forEach(match => {
+            if (currentComp.matchdays) {
+                currentComp.matchdays.forEach(md => { md.forEach(match => {
                     (match.scorers || []).forEach(s => { const key = s.player + "_" + s.teamId; if (!scorersMap[key]) scorersMap[key] = { name: s.player, teamId: s.teamId, count: 0 }; scorersMap[key].count++; });
                     (match.assists || []).forEach(a => { const key = a.player + "_" + a.teamId; if (!assistsMap[key]) assistsMap[key] = { name: a.player, teamId: a.teamId, count: 0 }; assistsMap[key].count++; });
                     (match.cards || []).forEach(c => cardsList.push(c));
@@ -276,23 +339,20 @@
             
             const scorersList = document.getElementById('stats-scorers');
             let sortedScorers = Object.values(scorersMap).sort((a, b) => b.count - a.count).slice(0, 10);
-            if (sortedScorers.length > 0) scorersList.innerHTML = sortedScorers.map(s => `<li><div class="player-info"><span>${s.name}</span><span class="team-badge">${clubs.find(c=>c.id===s.teamId)?.name||'N/D'}</span></div><strong>${s.count}</strong></li>`).join('');
+            if (sortedScorers.length > 0) scorersList.innerHTML = sortedScorers.map(s => `<li><div class="player-info"><span>${s.name}</span><span class="team-badge">${allClubs.find(c=>c.id===s.teamId)?.nome||'N/D'}</span></div><strong>${s.count}</strong></li>`).join('');
             else scorersList.innerHTML = '<li class="text-muted">Nessun dato</li>';
 
             const assistsList = document.getElementById('stats-assists');
             let sortedAssists = Object.values(assistsMap).sort((a, b) => b.count - a.count).slice(0, 10);
-            if (sortedAssists.length > 0) assistsList.innerHTML = sortedAssists.map(a => `<li><div class="player-info"><span>${a.name}</span><span class="team-badge">${clubs.find(c=>c.id===a.teamId)?.name||'N/D'}</span></div><strong>${a.count}</strong></li>`).join('');
+            if (sortedAssists.length > 0) assistsList.innerHTML = sortedAssists.map(a => `<li><div class="player-info"><span>${a.name}</span><span class="team-badge">${allClubs.find(c=>c.id===a.teamId)?.nome||'N/D'}</span></div><strong>${a.count}</strong></li>`).join('');
             else assistsList.innerHTML = '<li class="text-muted">Nessun dato</li>';
 
             const cardsListEl = document.getElementById('stats-cards');
-            if (cardsList.length > 0) cardsListEl.innerHTML = cardsList.slice(-10).reverse().map(c => `<li><div class="player-info"><span>${c.type==='red'?'🟥':'🟨'} ${c.player}</span><span class="team-badge">${clubs.find(cl=>cl.id===c.teamId)?.name||'N/D'}</span></div><span class="text-muted">${c.minute||''}'</span></li>`).join('');
+            if (cardsList.length > 0) cardsListEl.innerHTML = cardsList.slice(-10).reverse().map(c => `<li><div class="player-info"><span>${c.type==='red'?'🟥':'🟨'} ${c.player}</span><span class="team-badge">${allClubs.find(cl=>cl.id===c.teamId)?.nome||'N/D'}</span></div><span class="text-muted">${c.minute||''}'</span></li>`).join('');
             else cardsListEl.innerHTML = '<li class="text-muted">Nessun dato</li>';
         }
 
-        // Init
-        renderStandings();
-        renderMatchdays();
-        renderStats();
+        loadData();
     </script>
 </body>
 </html>
