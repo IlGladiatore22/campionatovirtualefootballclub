@@ -103,13 +103,24 @@
         }
         .btn-danger:hover { opacity: 0.9; }
         
-        /* Stile tasto attesa */
         .btn-pending {
             background: #6c757d !important;
             cursor: default !important;
             opacity: 0.9;
             color: white !important;
             border: none;
+        }
+
+        /* Stile Debug Box */
+        .debug-box {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -226,10 +237,17 @@
                             <button id="toggle-status-btn" class="btn btn-secondary" style="flex: 1;"><i class="fas fa-lock"></i> Chiudi Iscrizioni</button>
                             <a id="edit-link" href="#" class="btn btn-secondary" style="flex: 1;"><i class="fas fa-edit"></i> Modifica</a>
                         </div>
-                        <!-- NUOVA SEZIONE RICHIESTE ADMIN -->
+                        
+                        <!-- SEZIONE RICHIESTE -->
                         <div id="admin-requests-section" class="mt-4">
                             <h5 style="margin-bottom:10px;"><i class="fas fa-user-clock"></i> Richieste in Attesa (<span id="req-count">0</span>)</h5>
-                            <div id="admin-requests-list"><p class="text-muted">Nessuna richiesta in attesa.</p></div>
+                            
+                            <!-- DEBUG BOX: Mostra dati grezzi per capire se il database funziona -->
+                            <div class="debug-box" id="debug-info">
+                                DEBUG: Caricamento in corso...
+                            </div>
+                            
+                            <div id="admin-requests-list" class="mt-2"><p class="text-muted">Nessuna richiesta.</p></div>
                         </div>
                     </div>
 
@@ -359,16 +377,14 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // --- FUNZIONE FIND LOGO "MAGNETICA" ---
+        // --- FUNZIONE FIND LOGO ---
         function findLogoUrl(clubObj) {
             if (!clubObj) return null;
-            
             const preferredKeys = ['logo', 'img', 'image', 'immagine', 'shield', 'emblem'];
             for (let key of preferredKeys) {
                 const val = clubObj[key] || clubObj[key.toLowerCase()] || clubObj[key.toUpperCase()] || clubObj[key.charAt(0).toUpperCase() + key.slice(1)];
                 if (val && typeof val === 'string' && val.length > 5) return val;
             }
-
             for (let key in clubObj) {
                 if (clubObj.hasOwnProperty(key)) {
                     const val = clubObj[key];
@@ -482,7 +498,7 @@
             setupAdmin();
         }
 
-        // --- RENDER SQUADRE CON LOGO FIXATO ---
+        // --- RENDER SQUADRE ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -514,7 +530,7 @@
             }
         }
 
-        // --- LOGICA RICHIESTA ISCRIZIONE ---
+        // --- LOGICA ISCRIZIONE CON DEBUG ---
         function setupSubscribe(registrati, maxSquadre, costo) {
             const btn = document.getElementById('subscribe-btn');
             const withdrawBtn = document.getElementById('withdraw-btn');
@@ -534,7 +550,7 @@
                 return;
             }
 
-            // 1. Se sono già iscritto
+            // 1. Se già iscritto
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
@@ -564,7 +580,6 @@
 
             // 2. Controllo se ho già inviato la richiesta
             const richieste = currentComp.richieste || [];
-            // Controllo sicuro (converte tutto a stringa per confronto)
             const hasPending = richieste.some(r => String(r) === String(userClub.id));
 
             if (hasPending) {
@@ -574,12 +589,24 @@
                 return;
             }
 
-            // 3. Pulsante Richiesta Iscrizione
+            // 3. Pulsante Richiesta
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> RICHIESTA ISCRIZIONE';
             
             btn.onclick = async () => {
                 if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
                 if (maxSquadre !== '∞' && registrati.length >= maxSquadre) { alert('Posti esauriti.'); return; }
+
+                // DEBUG CONSOLE
+                console.log("------------------------------------------------");
+                console.log("DEBUG: TENTATIVO DI INVIO RICHIESTA");
+                console.log("DEBUG: User Club ID ->", userClub.id);
+                console.log("DEBUG: Competition ID ->", compId);
+
+                if(!userClub.id) {
+                    alert("Errore: Il tuo club non ha un ID valido. Impossibile inviare la richiesta.");
+                    console.error("DEBUG: userClub.id è nullo o undefined!");
+                    return;
+                }
 
                 try {
                     btn.disabled = true;
@@ -592,12 +619,10 @@
                     const idx = list.findIndex(c => c.id === compId);
 
                     if (idx !== -1) {
-                        // Aggiungi alle richieste
                         if (!list[idx].richieste) list[idx].richieste = [];
-                        // Evita duplicati
-                        if (!list[idx].richieste.includes(userClub.id)) {
-                            list[idx].richieste.push(userClub.id);
-                        }
+                        
+                        list[idx].richieste.push(userClub.id);
+                        console.log("DEBUG: Array richieste aggiornato ->", list[idx].richieste);
 
                         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                             method: 'PUT', 
@@ -605,12 +630,13 @@
                             body: JSON.stringify({ "competizioni": list }) 
                         });
 
+                        console.log("DEBUG: Salvataggio completato con successo.");
                         alert('Richiesta inviata agli Admin! Attendi l\'approvazione.');
                         location.reload();
                     }
 
                 } catch(e) {
-                    console.error(e);
+                    console.error("DEBUG: ERRORE DURANTE IL SALVATAGGIO:", e);
                     alert("Errore durante l'invio della richiesta.");
                     btn.innerHTML = '<i class="fas fa-paper-plane"></i> RICHIESTA ISCRIZIONE';
                     btn.disabled = false;
@@ -618,7 +644,7 @@
             };
         }
 
-        // --- FUNZIONE ADMIN PER ACCETTARE RICHIESTE ---
+        // --- FUNZIONE ADMIN CON DEBUG VISIVO ---
         function setupAdmin() {
             if (user.isAdmin) {
                 document.getElementById('admin-controls').style.display = 'block';
@@ -644,36 +670,42 @@
 
                 // Gestione Richieste
                 const richieste = currentComp.richieste || [];
-                const reqSection = document.getElementById('admin-requests-section');
                 const reqList = document.getElementById('admin-requests-list');
                 const reqCount = document.getElementById('req-count');
+                const debugInfo = document.getElementById('debug-info');
                 
                 reqCount.textContent = richieste.length;
+
+                // Mostro i dati grezzi nel debug box
+                debugInfo.innerHTML = `DEBUG IDs trovati nel DB: <br> ${JSON.stringify(richieste)}`;
 
                 if (richieste.length > 0) {
                     let html = '<ul style="list-style:none; padding:0;">';
                     
                     richieste.forEach(reqId => {
-                        const club = allClubs.find(c => String(c.id) === String(reqId)); // Controllo sicuro
+                        const club = allClubs.find(c => String(c.id) === String(reqId));
                         if (club) {
-                            html += `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+                            html += `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #444;">
                                 <span><i class="fas fa-user"></i> <strong>${club.nome}</strong></span>
                                 <div>
-                                    <button onclick="acceptRequest('${reqId}')" class="btn btn-primary btn-small" style="padding:5px 10px;"><i class="fas fa-check"></i> Accetta</button>
+                                    <button onclick="acceptRequest('${reqId}')" class="btn btn-primary btn-small" style="padding:5px 10px;"><i class="fas fa-check"></i></button>
                                     <button onclick="rejectRequest('${reqId}')" class="btn btn-danger btn-small" style="padding:5px 10px; margin-left:5px;"><i class="fas fa-times"></i></button>
                                 </div>
                             </li>`;
+                        } else {
+                            // Se l'ID c'è ma il club non si trova
+                            html += `<li style="padding:10px; color:orange;">ID Richesta: ${reqId} (Club non trovato nel database)</li>`;
                         }
                     });
                     html += '</ul>';
                     reqList.innerHTML = html;
                 } else {
-                    reqList.innerHTML = '<p class="text-muted" style="font-size:0.9em;">Nessuna richiesta in attesa.</p>';
+                    reqList.innerHTML = '<p class="text-muted" style="margin-top:10px;">Nessuna richiesta in attesa.</p>';
                 }
             }
         }
 
-        // Funzioni globali per i pulsanti admin
+        // Funzioni globali admin
         window.acceptRequest = async (clubId) => {
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
@@ -682,14 +714,10 @@
                 const idx = list.findIndex(c => c.id === compId);
 
                 if (idx !== -1) {
-                    // Rimuovi dalle richieste
                     list[idx].richieste = (list[idx].richieste || []).filter(id => String(id) !== String(clubId));
-                    // Aggiungi ai registrati
                     if (!list[idx].club_registrati) list[idx].club_registrati = [];
-                    if (!list[idx].club_registrati.includes(clubId)) {
-                         list[idx].club_registrati.push(clubId);
-                    }
-                    // Inizializza classifica
+                    if (!list[idx].club_registrati.includes(clubId)) list[idx].club_registrati.push(clubId);
+                    
                     if (!list[idx].classifica) list[idx].classifica = {};
                     list[idx].classifica[clubId] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
 
