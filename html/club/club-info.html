@@ -3,185 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC27 - Gestione Club</title>
+    <title>FC27 - Info Club</title>
+    
+    <link rel="icon" type="image/png" href="../../estetica/logosito.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../../estetica/style.css">
     <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
+    
     <style>
-        body { background: #0d1117; color: #e0e0e0; }
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
-        /* Nuovo Layout Accesso Negato / Guest View */
-        .guest-view-container {
-            display: flex;
-            flex-direction: column;
+        .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
+        @media (max-width: 768px) {
+            .hero-card { flex-direction: column; align-items: center; text-align: center; }
+        }
+
+        .club-logo-wrapper {
+            width: 100px; height: 100px; border-radius: 50%; background: var(--bg-tertiary);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            border: 3px solid var(--accent-gold); flex-shrink: 0;
+        }
+        .club-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .club-logo-wrapper i { font-size: 2.5rem; color: var(--accent-gold); }
+
+        .text-content { flex: 1; }
+        .comp-title-main { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        
+        .tag-captain {
+            background: var(--accent-gold);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            min-height: 70vh;
-            text-align: center;
-            padding: 20px;
+            gap: 5px;
+            margin-top: 10px;
         }
-        .guest-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+        .stats-grid-mod { grid-template-columns: repeat(2, 1fr); }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .guest-logo {
-            width: 100px; height: 100px; border-radius: 50%; background: #21262d;
-            display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
-            border: 3px solid var(--accent-gold); margin: 0 auto 20px; overflow: hidden; color: #888;
+        .member-avatar {
+            width: 30px; height: 30px; border-radius: 50%; background: var(--bg-tertiary);
+            display: flex; align-items: center; justify-content: center;
         }
-        .guest-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .guest-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
-        .guest-subtitle { color: #8b949e; margin-bottom: 30px; line-height: 1.5; }
-        .guest-icon { font-size: 3rem; color: var(--accent-gold); margin-bottom: 20px; opacity: 0.8; }
-
-        /* Layout Membro */
-        .club-hero { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 12px; border: 1px solid #30363d; }
-        .club-logo { width: 60px; height: 60px; border-radius: 50%; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid var(--accent-gold); flex-shrink: 0; overflow: hidden; color: var(--text-muted); }
-        .club-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         
-        .main-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
-        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
-        
-        .pitch-box { background: #0d1117; border-radius: 12px; padding: 10px; border: 1px solid #30363d; }
-        .pitch-field { background: #1d5c2f; position: relative; width: 100%; padding-bottom: 110%; border-radius: 8px; border: 3px solid #2d7d45; overflow: visible; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
-        
-        .pitch-inner-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; border-radius: 5px; }
-        
-        .pitch-markings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .pitch-markings::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.4); transform: translateY(-50%); }
-        .pitch-markings::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18%; height: 13.8%; border: 3px solid rgba(255,255,255,0.4); border-radius: 50%; transform: translate(-50%, -50%); }
-        .pitch-area-top { position: absolute; top: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-top: none; transform: translateX(-50%); }
-        .pitch-area-bottom { position: absolute; bottom: 0; left: 50%; width: 40%; height: 14%; border: 3px solid rgba(255,255,255,0.4); border-bottom: none; transform: translateX(-50%); }
-
-        .player-slot { position: absolute; width: 80px; height: auto; z-index: 10; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
-        .role-badge { background: rgba(0,0,0,0.9); color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; margin-bottom: 4px; z-index: 2; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .slot-card { width: 55px; height: 55px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .slot-info { margin-top: 4px; text-align: center; width: 100%; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; overflow: hidden; }
-        .slot-player-name { font-size: 0.6rem; font-weight: 700; color: #fff; text-transform: uppercase; display: inline-block; white-space: nowrap; }
-        .scrolling-name { animation: scroll-text 4s linear infinite alternate; }
-        @keyframes scroll-text { 0% { transform: translateX(0); } 100% { transform: translateX(var(--scroll-offset)); } }
-        
-        .player-slot.empty .slot-card { border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; height: 50px; background: rgba(0,0,0,0.1); }
-        .player-slot.empty .slot-info { display: none; }
-        .player-slot.empty .role-badge { opacity: 0.5; }
-        
-        .jersey-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
-
-        .sidebar-panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
-        .sidebar-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; margin-bottom: 15px; color: var(--accent-gold); text-transform: uppercase; }
-        .formation-selector select { width: 100%; padding: 10px; border-radius: 6px; background: #21262d; color: white; border: 1px solid #30363d; cursor: pointer; }
-        
-        .roster-section { margin-bottom: 15px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-
-        .roster-list-small { max-height: 120px; overflow-y: auto; }
-        .roster-item { display: flex; align-items: center; justify-content: space-between; background: #21262d; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #30363d; cursor: grab; transition: all 0.2s; font-size: 0.8rem; }
-        
-        .captain-tools { margin-top: auto; padding-top: 15px; border-top: 1px solid #30363d; display: flex; flex-direction: column; gap: 8px; }
+        .request-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <div class="page-wrapper">
+        <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <button onclick="history.back()" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></button>
-                <span class="site-name">Club</span>
+                <a href="club.html" class="header-btn" style="background: transparent; border: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
             </div>
-            <div class="header-right"><button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button></div>
+            <div class="header-right">
+                <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
         </header>
-        
-        <div class="sidebar-overlay" id="overlay"></div>
-        
+
+        <!-- SIDEBAR OVERLAY -->
+        <div id="overlay" class="sidebar-overlay"></div>
+
+        <!-- SIDEBAR -->
         <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">FC</div>
+                    <span class="site-name">FC27</span>
+                </div>
+                <button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button>
+            </div>
             <nav class="sidebar-nav">
-                <div class="nav-section"><div class="nav-section-title">Menu</div><a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a><a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a></div>
-                <div class="nav-section"><div class="nav-section-title">Account</div><a href="../profilo.html" class="nav-link"><i class="fas fa-user"></i><span>Profilo</span></a><button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu</div>
+                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                    <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
+                </div>
+                <div class="nav-section">
+                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+                </div>
             </nav>
         </aside>
 
+        <!-- MAIN -->
         <main class="main-content">
-            <div class="container">
+            <div class="container" style="padding-top: 30px;">
                 
-                <div id="loading-state" class="text-center" style="padding-top: 100px;"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
+                <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
 
-                <!-- VISTA PER NON MEMBRI (GUEST) -->
-                <div id="guest-view" class="guest-view-container" style="display:none;">
-                    <div class="guest-card animate-slideUp">
-                        <div class="guest-logo" id="guest-logo"><i class="fas fa-shield-alt"></i></div>
-                        <h1 class="guest-title" id="guest-name">Nome Club</h1>
-                        <i class="fas fa-lock guest-icon"></i>
-                        <p class="guest-subtitle">Questo club è privato.<br>Devi essere un membro per visualizzare la formazione e i dettagli.</p>
-                        <button id="guest-join-btn" class="btn btn-primary btn-large btn-block" onclick="requestJoinFromGuest()">
-                            <i class="fas fa-user-plus"></i> Richiedi di unirti
-                        </button>
+                <div id="main-content" style="display: none;">
+                    
+                    <div class="card hero-card">
+                        <div class="club-logo-wrapper" id="club-logo">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="text-content">
+                            <h1 id="club-name" class="comp-title-main">Nome Club</h1>
+                            <p id="club-stadium" class="text-muted" style="margin-top:5px;"><i class="fas fa-map-marker-alt"></i> Stadio</p>
+                            <span id="captain-badge" class="tag-captain" style="display:none;"><i class="fas fa-crown"></i> SEI IL CAPITANO</span>
+                        </div>
                     </div>
+
+                    <!-- Sezione Admin (Visibile solo al Capitano) -->
+                    <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
+                        <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
+                        <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata dei nuovi membri.</p>
+                        
+                        <div id="requests-list" class="mt-3">
+                            <p class="text-muted">Nessuna richiesta in sospeso.</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
+                        <div class="stat-card">
+                            <div class="stat-header"><i class="fas fa-users"></i><span>Membri</span></div>
+                            <div id="member-count" class="stat-value-big">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><i class="fas fa-calendar"></i><span>Fondato</span></div>
+                            <div id="club-date" class="stat-value-big" style="font-size: 1rem;">-</div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4 animate-slideUp stagger-2">
+                        <h4 class="mb-3"><i class="fas fa-users text-gold"></i> Rosa Squadra</h4>
+                        <div id="members-list"><p class="text-muted">Caricamento...</p></div>
+                    </div>
+
+                    <div class="action-buttons-container mt-4">
+                        <button id="join-btn" class="btn btn-primary btn-large btn-block" style="display:none;">Unisciti</button>
+                        <button id="leave-btn" class="btn btn-danger btn-large btn-block" style="display:none;">Abbandona Club</button>
+                    </div>
+
                 </div>
 
-                <!-- VISTA PER MEMBRI -->
-                <div id="member-panel" style="display:none;">
-                    <div class="club-hero animate-slideUp">
-                        <div class="club-logo" id="club-logo"><i class="fas fa-shield-alt"></i></div>
-                        <div class="club-info"><h1 id="club-name">Caricamento...</h1><p id="club-info">-</p></div>
-                    </div>
-
-                    <div class="tabs-container mb-3">
-                        <button class="tab-btn active" data-tab="formation">Formazione</button>
-                        <button class="tab-btn" id="req-tab" style="display:none;" data-tab="requests">Richieste</button>
-                        <button class="tab-btn" id="overview-tab" data-tab="overview">Panoramica</button>
-                    </div>
-
-                    <div id="tab-formation" class="tab-content active">
-                        <div class="main-layout">
-                            <div class="pitch-box">
-                                <div class="pitch-field" id="pitch">
-                                    <div class="pitch-inner-mask">
-                                        <div class="pitch-markings"><div class="pitch-area-top"></div><div class="pitch-area-bottom"></div></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="sidebar-panel">
-                                <div class="sidebar-title">Gestione Squadra</div>
-                                <div class="formation-selector" id="formation-box" style="display:none;">
-                                    <label style="font-size: 0.8rem; color: var(--text-muted); display:block; margin-bottom:5px;">Modulo</label>
-                                    <select id="formation-select" onchange="changeFormation(this.value)">
-                                        <option value="4-3-3">4-3-3</option>
-                                        <option value="4-4-2">4-4-2</option>
-                                        <option value="4-2-3-1">4-2-3-1</option>
-                                        <option value="3-5-2">3-5-2</option>
-                                        <option value="5-3-2">5-3-2</option>
-                                    </select>
-                                </div>
-                                <div class="roster-section">
-                                    <div class="section-header"><span>Rosa</span></div>
-                                    <div class="roster-list-small" id="roster-list"></div>
-                                </div>
-                                <div class="captain-tools" id="captain-tools" style="display:none;">
-                                    <button class="btn btn-primary btn-block" id="save-form-btn" type="button"><i class="fas fa-save"></i> Salva Formazione</button>
-                                    <button id="manage-numbers-btn" class="btn btn-secondary btn-block" type="button"><i class="fas fa-hashtag"></i> Gestione Numeri</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste in Attesa</h3><div id="req-list"></div></div></div>
-                    
-                    <div id="tab-overview" class="tab-content" style="display:none;">
-                        <div class="card animate-slideUp">
-                            <h3><i class="fas fa-chart-line text-gold"></i> Panoramica</h3>
-                            <div class="grid-3 mt-2">
-                                <div class="stat-box"><span style="color: var(--accent-green); font-size: 2rem; font-weight: bold;">0</span><br>Vittorie</div>
-                                <div class="stat-box"><span style="color: var(--accent-red); font-size: 2rem; font-weight: bold;">0</span><br>Sconfitte</div>
-                                <div class="stat-box"><span style="color: var(--accent-gold); font-size: 2rem; font-weight: bold;">0</span><br>Pareggi</div>
-                            </div>
-                        </div>
-                    </div>
+                <div id="error-state" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
+                    <h3 class="empty-state-title">Errore</h3>
+                    <p class="text-muted">Club non trovato.</p>
+                    <a href="club.html" class="btn btn-secondary mt-2">Torna ai Club</a>
                 </div>
 
             </div>
@@ -189,312 +175,240 @@
     </div>
 
     <script>
-        // === CONFIG ===
-        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508';
+        // CONFIG
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
+        const BIN_ID_USERS = '6a2ae33cda38895dfeaee508'; // Aggiunto per i nomi utenti
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-        let user = JSON.parse(localStorage.getItem('user') || 'null');
-        let clubs = [], users = [], club = null, isCaptain = false;
-        let originalRecord = null;
-        const urlP = new URLSearchParams(window.location.search);
-        const cId = urlP.get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const clubId = urlParams.get('id');
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-        window.onload = async function() {
-            if (!user) return window.location.href = '../accesso.html';
-            if (!cId) { showError("ID Club mancante"); return; }
-            
-            setupUIEvents();
-            await loadData();
-        };
+        let currentClub = null;
+        let allData = null;
+        let usersList = []; // Lista globale utenti
+
+        // UI SETUP
+        document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
+        document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+        document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
+        document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.href = '../home-non-loggato.html'; };
+
+        // FUNZIONI UTILITA
+        function getLogo(club) {
+            if (!club) return null;
+            const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
+            for (let p of props) {
+                if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
+            }
+            for (let key in club) {
+                let val = club[key];
+                if (typeof val === 'string' && val.length > 10) {
+                    if (val.includes('http') || val.includes('data:image') || val.includes('.png')) return val;
+                }
+            }
+            return null;
+        }
 
         async function loadData() {
+            if (!clubId) { showError(); return; }
+
             try {
-                // Carica Utenti
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                users = (await res.json()).record.users || [];
-                
-                // Carica Club
-                res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                const clubData = await res.json();
-                originalRecord = clubData.record;
+                // Carico sia Club che Utenti in parallelo
+                const [clubRes, userRes] = await Promise.all([
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
+                ]);
 
-                // FIX: Gestione struttura dati flessibile
-                if (Array.isArray(originalRecord)) clubs = originalRecord;
-                else clubs = originalRecord.clubs || originalRecord.club || [];
-                
-                club = clubs.find(c => c.id === cId);
-                if (!club) throw new Error("Club non trovato.");
+                const clubData = await clubRes.json();
+                const userData = await userRes.json();
 
-                // --- FIX: CONTROLLO PERMESSI MIGLIORATO ---
-                let isMember = false;
-                const myIdStr = String(user.id);
+                usersList = userData.record.users || [];
+                allData = clubData.record;
 
-                // 1. Controllo se sono Capitano (qualsiasi proprietà simile)
-                const captainKeys = ['captain', 'owner', 'presidente', 'createdBy', 'founder'];
-                captainKeys.forEach(key => {
-                    if(club[key]) {
-                        let val = club[key];
-                        // Se è un oggetto {id: ...}
-                        if (typeof val === 'object' && val !== null && val.id) val = val.id;
-                        if (String(val) === myIdStr) isCaptain = true;
-                    }
-                });
+                // FIX: Gestione flessibile struttura dati
+                let clubs = [];
+                if (Array.isArray(allData)) clubs = allData;
+                else clubs = allData.clubs || allData.club || [];
 
-                // 2. Controllo se sono Membro (gestendo array misti)
-                if (club.members && Array.isArray(club.members)) {
-                    club.members.forEach(member => {
-                        let memberId = member;
-                        // Se membro è un oggetto {id: ..., name: ...}
-                        if (typeof member === 'object' && member !== null && member.id) {
-                            memberId = member.id;
-                        }
-                        if (String(memberId) === myIdStr) isMember = true;
-                    });
-                }
+                currentClub = clubs.find(c => c.id === clubId);
 
-                console.log("DEBUG ACCESSO:", "Capitano?", isCaptain, "Membro?", isMember, "User ID:", user.id);
-
-                // --- VISUALIZZAZIONE ---
-                document.getElementById('loading-state').style.display = 'none';
-
-                if (isMember || isCaptain) {
-                    // Ho i permessi: mostro pannello membro
-                    document.getElementById('member-panel').style.display = 'block';
-                    document.getElementById('guest-view').style.display = 'none';
-                    renderHeader();
-                    
-                    if (isCaptain) {
-                        document.getElementById('req-tab').style.display = 'block';
-                        document.getElementById('captain-tools').style.display = 'flex';
-                        document.getElementById('formation-box').style.display = 'block';
-                        renderRequests();
-                    }
-                    initUI();
+                if (!currentClub) {
+                    console.error("Club ID cercato:", clubId, "Lista disponibile:", clubs);
+                    showError();
                 } else {
-                    // Non ho i permessi: mostro vista Guest
-                    document.getElementById('member-panel').style.display = 'none';
-                    document.getElementById('guest-view').style.display = 'flex';
-                    renderGuestView();
+                    renderUI();
                 }
 
             } catch (e) {
                 console.error(e);
-                showError(e.message);
+                showError();
             }
         }
 
-        // Nuova funzione per la vista Guest
-        function renderGuestView() {
-            const logoSrc = club.logo || club.immagine || club.img;
-            const logoEl = document.getElementById('guest-logo');
-            if (logoSrc) logoEl.innerHTML = `<img src="${logoSrc}" alt="Logo">`;
+        function showError() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'block';
+        }
+
+        function renderUI() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+
+            // Nome e Logo
+            document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
+            const logoSrc = getLogo(currentClub);
+            if (logoSrc) {
+                document.getElementById('club-logo').innerHTML = `<img src="${logoSrc}" alt="Logo">`;
+            }
+
+            // Stadio
+            const stadium = currentClub.stadium || currentClub.stadio;
+            document.getElementById('club-stadium').textContent = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : 'Stadio non specificato';
+
+            // Data
+            if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
+
+            // Membri
+            const members = currentClub.members || [];
+            document.getElementById('member-count').textContent = members.length;
             
-            document.getElementById('guest-name').textContent = club.name || club.nome || 'Club';
-
-            // Controllo se ho già richiesto
-            const hasRequested = (club.requests || []).some(r => {
-                let reqId = r;
-                if (typeof r === 'object' && r.id) reqId = r.id;
-                return String(reqId) === String(user.id);
+            let membersHtml = '';
+            members.forEach(m => {
+                // Gestisce sia ID stringa che oggetto
+                let mId = (typeof m === 'object' && m !== null && m.id) ? m.id : m;
+                const u = usersList.find(u => String(u.id) === String(mId));
+                const name = u ? u.nomeEA : `ID: ${mId}`;
+                
+                membersHtml += `<div class="member-item">
+                    <div class="member-avatar"><i class="fas fa-user"></i></div>
+                    <div class="member-name">${name}</div>
+                </div>`;
             });
+            document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
 
-            if (hasRequested) {
-                document.getElementById('guest-join-btn').innerHTML = '<i class="fas fa-clock"></i> Richiesta Inviata';
-                document.getElementById('guest-join-btn').disabled = true;
-                document.getElementById('guest-join-btn').classList.add('btn-pending');
+            // --- FIX: CONTROLLO CAPITANO / MEMBRO ROBUSTO ---
+            
+            // 1. Controllo Capitano (converte tutto in stringa per confronto sicuro)
+            const isCaptain = user && (
+                String(currentClub.captain) === String(user.id) ||
+                String(currentClub.owner) === String(user.id) ||
+                String(currentClub.presidente) === String(user.id) ||
+                String(currentClub.createdBy) === String(user.id) ||
+                String(currentClub.founder) === String(user.id)
+            );
+
+            // 2. Controllo Membro (itera l'array e confronta stringhe)
+            let isMember = false;
+            if (user && members.length > 0) {
+                members.forEach(m => {
+                    let mId = (typeof m === 'object' && m !== null && m.id) ? m.id : m;
+                    if (String(mId) === String(user.id)) isMember = true;
+                });
+            }
+
+            console.log("Permessi:", "Capitano?", isCaptain, "Membro?", isMember, "User ID:", user.id);
+
+            if (isCaptain) {
+                document.getElementById('captain-badge').style.display = 'inline-flex';
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('leave-btn').style.display = 'block'; // Opzionale
+                renderRequests();
+            } else if (isMember) {
+                document.getElementById('leave-btn').style.display = 'block';
+            } else {
+                // Se non è né capitano né membro
+                document.getElementById('join-btn').style.display = 'block';
+                document.getElementById('join-btn').onclick = () => requestJoin();
             }
         }
 
-        async function requestJoinFromGuest() {
-            if(!club.requests) club.requests = [];
-            club.requests.push(user.id);
-            await saveToCloud();
-            alert('Richiesta inviata! Attendi l\'approvazione del capitano.');
+        function renderRequests() {
+            const requests = currentClub.requests || [];
+            const listEl = document.getElementById('requests-list');
+
+            if (requests.length === 0) {
+                listEl.innerHTML = '<p class="text-muted">Nessuna richiesta in sospeso.</p>';
+                return;
+            }
+
+            let html = '';
+            requests.forEach(req => {
+                // Gestisce ID stringa o oggetto
+                let rId = (typeof req === 'object' && req !== null && req.id) ? req.id : req;
+                const u = usersList.find(u => String(u.id) === String(rId));
+                const name = u ? u.nomeEA : `ID: ${rId}`;
+
+                html += `<div class="request-item">
+                    <span>${name}</span>
+                    <div>
+                        <button class="btn btn-primary btn-xs" onclick="accept('${rId}')"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-danger btn-xs" onclick="reject('${rId}')" style="margin-left:5px;"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>`;
+            });
+            listEl.innerHTML = html;
+        }
+
+        // Azioni Admin
+        window.accept = async (userId) => {
+            if(!confirm("Accettare questo membro?")) return;
+            
+            if(!currentClub.members) currentClub.members = [];
+            currentClub.members.push(userId);
+            currentClub.requests = currentClub.requests.filter(id => String(id) !== String(userId));
+
+            await saveData();
+            alert('Membro aggiunto!');
+            location.reload();
+        };
+
+        window.reject = async (userId) => {
+            if(!confirm("Rifiutare questa richiesta?")) return;
+            
+            currentClub.requests = currentClub.requests.filter(id => String(id) !== String(userId));
+            await saveData();
+            alert('Richiesta rifiutata.');
+            location.reload();
+        };
+
+        // Richiesta utente normale
+        async function requestJoin() {
+            if(!user) return alert("Accedi per unirti.");
+            
+            if(!currentClub.requests) currentClub.requests = [];
+            // Evita duplicati
+            if(currentClub.requests.some(r => String(r) === String(user.id))) return alert("Richiesta già inviata.");
+
+            currentClub.requests.push(user.id);
+            await saveData();
+            alert('Richiesta inviata al capitano!');
             location.reload();
         }
 
-        function renderHeader() {
-            document.getElementById('club-name').textContent = club.name || club.nome || 'Club';
-            const capUser = users.find(u => String(u.id) === String(club.captain || club.owner));
-            document.getElementById('club-info').textContent = 'Capitano: ' + (capUser ? capUser.nomeEA : 'N/D');
-            const logoDiv = document.getElementById('club-logo');
-            const logoSrc = club.logo || club.immagine || club.img;
-            if (logoSrc) logoDiv.innerHTML = `<img src="${logoSrc}" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
-        }
-
-        async function saveToCloud() {
+        // Salva dati (Mantenendo struttura originale)
+        async function saveData() {
             let payload;
-            if (Array.isArray(originalRecord)) {
-                let idx = originalRecord.findIndex(c => c.id === cId);
-                if(idx !== -1) originalRecord[idx] = club;
-                payload = originalRecord;
+            if (Array.isArray(allData)) {
+                let idx = allData.findIndex(c => c.id === clubId);
+                if(idx !== -1) allData[idx] = currentClub;
+                payload = allData;
             } else {
-                let key = originalRecord.clubs ? 'clubs' : 'club';
-                originalRecord[key] = clubs;
-                payload = originalRecord;
+                let key = allData.clubs ? 'clubs' : 'club';
+                let list = allData[key];
+                let idx = list.findIndex(c => c.id === clubId);
+                if(idx !== -1) list[idx] = currentClub;
+                payload = allData;
             }
+
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                 body: JSON.stringify(payload)
             });
         }
 
-        function setupUIEvents() {
-            document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
-            document.getElementById('close-btn').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
-            document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
-            document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.onclick = function() {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-                    this.classList.add('active');
-                    const target = 'tab-' + this.dataset.tab;
-                    const tabEl = document.getElementById(target);
-                    if(tabEl) tabEl.style.display = 'block';
-                };
-            });
-            document.getElementById('manage-numbers-btn').onclick = () => window.location.href = 'gestione-numeri.html?id=' + cId;
-        }
-
-        function initUI() { renderRoster(); renderPitch(); }
-        function changeFormation(val) { club.formation = val; saveToCloud(); renderPitch(); renderRoster(); }
-
-        function generateRealisticJersey(c1, c2, playerName, playerNum) {
-            const numColor = isLightColor(c1) ? '#000' : '#fff';
-            return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
-                <path d="M28,42 L28,105 Q28,115 38,115 L62,115 Q72,115 72,105 L72,42 L82,32 Q60,22 50,22 Q40,22 18,32 Z" fill="${c1}" stroke="${c2}" stroke-width="2"/>
-                <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight="bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${playerNum || '?'}</text>
-            </svg>`;
-        }
-        function isLightColor(hex) { try { const c = hex.substring(1); const rgb = parseInt(c, 16); return ((rgb >> 16) & 0xff)*0.2126 + ((rgb >> 8) & 0xff)*0.7152 + ((rgb >> 0) & 0xff)*0.0722 > 127.5; } catch(e){ return false; } }
-
-        function renderRoster() {
-            const rosterList = document.getElementById('roster-list');
-            rosterList.innerHTML = '';
-            (club.members || []).forEach(mId => {
-                // Gestione membro come oggetto o stringa
-                let uId = (typeof mId === 'object' && mId !== null && mId.id) ? mId.id : mId;
-                const u = users.find(x => String(x.id) === String(uId));
-                if(!u) return;
-                
-                const isInLineup = club.lineup && Object.values(club.lineup).some(slot => String(slot.id) === String(uId));
-                const div = document.createElement('div');
-                div.className = 'roster-item';
-                div.dataset.id = u.id; div.dataset.name = u.nomeEA;
-                div.innerHTML = `<span class="r-name">${u.nomeEA}</span>`;
-                if(isCaptain) div.setAttribute('draggable', 'true');
-                div.ondragstart = (e) => e.dataTransfer.setData('text/plain', u.id);
-                if (isInLineup) div.style.opacity = '0.4';
-                rosterList.appendChild(div);
-            });
-        }
-
-        function checkNameScroll(el) {
-            if (el.scrollWidth > el.clientWidth) {
-                el.classList.add('scrolling-name');
-                const offset = el.clientWidth - el.scrollWidth;
-                el.style.setProperty('--scroll-offset', `${offset}px`);
-            }
-        }
-
-        function renderPitch() {
-            const pitch = document.getElementById('pitch');
-            const marks = pitch.querySelector('.pitch-inner-mask');
-            pitch.innerHTML = ''; pitch.appendChild(marks);
-            
-            const formationName = club.formation || '4-3-3';
-            document.getElementById('formation-select').value = formationName;
-            const positions = getFormationCoords(formationName);
-            const c1 = club.colors?.primary || '#f5a623';
-            const c2 = club.colors?.secondary || '#1a1a24';
-            
-            positions.forEach((pt, i) => {
-                const slot = document.createElement('div');
-                slot.className = 'player-slot';
-                if(!isCaptain) slot.style.pointerEvents = 'none';
-                slot.style.left = pt.x + '%'; slot.style.top = pt.y + '%';
-                
-                const data = club.lineup && club.lineup[i];
-                if (data) {
-                    const pUser = users.find(u => String(u.id) === String(data.id));
-                    const pName = pUser ? pUser.nomeEA : data.name;
-                    const pNum = data.num || '';
-                    
-                    const nameEl = document.createElement('div');
-                    nameEl.className = 'slot-player-name';
-                    nameEl.textContent = pName;
-
-                    slot.innerHTML = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card">${generateRealisticJersey(c1, c2, pName, pNum)}</div>`;
-                    
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'slot-info';
-                    infoDiv.appendChild(nameEl);
-                    slot.appendChild(infoDiv);
-
-                    setTimeout(() => checkNameScroll(nameEl), 50);
-                    if(isCaptain) { slot.draggable = true; slot.ondragstart = (e) => e.dataTransfer.setData('text/plain', String(data.id)); }
-                } else {
-                    slot.classList.add('empty');
-                    slot.innerHTML = `<div class="role-badge">${pt.abbrev}</div><div class="slot-card"></div>`;
-                }
-                
-                slot.ondragover = (e) => e.preventDefault();
-                slot.ondrop = (e) => {
-                    e.preventDefault();
-                    const droppedId = e.dataTransfer.getData('text/plain'); if (!droppedId) return;
-                    const rosterItem = document.querySelector(`.roster-item[data-id="${droppedId}"]`);
-                    const pName = rosterItem ? rosterItem.dataset.name : '?';
-                    if(club.lineup) Object.keys(club.lineup).forEach(k => { if (String(club.lineup[k].id) === droppedId) delete club.lineup[k]; });
-                    if(!club.lineup) club.lineup = {};
-                    club.lineup[i] = { id: droppedId, name: pName };
-                    saveAndRender();
-                };
-                pitch.appendChild(slot);
-            });
-        }
-
-        function getFormationCoords(f) {
-            const formations = {
-                "4-3-3": [{x:50, y:90, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:28, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:72, y:45, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
-                "4-4-2": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:15, y:42, abbrev:"ES"}, {x:38, y:45, abbrev:"CC"}, {x:62, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                "4-2-3-1": [{x:50, y:90, abbrev:"POR"}, {x:15, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:85, y:65, abbrev:"TD"}, {x:35, y:52, abbrev:"MDC"}, {x:65, y:52, abbrev:"MDC"}, {x:20, y:32, abbrev:"AS"}, {x:50, y:35, abbrev:"TQ"}, {x:80, y:32, abbrev:"AD"}, {x:50, y:15, abbrev:"AT"}],
-                "3-5-2": [{x:50, y:90, abbrev:"POR"}, {x:25, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:75, y:68, abbrev:"DC"}, {x:15, y:42, abbrev:"ES"}, {x:35, y:45, abbrev:"CC"}, {x:50, y:50, abbrev:"REG"}, {x:65, y:45, abbrev:"CC"}, {x:85, y:42, abbrev:"ED"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}],
-                "5-3-2": [{x:50, y:90, abbrev:"POR"}, {x:10, y:58, abbrev:"TS"}, {x:30, y:68, abbrev:"DC"}, {x:50, y:70, abbrev:"DC"}, {x:70, y:68, abbrev:"DC"}, {x:90, y:58, abbrev:"TD"}, {x:30, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:70, y:45, abbrev:"CC"}, {x:35, y:20, abbrev:"AT"}, {x:65, y:20, abbrev:"AT"}]
-            };
-            return formations[f] || formations["4-3-3"];
-        }
-
-        async function saveAndRender() { await saveToCloud(); initUI(); }
-        document.getElementById('save-form-btn').onclick = async () => { await saveAndRender(); alert('Salvato!'); };
-
-        function renderRequests() {
-            const list = document.getElementById('req-list');
-            const pendingIds = club.requests || [];
-            if (pendingIds.length === 0) { list.innerHTML = '<p style="padding:10px; opacity:0.5">Nessuna richiesta.</p>'; return; }
-            list.innerHTML = '';
-            pendingIds.forEach(reqId => {
-                let rId = (typeof reqId === 'object' && reqId !== null && reqId.id) ? reqId.id : reqId;
-                const u = users.find(us => String(us.id) === String(rId));
-                const name = u ? u.nomeEA : 'Sconosciuto';
-                list.innerHTML += `<div style="background:#21262d; padding:10px; margin-bottom:5px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;"><span>${name}</span><div><button class="btn btn-secondary" style="padding:5px 10px;" onclick="decide('${rId}', true)">Accetta</button> <button class="btn btn-secondary" style="padding:5px 10px; background:#333;" onclick="decide('${rId}', false)">Rifiuta</button></div></div>`;
-            });
-        }
-        
-        window.decide = async (id, approve) => {
-            club.requests = (club.requests || []).filter(r => {
-                let existingId = (typeof r === 'object' && r !== null && r.id) ? r.id : r;
-                return String(existingId) !== String(id);
-            });
-            if (approve) { if (!club.members) club.members = []; club.members.push(id); }
-            await saveAndRender(); renderRequests();
-        };
-
-        function showError(msg) {
-            document.getElementById('loading-state').innerHTML = `<div class="guest-view-container"><div class="guest-card"><h2 style="color:red">Errore</h2><p>${msg}</p></div></div>`;
-        }
+        loadData();
     </script>
 </body>
 </html>
