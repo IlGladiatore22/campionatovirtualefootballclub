@@ -68,14 +68,24 @@
         .team-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .team-list-item:last-child { border-bottom: none; }
         
-        /* Stile Loghi Squadre */
+        /* Stile Loghi Squadre - FIX VISIBILITA' */
         .team-logo-wrapper {
-            width: 32px; height: 32px; border-radius: 50%; background: var(--bg-primary); 
+            width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); 
             display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; 
             border: 1px solid var(--border-color);
+            position: relative;
         }
-        .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .team-logo-wrapper i { color: var(--text-muted); font-size: 0.9rem; }
+        /* Immagine: copre tutto, se fallisce scompare */
+        .team-logo-wrapper img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            position: absolute; top: 0; left: 0;
+        }
+        /* Icona: visibile solo se l'immagine non c'è o fallisce */
+        .team-logo-wrapper i { 
+            color: #fff; /* Bianco per essere visibile su sfondo scuro */
+            font-size: 1rem; 
+            z-index: 1; 
+        }
         
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
@@ -88,14 +98,6 @@
         .action-buttons-container .btn-primary { flex: 2; }
         .action-buttons-container .btn-danger { flex: 1; }
 
-        .btn-pending {
-            background: #6c757d !important;
-            cursor: default !important;
-            opacity: 0.9;
-            color: white !important;
-            border: none;
-        }
-        
         .btn-danger {
             background: var(--accent-red);
             color: white;
@@ -254,6 +256,7 @@
                         <div id="comp-details"><p class="text-muted">-</p></div>
                     </div>
 
+                    <!-- SEZIONE SQUADRE -->
                     <div class="card mt-4 animate-slideUp stagger-4">
                         <h4 class="mb-3"><i class="fas fa-shield-alt text-gold"></i> Squadre Registrate (<span id="teams-count">0</span>)</h4>
                         <div id="teams-list"><p class="text-muted">-</p></div>
@@ -281,38 +284,42 @@
     </div>
 
     <script>
+        // CONFIGURAZIONE API
         const BIN_ID_COMP = '6a2d7dcbf5f4af5e29ec21b0';
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-        // UI SETUP
+        // VARIABILI GLOBALI
+        let currentComp = null;
+        let allClubs = [];
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const urlParams = new URLSearchParams(window.location.search);
+        const compId = urlParams.get('id');
+
+        // FUNZIONI UI
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
         const sidebar = document.getElementById('sidebar');
 
-        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-        menuBtn.addEventListener('click', openSidebar);
-        closeBtn.addEventListener('click', closeSidebar);
-        overlay.addEventListener('click', closeSidebar);
+        menuBtn.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; });
 
         function toggleRegolamento() {
             const content = document.getElementById('reg-content');
             const arrow = document.getElementById('reg-arrow');
-            if (content.style.display === 'none' || content.style.display === '') {
-                content.style.display = 'block';
-                arrow.classList.add('open');
-            } else {
+            if (content.style.display === 'block') {
                 content.style.display = 'none';
                 arrow.classList.remove('open');
+            } else {
+                content.style.display = 'block';
+                arrow.classList.add('open');
             }
         }
 
-        // AUTH
-        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        // AUTH CHECK
         const token = localStorage.getItem('auth_token');
-        
         if (!user || !token) {
             window.location.href = '../accesso.html';
         } else {
@@ -340,38 +347,65 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // DATA LOAD
-        const urlParams = new URLSearchParams(window.location.search);
-        const compId = urlParams.get('id');
-        let currentComp = null;
-        let allClubs = [];
+        // --- FUNZIONI DATI ---
+
+        // Funzione intelligente per trovare il logo in un oggetto club
+        function findLogoUrl(clubObj) {
+            if (!clubObj || typeof clubObj !== 'object') return null;
+
+            // 1. Cerca nelle proprietà standard
+            const stdProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield', 'emblem'];
+            for (let prop of stdProps) {
+                if (clubObj[prop] && typeof clubObj[prop] === 'string' && clubObj[prop].length > 5) {
+                    return clubObj[prop];
+                }
+            }
+
+            // 2. Scansiona TUTTE le proprietà per trovare un link (http, data:image, estensioni img)
+            for (let key in clubObj) {
+                if (clubObj.hasOwnProperty(key)) {
+                    const val = clubObj[key];
+                    if (typeof val === 'string' && val.length > 10) {
+                        if (val.includes('http') || val.includes('data:image') || val.match(/\.(png|jpg|jpeg|webp|gif)/i)) {
+                            return val;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
         async function loadData() {
             if (!compId) { showError(); return; }
+
             try {
+                // Fetch parallelo
                 const [compRes, clubRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
                 ]);
+
                 const compData = await compRes.json();
                 const clubData = await clubRes.json();
-                
+
                 const competizioni = compData.record.competizioni || [];
                 
-                // FIX: Gestione robusta del caricamento clubs (Array o Oggetto)
-                const clubRecord = clubData.record;
-                if (Array.isArray(clubRecord)) {
-                    allClubs = clubRecord;
+                // Caricamento Club flessibile
+                if (Array.isArray(clubData.record)) {
+                    allClubs = clubData.record;
                 } else {
-                    allClubs = clubRecord.club || clubRecord.clubs || clubRecord.teams || [];
+                    allClubs = clubData.record.club || clubData.record.clubs || clubData.record.teams || [];
                 }
                 
+                console.log("Club caricati:", allClubs); // Debug
+
                 currentComp = competizioni.find(c => c.id === compId);
                 
                 if (!currentComp) { showError(); return; }
+                
                 renderUI();
             } catch (error) {
-                console.error(error);
+                console.error("Errore caricamento dati:", error);
                 document.getElementById('loading-state').innerHTML = '<p style="color:red;">Errore database.</p>';
             }
         }
@@ -381,54 +415,11 @@
             document.getElementById('error-state').style.display = 'block';
         }
 
-        // Funzione Helper: Cerca il logo ovunque nell'oggetto
-        function getClubLogo(club) {
-            if (!club) return '';
-            
-            // Funzione ricorsiva per cercare stringhe che sembrano immagini
-            const searchDeep = (obj) => {
-                if (!obj || typeof obj !== 'object') return null;
-                
-                // 1. Controlla proprietà comuni
-                const commonProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'logoURL', 'pic', 'avatar', 'teamLogo', 'shield', 'emblem'];
-                for (let prop of commonProps) {
-                    if (obj[prop] && typeof obj[prop] === 'string' && obj[prop].length > 5) {
-                        return obj[prop];
-                    }
-                }
-                
-                // 2. Controlla se ci sono link immagine in altre proprietà
-                for (let key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        const val = obj[key];
-                        if (typeof val === 'string' && val.length > 5) {
-                            // Se contiene http o estensioni immagine
-                            if (val.includes('http') || val.includes('.png') || val.includes('.jpg') || val.includes('.webp') || val.includes('data:image')) {
-                                return val;
-                            }
-                        }
-                        // 3. Se è un oggetto nidificato, cerca dentro
-                        if (typeof val === 'object' && val !== null) {
-                            const found = searchDeep(val);
-                            if (found) return found;
-                        }
-                    }
-                }
-                return null;
-            };
-
-            // Esegui la ricerca
-            const result = searchDeep(club);
-            if (result) return result;
-
-            // Fallback vecchia modalità (proprieta diretta)
-            return club.logo || club.immagine || '';
-        }
-
         function renderUI() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             
+            // Info Competizione
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
@@ -436,11 +427,13 @@
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
             document.getElementById('comp-created').textContent = created;
 
+            // Stato
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
             statusEl.textContent = stato.replace(/_/g, ' ').toUpperCase();
             statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
+            // Statistiche
             const costo = currentComp.costo || 0;
             document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
             
@@ -466,6 +459,7 @@
             detailsHTML += '</ul>';
             document.getElementById('comp-details').innerHTML = detailsHTML;
 
+            // Premi
             const prizesDiv = document.getElementById('comp-prizes');
             const premi = currentComp.premi || '';
             if (premi.trim() !== '') {
@@ -482,7 +476,48 @@
             } else { prizesDiv.innerHTML = '<p class="text-muted">Nessun premio specificato.</p>'; }
 
             renderTeams(registrati);
+            setupSubscribe(registrati, maxSq, costo);
+            setupAdmin();
+        }
 
+        // --- RENDER SQUADRE (LOGICA FIXATA) ---
+        function renderTeams(registrati) {
+            const teamsList = document.getElementById('teams-list');
+            document.getElementById('teams-count').textContent = registrati.length;
+            
+            if (registrati.length > 0) {
+                const containerClass = registrati.length >= 5 ? 'teams-container-grid' : 'teams-container-list';
+                let html = `<div class="${containerClass}">`;
+                
+                registrati.forEach(clubId => {
+                    const club = allClubs.find(c => c.id === clubId);
+                    if (club) {
+                        const logoUrl = findLogoUrl(club);
+                        
+                        // Costruzione HTML
+                        // Default: mostro l'icona.
+                        // Se c'è il logo, metto l'immagine SOPRA l'icona. Se l'immagine fallisce, si nasconde e resta l'icona.
+                        let logoHtml = `<i class="fas fa-shield-alt" style="color: #ccc;"></i>`; // Icona di default visibile
+                        
+                        if (logoUrl) {
+                            // Aggiungo l'immagine. onerror nasconde l'img se il link è rotto
+                            logoHtml += `<img src="${logoUrl}" alt="Logo" onerror="this.style.display='none';">`;
+                        }
+                        
+                        html += `<div class="team-list-item">
+                            <div class="team-logo-wrapper">${logoHtml}</div>
+                            <div class="team-name-text">${club.nome || club.name}</div>
+                        </div>`;
+                    }
+                });
+                html += '</div>';
+                teamsList.innerHTML = html;
+            } else {
+                teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>';
+            }
+        }
+
+        function setupAdmin() {
             if (user.isAdmin) {
                 document.getElementById('admin-controls').style.display = 'block';
                 document.getElementById('edit-link').href = `../admin/modifica-competizione.html?id=${compId}`;
@@ -503,54 +538,13 @@
                     } catch(e) { alert("Errore salvataggio."); }
                 };
             }
-
-            setupSubscribe(registrati, maxSq, costo);
-        }
-
-        // --- RENDER TEAMS CON VISUALIZZAZIONE LOGHI MIGLIORATA ---
-        function renderTeams(registrati) {
-            const teamsList = document.getElementById('teams-list');
-            document.getElementById('teams-count').textContent = registrati.length;
-            
-            if (registrati.length > 0) {
-                const containerClass = registrati.length >= 5 ? 'teams-container-grid' : 'teams-container-list';
-                let html = `<div class="${containerClass}">`;
-                
-                registrati.forEach(clubId => {
-                    const club = allClubs.find(c => c.id === clubId);
-                    if (club) {
-                        // Trova il logo usando la funzione avanzata
-                        const logoSrc = getClubLogo(club);
-                        
-                        let logoHtml = '';
-                        if (logoSrc) {
-                            // Sanitizzazione base dell'URL per sicurezza virgolette
-                            const safeSrc = logoSrc.replace(/"/g, '&quot;');
-                            // Se l'immagine non carica, mostra l'icona
-                            logoHtml = `<img src="${safeSrc}" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                        <i class="fas fa-shield-alt" style="display:none;"></i>`;
-                        } else {
-                            // Se non c'è logo, mostra icona diretta
-                            logoHtml = '<i class="fas fa-shield-alt"></i>';
-                        }
-                        
-                        html += `<div class="team-list-item">
-                            <div class="team-logo-wrapper">${logoHtml}</div>
-                            <div class="team-name-text">${club.nome || club.name}</div>
-                        </div>`;
-                    }
-                });
-                html += '</div>';
-                teamsList.innerHTML = html;
-            } else {
-                teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>';
-            }
         }
 
         function setupSubscribe(registrati, maxSquadre, costo) {
             const btn = document.getElementById('subscribe-btn');
             const withdrawBtn = document.getElementById('withdraw-btn');
             
+            // Trova il club dell'utente
             const userClub = allClubs.find(c => {
                 const members = c.membri || c.members || [];
                 const isMember = members.includes(user.id);
@@ -568,6 +562,7 @@
                 return;
             }
 
+            // Se già iscritto
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
@@ -575,7 +570,6 @@
                 withdrawBtn.style.display = 'inline-block';
                 withdrawBtn.onclick = async () => {
                     if(!confirm("Sei sicuro di volerti ritirare dalla competizione?")) return;
-
                     try {
                         withdrawBtn.disabled = true;
                         withdrawBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -593,7 +587,6 @@
                                 method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                                 body: JSON.stringify({ "competizioni": list })
                             });
-
                             alert('Ti sei ritirato dalla competizione.');
                             location.reload();
                         }
@@ -607,6 +600,7 @@
                 return;
             }
 
+            // Iscriviti
             btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ISCRIVITI';
             
             btn.onclick = async () => {
@@ -650,6 +644,7 @@
             };
         }
 
+        // AVVIO
         loadData();
 
     </script>
