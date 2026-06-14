@@ -345,32 +345,31 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // --- FUNZIONE FIND LOGO MIGLIORATA (CASE-INSENSITIVE) ---
+        // --- FUNZIONE DEBUG ESTREMO ---
         function findLogoUrl(clubObj) {
-            if (!clubObj || typeof clubObj !== 'object') return null;
+            if (!clubObj) return null;
 
-            // Nomi possibili (controllati in minuscolo)
-            const possibleNames = ['logo', 'immagine', 'image', 'logourl', 'foto', 'img', 'shield', 'emblem', 'pic', 'avatar', 'teamlogo'];
+            // 1. Logghiamo TUTTO l'oggetto per vedere cosa c'è dentro
+            console.log("--- ANALISI OGGETTO CLUB ---", clubObj);
 
-            // 1. Cerca proprietà con nome noto (case-insensitive)
+            // 2. Iteriamo su TUTTE le chiavi
             for (let key in clubObj) {
-                if (possibleNames.includes(key.toLowerCase())) { // Confronto minuscolo
+                if (clubObj.hasOwnProperty(key)) {
                     const val = clubObj[key];
-                    if (val && typeof val === 'string' && val.trim() !== '') {
-                        return val.trim();
-                    }
-                }
-            }
+                    console.log(`Controllo chiave: '${key}' ->`, val);
 
-            // 2. Se non trova, cerca qualsiasi stringa che sembra un URL immagine
-            for (let key in clubObj) {
-                const val = clubObj[key];
-                if (val && typeof val === 'string' && val.length > 10) {
-                    if (val.includes('http') || val.includes('data:image') || val.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
-                        return val;
+                    // Se è una stringa
+                    if (typeof val === 'string') {
+                        // Controlliamo se sembra un link (http, google drive, extensions)
+                        if (val.includes('http') || val.includes('drive.google') || val.includes('.png') || val.includes('.jpg') || val.includes('data:image')) {
+                            console.log(`%c TROVATO URL NELLA CHIAVE '${key}': ${val}`, "color: green; font-weight: bold;");
+                            return val;
+                        }
                     }
                 }
             }
+            
+            console.warn("Nessun URL immagine trovato in questo oggetto.");
             return null;
         }
 
@@ -388,7 +387,7 @@
 
                 const competizioni = compData.record.competizioni || [];
                 
-                // Caricamento Club flessibile
+                // Caricamento Club
                 if (Array.isArray(clubData.record)) {
                     allClubs = clubData.record;
                 } else {
@@ -415,7 +414,6 @@
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             
-            // Info Competizione
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
@@ -423,13 +421,11 @@
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
             document.getElementById('comp-created').textContent = created;
 
-            // Stato
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
             statusEl.textContent = stato.replace(/_/g, ' ').toUpperCase();
             statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
-            // Statistiche
             const costo = currentComp.costo || 0;
             document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
             
@@ -455,7 +451,6 @@
             detailsHTML += '</ul>';
             document.getElementById('comp-details').innerHTML = detailsHTML;
 
-            // Premi
             const prizesDiv = document.getElementById('comp-prizes');
             const premi = currentComp.premi || '';
             if (premi.trim() !== '') {
@@ -476,7 +471,7 @@
             setupAdmin();
         }
 
-        // --- RENDER SQUADRE CON DEBUG ---
+        // --- RENDER SQUADRE ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -488,16 +483,12 @@
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
+                        // Richiamiamo la funzione di debug
                         const logoUrl = findLogoUrl(club);
-                        
-                        // DEBUG: Apri la console (F12) per vedere cosa trova
-                        console.log(`DEBUG LOGO: Squadra '${club.nome || club.name}' -> Proprietà trovata:`, logoUrl);
 
-                        // Icona di default (sempre presente ma nascosta se c'è img valida)
                         let logoHtml = `<i class="fas fa-shield-alt" style="color: #ccc;"></i>`;
                         
                         if (logoUrl) {
-                            // Se ho un URL, metto l'immagine. Se l'immagine da errore, si nasconde e resta l'icona.
                             logoHtml += `<img src="${logoUrl}" alt="Logo" onerror="this.style.display='none';">`;
                         }
                         
