@@ -58,7 +58,6 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- FRECCIA RIMOSSA -->
                 <a href="../home.html" class="logo-container" style="text-decoration: none;">
                     <div class="logo">
                         <img src="../../estetica/logosito.png" alt="FC27 Logo">
@@ -211,15 +210,25 @@
             const emptyState = document.getElementById('empty-state');
 
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY },
-                    cache: 'no-store'
-                });
+                // MODIFICA: Scarico sia competizioni che club per verificare i partecipanti
+                const [compRes, clubRes] = await Promise.all([
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMPETIZIONI}/latest`, {
+                        headers: { 'X-Master-Key': API_KEY },
+                        cache: 'no-store'
+                    }),
+                    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
+                        headers: { 'X-Master-Key': API_KEY },
+                        cache: 'no-store'
+                    })
+                ]);
 
-                if (!res.ok) throw new Error("Errore connessione database.");
+                if (!compRes.ok) throw new Error("Errore connessione database.");
 
-                const data = await res.json();
-                const competitions = data.record.competizioni || [];
+                const compData = await compRes.json();
+                const clubData = await clubRes.json();
+                
+                const competitions = compData.record.competizioni || [];
+                const allClubs = clubData.record.club || []; // Lista completa dei club esistenti
 
                 if (competitions.length > 0) {
                     emptyState.style.display = 'none';
@@ -248,7 +257,10 @@
                         const descComp = comp.descrizione || comp.description || '';
                         const costoComp = comp.costo || comp.cost || 0;
                         const maxSquadre = comp.max_squadre || comp.maxTeams || '∞';
-                        const registrati = comp.club_registrati || comp.registeredClubs || [];
+                        
+                        // FIX: Conta solo i club che esistono realmente
+                        const rawIds = comp.club_registrati || comp.registeredClubs || [];
+                        const validCount = rawIds.filter(id => allClubs.some(c => c.id === id)).length;
 
                         card.innerHTML = `
                             <div class="card-image">${imageContent}</div>
@@ -256,7 +268,7 @@
                             <h4 class="card-title">${nomeComp}</h4>
                             <p class="card-description">${descComp}</p>
                             <div class="flex justify-between mt-2">
-                                <span class="text-muted"><i class="fas fa-users"></i> ${registrati.length}/${maxSquadre}</span>
+                                <span class="text-muted"><i class="fas fa-users"></i> ${validCount}/${maxSquadre}</span>
                                 <span class="text-gold"><i class="fas fa-euro-sign"></i> ${costoComp > 0 ? costoComp + ' €' : 'Gratuito'}</span>
                             </div>`;
                         grid.appendChild(card);
