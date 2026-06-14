@@ -68,21 +68,19 @@
         .team-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .team-list-item:last-child { border-bottom: none; }
         
-        /* Stile Loghi Squadre - FIX VISIBILITA' */
+        /* Stile Loghi Squadre */
         .team-logo-wrapper {
             width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); 
             display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; 
             border: 1px solid var(--border-color);
             position: relative;
         }
-        /* Immagine: copre tutto, se fallisce scompare */
         .team-logo-wrapper img { 
             width: 100%; height: 100%; object-fit: cover; 
             position: absolute; top: 0; left: 0;
         }
-        /* Icona: visibile solo se l'immagine non c'è o fallisce */
         .team-logo-wrapper i { 
-            color: #fff; /* Bianco per essere visibile su sfondo scuro */
+            color: #fff; 
             font-size: 1rem; 
             z-index: 1; 
         }
@@ -347,28 +345,29 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // --- FUNZIONI DATI ---
-
-        // Funzione intelligente per trovare il logo in un oggetto club
+        // --- FUNZIONE FIND LOGO MIGLIORATA (CASE-INSENSITIVE) ---
         function findLogoUrl(clubObj) {
             if (!clubObj || typeof clubObj !== 'object') return null;
 
-            // 1. Cerca nelle proprietà standard
-            const stdProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield', 'emblem'];
-            for (let prop of stdProps) {
-                if (clubObj[prop] && typeof clubObj[prop] === 'string' && clubObj[prop].length > 5) {
-                    return clubObj[prop];
+            // Nomi possibili (controllati in minuscolo)
+            const possibleNames = ['logo', 'immagine', 'image', 'logourl', 'foto', 'img', 'shield', 'emblem', 'pic', 'avatar', 'teamlogo'];
+
+            // 1. Cerca proprietà con nome noto (case-insensitive)
+            for (let key in clubObj) {
+                if (possibleNames.includes(key.toLowerCase())) { // Confronto minuscolo
+                    const val = clubObj[key];
+                    if (val && typeof val === 'string' && val.trim() !== '') {
+                        return val.trim();
+                    }
                 }
             }
 
-            // 2. Scansiona TUTTE le proprietà per trovare un link (http, data:image, estensioni img)
+            // 2. Se non trova, cerca qualsiasi stringa che sembra un URL immagine
             for (let key in clubObj) {
-                if (clubObj.hasOwnProperty(key)) {
-                    const val = clubObj[key];
-                    if (typeof val === 'string' && val.length > 10) {
-                        if (val.includes('http') || val.includes('data:image') || val.match(/\.(png|jpg|jpeg|webp|gif)/i)) {
-                            return val;
-                        }
+                const val = clubObj[key];
+                if (val && typeof val === 'string' && val.length > 10) {
+                    if (val.includes('http') || val.includes('data:image') || val.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
+                        return val;
                     }
                 }
             }
@@ -379,7 +378,6 @@
             if (!compId) { showError(); return; }
 
             try {
-                // Fetch parallelo
                 const [compRes, clubRes] = await Promise.all([
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' }),
                     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' })
@@ -396,8 +394,6 @@
                 } else {
                     allClubs = clubData.record.club || clubData.record.clubs || clubData.record.teams || [];
                 }
-                
-                console.log("Club caricati:", allClubs); // Debug
 
                 currentComp = competizioni.find(c => c.id === compId);
                 
@@ -480,7 +476,7 @@
             setupAdmin();
         }
 
-        // --- RENDER SQUADRE (LOGICA FIXATA) ---
+        // --- RENDER SQUADRE CON DEBUG ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -494,13 +490,14 @@
                     if (club) {
                         const logoUrl = findLogoUrl(club);
                         
-                        // Costruzione HTML
-                        // Default: mostro l'icona.
-                        // Se c'è il logo, metto l'immagine SOPRA l'icona. Se l'immagine fallisce, si nasconde e resta l'icona.
-                        let logoHtml = `<i class="fas fa-shield-alt" style="color: #ccc;"></i>`; // Icona di default visibile
+                        // DEBUG: Apri la console (F12) per vedere cosa trova
+                        console.log(`DEBUG LOGO: Squadra '${club.nome || club.name}' -> Proprietà trovata:`, logoUrl);
+
+                        // Icona di default (sempre presente ma nascosta se c'è img valida)
+                        let logoHtml = `<i class="fas fa-shield-alt" style="color: #ccc;"></i>`;
                         
                         if (logoUrl) {
-                            // Aggiungo l'immagine. onerror nasconde l'img se il link è rotto
+                            // Se ho un URL, metto l'immagine. Se l'immagine da errore, si nasconde e resta l'icona.
                             logoHtml += `<img src="${logoUrl}" alt="Logo" onerror="this.style.display='none';">`;
                         }
                         
@@ -544,7 +541,6 @@
             const btn = document.getElementById('subscribe-btn');
             const withdrawBtn = document.getElementById('withdraw-btn');
             
-            // Trova il club dell'utente
             const userClub = allClubs.find(c => {
                 const members = c.membri || c.members || [];
                 const isMember = members.includes(user.id);
@@ -562,7 +558,6 @@
                 return;
             }
 
-            // Se già iscritto
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
@@ -600,7 +595,6 @@
                 return;
             }
 
-            // Iscriviti
             btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ISCRIVITI';
             
             btn.onclick = async () => {
