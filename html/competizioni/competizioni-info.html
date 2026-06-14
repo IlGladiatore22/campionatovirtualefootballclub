@@ -72,12 +72,13 @@
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
-        /* Stili Bottoni Stato */
+        /* Stile Bottone Stato Attesa */
         .btn-pending {
-            background: #555 !important; /* Grigio scuro */
+            background: #6c757d !important; /* Grigio */
             cursor: default !important;
             opacity: 0.9;
             color: white !important;
+            border: none;
         }
     </style>
 </head>
@@ -238,7 +239,7 @@
 
                     <div class="mt-4 mb-4 animate-slideUp stagger-5">
                         <button id="subscribe-btn" class="btn btn-primary btn-block btn-large">
-                            <i class="fas fa-sign-in-alt"></i> Caricamento...
+                            <i class="fas fa-spinner fa-spin"></i> Caricamento...
                         </button>
                     </div>
 
@@ -259,6 +260,7 @@
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
+        // UI SETUP
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
@@ -269,7 +271,6 @@
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
         function toggleRegolamento() {
             const content = document.getElementById('reg-content');
@@ -283,6 +284,7 @@
             }
         }
 
+        // AUTH
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
         
@@ -313,6 +315,7 @@
             window.location.href = '../home-non-loggato.html';
         });
 
+        // DATA LOAD
         const urlParams = new URLSearchParams(window.location.search);
         const compId = urlParams.get('id');
         let currentComp = null;
@@ -351,16 +354,18 @@
         function renderUI() {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
+            
+            // Popola dati competizione
             document.getElementById('comp-name').textContent = currentComp.nome || 'Competizione';
             document.getElementById('comp-desc-hero').textContent = currentComp.descrizione || '';
             document.getElementById('organizer-name').textContent = currentComp.organizzatore || "FC27";
+            
             const created = currentComp.creato_il ? new Date(currentComp.creato_il).toLocaleDateString('it-IT') : 'N/D';
             document.getElementById('comp-created').textContent = created;
 
             const statusEl = document.getElementById('comp-status');
             const stato = currentComp.stato || 'chiusa';
-            let statusText = stato.replace(/_/g, ' ').toUpperCase();
-            statusEl.textContent = statusText;
+            statusEl.textContent = stato.replace(/_/g, ' ').toUpperCase();
             statusEl.style.background = stato === 'aperta' ? 'var(--accent-green)' : stato === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
 
             const costo = currentComp.costo || 0;
@@ -446,27 +451,36 @@
 
         function setupSubscribe(registrati, maxSquadre, costo, richieste) {
             const btn = document.getElementById('subscribe-btn');
-            const userClub = allClubs.find(c => (c.membri || c.members || []).includes(user.id));
+            
+            // Cerca il club dell'utente corrente (controllando membri e proprietario)
+            const userClub = allClubs.find(c => {
+                const members = c.membri || c.members || [];
+                const isMember = members.includes(user.id);
+                const isOwner = (c.presidente === user.id || c.owner === user.id || c.createdBy === user.id);
+                return isMember || isOwner;
+            });
 
-            // Reset stile bottone
-            btn.className = 'btn btn-primary btn-block btn-large';
+            console.log("User Club trovato:", userClub); // Debug
+
+            // Reset UI bottone
             btn.disabled = false;
+            btn.className = 'btn btn-primary btn-block btn-large';
 
-            // 1. CASO: Nessun Club
+            // 1. Nessun Club
             if (!userClub) {
                 btn.innerHTML = '<i class="fas fa-users"></i> Unisciti a un Club';
                 btn.onclick = () => { window.location.href = '../club/club.html'; };
                 return;
             }
 
-            // 2. CASO: Già Iscritto (Approvato)
+            // 2. Già Iscritto
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
                 return;
             }
 
-            // 3. CASO: Richiesta in attesa
+            // 3. Richiesta in attesa
             const pendingRequest = richieste.find(r => r.clubId === userClub.id && r.competizioneId === compId && r.stato === 'in_attesa');
             if (pendingRequest) {
                 btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
@@ -476,7 +490,7 @@
                 return;
             }
 
-            // 4. CASO: Invia Richiesta (Default)
+            // 4. Default: INVIA RICHIESTA
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
             
             btn.onclick = async () => {
@@ -487,12 +501,13 @@
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
 
+                    // Fetch dati aggiornati
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                     const d = await res.json();
                     
                     if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
 
-                    // Controllo doppio sicurezza
+                    // Doppio controllo
                     const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
                     if (exists) {
                         btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
@@ -500,6 +515,7 @@
                         return;
                     }
 
+                    // Creazione richiesta
                     const nuovaRichiesta = {
                         id: 'req_' + Date.now(),
                         competizioneId: compId,
@@ -514,13 +530,14 @@
 
                     d.record.richieste_iscrizione.push(nuovaRichiesta);
 
+                    // Salvataggio
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                         method: 'PUT', 
                         headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
                         body: JSON.stringify(d.record) 
                     });
 
-                    // SUCCESSO: Aggiorna UI senza ricaricare
+                    // Successo UI
                     alert('Richiesta inviata con successo! Attendi risposta dagli admin.');
                     btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
                     btn.classList.add('btn-pending');
