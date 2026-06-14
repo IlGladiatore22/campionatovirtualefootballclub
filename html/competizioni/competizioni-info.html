@@ -72,14 +72,31 @@
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
-        /* Stile Bottone Stato Attesa */
+        /* Stili Bottoni Azione */
+        .action-buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+        /* Il bottone primario prende più spazio se c'è il secondario */
+        .action-buttons-container .btn-primary { flex: 2; }
+        .action-buttons-container .btn-danger { flex: 1; }
+
         .btn-pending {
-            background: #6c757d !important; /* Grigio */
+            background: #6c757d !important;
             cursor: default !important;
             opacity: 0.9;
             color: white !important;
             border: none;
         }
+        
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+        }
+        .btn-danger:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -237,9 +254,14 @@
                         <div id="teams-list"><p class="text-muted">-</p></div>
                     </div>
 
-                    <div class="mt-4 mb-4 animate-slideUp stagger-5">
-                        <button id="subscribe-btn" class="btn btn-primary btn-block btn-large">
+                    <!-- Contenitore Bottoni Azione -->
+                    <div class="action-buttons-container animate-slideUp stagger-5">
+                        <button id="subscribe-btn" class="btn btn-primary btn-large btn-block">
                             <i class="fas fa-spinner fa-spin"></i> Caricamento...
+                        </button>
+                        <!-- BOTTONE RITIRATI (Nascosto di default) -->
+                        <button id="withdraw-btn" class="btn btn-danger btn-large" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i> RITIRATI
                         </button>
                     </div>
 
@@ -451,8 +473,9 @@
 
         function setupSubscribe(registrati, maxSquadre, costo, richieste) {
             const btn = document.getElementById('subscribe-btn');
+            const withdrawBtn = document.getElementById('withdraw-btn');
             
-            // Cerca il club dell'utente corrente (controllando membri e proprietario)
+            // Cerca il club dell'utente corrente
             const userClub = allClubs.find(c => {
                 const members = c.membri || c.members || [];
                 const isMember = members.includes(user.id);
@@ -460,11 +483,10 @@
                 return isMember || isOwner;
             });
 
-            console.log("User Club trovato:", userClub); // Debug
-
-            // Reset UI bottone
+            // Reset UI bottoni
             btn.disabled = false;
-            btn.className = 'btn btn-primary btn-block btn-large';
+            btn.className = 'btn btn-primary btn-large btn-block';
+            withdrawBtn.style.display = 'none'; // Nascondi ritirati di default
 
             // 1. Nessun Club
             if (!userClub) {
@@ -477,6 +499,45 @@
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
+                
+                // Mostro bottone RITIRATI
+                withdrawBtn.style.display = 'inline-block';
+                withdrawBtn.onclick = async () => {
+                    if(!confirm("Sei sicuro di volerti ritirare dalla competizione? La tua posizione in classifica verrà persa.")) return;
+
+                    try {
+                        withdrawBtn.disabled = true;
+                        withdrawBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+                        const d = await res.json();
+                        let list = d.record.competizioni || [];
+                        const idx = list.findIndex(c => c.id === compId);
+
+                        if (idx !== -1) {
+                            // Rimuovi da registrati
+                            list[idx].club_registrati = (list[idx].club_registrati || []).filter(id => id !== userClub.id);
+                            
+                            // Rimuovi dalla classifica
+                            if(list[idx].classifica) {
+                                delete list[idx].classifica[userClub.id];
+                            }
+
+                            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                                method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                                body: JSON.stringify({ "competizioni": list })
+                            });
+
+                            alert('Ti sei ritirato dalla competizione.');
+                            location.reload();
+                        }
+                    } catch(e) {
+                        console.error(e);
+                        alert("Errore durante il ritiro.");
+                        withdrawBtn.disabled = false;
+                        withdrawBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> RITIRATI';
+                    }
+                };
                 return;
             }
 
@@ -501,13 +562,11 @@
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
 
-                    // Fetch dati aggiornati
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                     const d = await res.json();
                     
                     if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
 
-                    // Doppio controllo
                     const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
                     if (exists) {
                         btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
@@ -515,7 +574,6 @@
                         return;
                     }
 
-                    // Creazione richiesta
                     const nuovaRichiesta = {
                         id: 'req_' + Date.now(),
                         competizioneId: compId,
@@ -530,14 +588,12 @@
 
                     d.record.richieste_iscrizione.push(nuovaRichiesta);
 
-                    // Salvataggio
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                         method: 'PUT', 
                         headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
                         body: JSON.stringify(d.record) 
                     });
 
-                    // Successo UI
                     alert('Richiesta inviata con successo! Attendi risposta dagli admin.');
                     btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
                     btn.classList.add('btn-pending');
