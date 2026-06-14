@@ -72,14 +72,12 @@
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
-        /* Stili Bottoni Azione */
         .action-buttons-container {
             display: flex;
             gap: 10px;
             margin-top: 1rem;
             margin-bottom: 2rem;
         }
-        /* Il bottone primario prende più spazio se c'è il secondario */
         .action-buttons-container .btn-primary { flex: 2; }
         .action-buttons-container .btn-danger { flex: 1; }
 
@@ -254,12 +252,10 @@
                         <div id="teams-list"><p class="text-muted">-</p></div>
                     </div>
 
-                    <!-- Contenitore Bottoni Azione -->
                     <div class="action-buttons-container animate-slideUp stagger-5">
                         <button id="subscribe-btn" class="btn btn-primary btn-large btn-block">
                             <i class="fas fa-spinner fa-spin"></i> Caricamento...
                         </button>
-                        <!-- BOTTONE RITIRATI (Nascosto di default) -->
                         <button id="withdraw-btn" class="btn btn-danger btn-large" style="display: none;">
                             <i class="fas fa-sign-out-alt"></i> RITIRATI
                         </button>
@@ -392,7 +388,11 @@
 
             const costo = currentComp.costo || 0;
             document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
-            const registrati = currentComp.club_registrati || [];
+            
+            // FIX: Filtra solo gli ID che corrispondono a club esistenti
+            const rawIds = currentComp.club_registrati || [];
+            const registrati = rawIds.filter(id => allClubs.some(c => c.id === id));
+            
             const maxSq = currentComp.max_squadre || '∞';
             document.getElementById('comp-teams').textContent = registrati.length + '/' + maxSq;
             
@@ -475,7 +475,6 @@
             const btn = document.getElementById('subscribe-btn');
             const withdrawBtn = document.getElementById('withdraw-btn');
             
-            // Cerca il club dell'utente corrente
             const userClub = allClubs.find(c => {
                 const members = c.membri || c.members || [];
                 const isMember = members.includes(user.id);
@@ -483,24 +482,20 @@
                 return isMember || isOwner;
             });
 
-            // Reset UI bottoni
             btn.disabled = false;
             btn.className = 'btn btn-primary btn-large btn-block';
-            withdrawBtn.style.display = 'none'; // Nascondi ritirati di default
+            withdrawBtn.style.display = 'none';
 
-            // 1. Nessun Club
             if (!userClub) {
                 btn.innerHTML = '<i class="fas fa-users"></i> Unisciti a un Club';
                 btn.onclick = () => { window.location.href = '../club/club.html'; };
                 return;
             }
 
-            // 2. Già Iscritto
             if (registrati.includes(userClub.id)) {
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ENTRA NELLA LEGA';
                 btn.onclick = () => { window.location.href = `competizione-interna.html?id=${compId}`; };
                 
-                // Mostro bottone RITIRATI
                 withdrawBtn.style.display = 'inline-block';
                 withdrawBtn.onclick = async () => {
                     if(!confirm("Sei sicuro di volerti ritirare dalla competizione? La tua posizione in classifica verrà persa.")) return;
@@ -515,13 +510,8 @@
                         const idx = list.findIndex(c => c.id === compId);
 
                         if (idx !== -1) {
-                            // Rimuovi da registrati
                             list[idx].club_registrati = (list[idx].club_registrati || []).filter(id => id !== userClub.id);
-                            
-                            // Rimuovi dalla classifica
-                            if(list[idx].classifica) {
-                                delete list[idx].classifica[userClub.id];
-                            }
+                            if(list[idx].classifica) { delete list[idx].classifica[userClub.id]; }
 
                             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                                 method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
@@ -541,7 +531,6 @@
                 return;
             }
 
-            // 3. Richiesta in attesa
             const pendingRequest = richieste.find(r => r.clubId === userClub.id && r.competizioneId === compId && r.stato === 'in_attesa');
             if (pendingRequest) {
                 btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
@@ -551,7 +540,6 @@
                 return;
             }
 
-            // 4. Default: INVIA RICHIESTA
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
             
             btn.onclick = async () => {
