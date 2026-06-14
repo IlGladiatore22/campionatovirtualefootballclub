@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC27 - Info Club</title>
+    <title>FC27 - Gestione Club</title>
     
     <link rel="icon" type="image/png" href="../../estetica/logosito.png">
     
@@ -15,145 +15,159 @@
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
         
-        .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
-        @media (max-width: 768px) {
-            .hero-card { flex-direction: column; align-items: center; text-align: center; }
+        /* Header Design */
+        .club-header-new {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 25px;
+            padding-top: 10px;
         }
-
-        .club-logo-wrapper {
-            width: 100px; height: 100px; border-radius: 50%; background: var(--bg-tertiary);
+        .club-logo-big {
+            width: 90px; height: 90px; border-radius: 50%; background: var(--bg-tertiary);
             display: flex; align-items: center; justify-content: center; overflow: hidden;
-            border: 3px solid var(--accent-gold); flex-shrink: 0;
+            border: 3px solid var(--accent-gold); margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .club-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .club-logo-wrapper i { font-size: 2.5rem; color: var(--accent-gold); }
-
-        .text-content { flex: 1; }
-        .comp-title-main { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .club-logo-big img { width: 100%; height: 100%; object-fit: cover; }
+        .club-logo-big i { font-size: 2.5rem; color: var(--accent-gold); }
         
-        .tag-captain {
-            background: var(--accent-gold);
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
+        .club-title { font-size: 1.9rem; font-weight: 700; color: #fff; margin: 0; }
+        .club-subtitle { 
+            font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; display: flex; align-items: center; gap: 8px; 
+        }
+        .club-subtitle i { color: var(--accent-gold); }
+
+        .badge-captain {
+            background: var(--accent-gold); color: #000; padding: 4px 12px; border-radius: 15px;
+            font-weight: 700; font-size: 0.75rem; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .stats-grid-mod { grid-template-columns: repeat(2, 1fr); }
-        
+        /* Navigation Tabs */
+        .nav-tabs-container {
+            display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .nav-tab-btn {
+            flex: 1; padding: 10px; border-radius: 8px; text-align: center;
+            background: var(--bg-tertiary); color: var(--text-secondary); text-decoration: none;
+            font-weight: 600; transition: all 0.2s; border: 1px solid transparent;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .nav-tab-btn:hover { background: #2a2f3a; color: #fff; }
+        .nav-tab-btn.active {
+            background: var(--accent-gold); color: #000; border-color: var(--accent-gold);
+        }
+
+        /* Stats Grid */
+        .stats-grid-mod { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .stat-box-new {
+            background: var(--bg-tertiary); padding: 15px; border-radius: 10px;
+            text-align: center; border: 1px solid var(--border-color);
+        }
+
+        /* Member List */
         .member-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; gap: 12px; padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;
         }
+        .member-item:hover { background: rgba(255,255,255,0.03); }
         .member-avatar {
-            width: 30px; height: 30px; border-radius: 50%; background: var(--bg-tertiary);
-            display: flex; align-items: center; justify-content: center;
+            width: 35px; height: 35px; border-radius: 50%; background: #2a2f3a;
+            display: flex; align-items: center; justify-content: center; color: var(--accent-gold);
         }
-        
+
+        /* Admin Section */
+        .admin-panel {
+            background: rgba(245, 166, 35, 0.1); border: 1px solid var(--accent-gold);
+            border-radius: 10px; padding: 15px; margin-bottom: 20px;
+        }
         .request-item {
-            background: rgba(255,255,255,0.05);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;
+            display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
         }
     </style>
 </head>
 <body>
     <div class="page-wrapper">
-        <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <a href="club.html" class="header-btn" style="background: transparent; border: none;">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div class="logo-container">
-                    <div class="logo">FC</div>
-                    <span class="site-name">FC27</span>
-                </div>
+                <a href="club.html" class="header-btn" style="background: transparent; border: none;"><i class="fas fa-arrow-left"></i></a>
+                <div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div>
             </div>
             <div class="header-right">
                 <button class="header-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
             </div>
         </header>
-
-        <!-- SIDEBAR OVERLAY -->
+        
         <div id="overlay" class="sidebar-overlay"></div>
-
-        <!-- SIDEBAR -->
+        
         <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-container">
-                    <div class="logo">FC</div>
-                    <span class="site-name">FC27</span>
-                </div>
-                <button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="sidebar-header"><div class="logo-container"><div class="logo">FC</div><span class="site-name">FC27</span></div><button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button></div>
             <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">Menu</div>
-                    <a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
-                    <a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a>
-                </div>
-                <div class="nav-section">
-                    <button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
-                </div>
+                <div class="nav-section"><div class="nav-section-title">Menu</div><a href="../home.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a><a href="club.html" class="nav-link active"><i class="fas fa-users"></i><span>Club</span></a></div>
+                <div class="nav-section"><button id="logout-btn" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
             </nav>
         </aside>
 
-        <!-- MAIN -->
         <main class="main-content">
-            <div class="container" style="padding-top: 30px;">
+            <div class="container" style="padding-top: 20px;">
                 
                 <div id="loading-state" class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Caricamento...</p></div>
 
                 <div id="main-content" style="display: none;">
                     
-                    <div class="card hero-card">
-                        <div class="club-logo-wrapper" id="club-logo">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="text-content">
-                            <h1 id="club-name" class="comp-title-main">Nome Club</h1>
-                            <p id="club-stadium" class="text-muted" style="margin-top:5px;"><i class="fas fa-map-marker-alt"></i> Stadio</p>
-                            <span id="captain-badge" class="tag-captain" style="display:none;"><i class="fas fa-crown"></i> SEI IL CAPITANO</span>
-                        </div>
-                    </div>
-
-                    <!-- Sezione Admin -->
-                    <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
-                        <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
-                        <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata.</p>
-                        <div id="requests-list" class="mt-3"><p class="text-muted">Nessuna richiesta in sospeso.</p></div>
-                    </div>
-
-                    <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
-                        <div class="stat-card">
-                            <div class="stat-header"><i class="fas fa-users"></i><span>Membri</span></div>
-                            <div id="member-count" class="stat-value-big">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><i class="fas fa-calendar"></i><span>Fondato</span></div>
-                            <div id="club-date" class="stat-value-big" style="font-size: 1rem;">-</div>
+                    <!-- HEADER CLUB -->
+                    <div class="animate-slideUp">
+                        <div class="club-header-new">
+                            <div class="club-logo-big" id="club-logo"><i class="fas fa-shield-alt"></i></div>
+                            <h1 id="club-name" class="club-title">Nome Club</h1>
+                            <div id="club-stadium" class="club-subtitle">
+                                <i class="fas fa-futbol"></i> <span>Stadio</span>
+                            </div>
+                            <span id="captain-badge" class="badge-captain" style="display:none;"><i class="fas fa-crown"></i> CAPITANO</span>
                         </div>
                     </div>
 
-                    <div class="card mt-4 animate-slideUp stagger-2">
-                        <h4 class="mb-3"><i class="fas fa-users text-gold"></i> Rosa Squadra</h4>
-                        <div id="members-list"><p class="text-muted">Caricamento...</p></div>
+                    <!-- TABS NAVIGATION -->
+                    <div class="nav-tabs-container animate-slideUp stagger-1">
+                        <!-- Panoramica (Pagina Attuale) -->
+                        <a href="#" class="nav-tab-btn active" onclick="return false;">
+                            <i class="fas fa-users"></i> Panoramica Rosa
+                        </a>
+                        <!-- Formazione (Link a formazione.html) -->
+                        <a id="link-formazione" href="#" class="nav-tab-btn">
+                            <i class="fas fa-chalkboard"></i> Formazione
+                        </a>
                     </div>
 
-                    <div class="action-buttons-container mt-4">
+                    <!-- ADMIN PANEL (Solo Capitano) -->
+                    <div id="admin-panel" class="admin-panel animate-slideUp" style="display:none;">
+                        <h4 style="color: var(--accent-gold); margin-bottom: 10px;"><i class="fas fa-user-shield"></i> Gestione Richieste</h4>
+                        <div id="requests-list"><p class="text-muted" style="margin:0;">Nessuna richiesta.</p></div>
+                    </div>
+
+                    <!-- STATS -->
+                    <div class="stats-grid mt-0 animate-slideUp stagger-2 stats-grid-mod">
+                        <div class="stat-box-new">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Membri</div>
+                            <div id="member-count" style="font-size: 1.8rem; font-weight: 700; color: var(--accent-gold);">0</div>
+                        </div>
+                        <div class="stat-box-new">
+                            <div style="font-size: 0.8rem; color: var(--text-muted; text-transform: uppercase;">Fondato</div>
+                            <div id="club-date" style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">-</div>
+                        </div>
+                    </div>
+
+                    <!-- ROSA SQUADRA -->
+                    <div class="card mt-4 animate-slideUp stagger-3" style="background: transparent; border: none; padding: 0;">
+                        <h4 class="mb-3" style="color: var(--text-primary);"><i class="fas fa-users text-gold"></i> Rosa Squadra</h4>
+                        <div id="members-list" class="card" style="padding: 10px;"><p class="text-muted">Caricamento...</p></div>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="action-buttons-container mt-4 animate-slideUp stagger-4">
                         <button id="join-btn" class="btn btn-primary btn-large btn-block" style="display:none;">Unisciti</button>
                         <button id="leave-btn" class="btn btn-danger btn-large btn-block" style="display:none;">Abbandona Club</button>
                     </div>
@@ -193,9 +207,7 @@
         function getLogo(club) {
             if (!club) return null;
             const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
-            for (let p of props) {
-                if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
-            }
+            for (let p of props) { if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p]; }
             for (let key in club) {
                 let val = club[key];
                 if (typeof val === 'string' && val.length > 10) {
@@ -226,17 +238,10 @@
 
                 currentClub = clubs.find(c => c.id === clubId);
 
-                if (!currentClub) {
-                    console.error("Club ID cercato:", clubId);
-                    showError();
-                } else {
-                    renderUI();
-                }
+                if (!currentClub) { showError(); } 
+                else { renderUI(); }
 
-            } catch (e) {
-                console.error(e);
-                showError();
-            }
+            } catch (e) { console.error(e); showError(); }
         }
 
         function showError() {
@@ -248,21 +253,24 @@
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
 
-            // Nome e Logo
+            // 1. Header Info
             document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
-            const logoSrc = getLogo(currentClub);
-            if (logoSrc) {
-                document.getElementById('club-logo').innerHTML = `<img src="${logoSrc}" alt="Logo">`;
-            }
-
-            // Stadio
+            
+            // Fix Icona Stadio
             const stadium = currentClub.stadium || currentClub.stadio;
-            document.getElementById('club-stadium').innerHTML = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : '';
+            document.getElementById('club-stadium').innerHTML = stadium ? `<i class="fas fa-futbol"></i> <span>${stadium}</span>` : '<i class="fas fa-futbol"></i> <span>Stadio Non Definito</span>';
 
+            // Logo
+            const logoSrc = getLogo(currentClub);
+            if (logoSrc) document.getElementById('club-logo').innerHTML = `<img src="${logoSrc}" alt="Logo">`;
+            
             // Data
             if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
 
-            // Membri
+            // Link Formazione (passa l'ID)
+            document.getElementById('link-formazione').href = `formazione.html?id=${clubId}`;
+
+            // 2. Membri
             const members = currentClub.members || [];
             document.getElementById('member-count').textContent = members.length;
             
@@ -277,53 +285,33 @@
                     <div class="member-name">${name}</div>
                 </div>`;
             });
-            document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
+            document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted" style="padding:10px;">Nessun membro.</p>';
 
-            // --- REPORT ACCESSO (DEBUG) ---
-            console.log("------------------------------------------------");
-            console.log("REPORT ACCESSO CLUB");
-            console.log("1. Tuo ID Utente (Locale):", String(user.id));
-            console.log("2. Capitano nel DB:", currentClub.captain, "-> Convertito:", String(currentClub.captain));
-            console.log("3. Membri nel DB:", currentClub.members);
-            console.log("4. Owner/Founder nel DB:", currentClub.owner, currentClub.createdBy);
-            console.log("------------------------------------------------");
-
-            // --- LOGICA ACCESSO ---
-            
-            // 1. Controllo Capitano
+            // 3. Logica Accesso (Capitano / Membro)
             let isCaptain = false;
             const capProps = ['captain', 'owner', 'createdBy', 'founder', 'presidente'];
             capProps.forEach(p => {
-                if(currentClub[p] && String(currentClub[p]) === String(user.id)) {
-                    isCaptain = true;
-                    console.log(`%c TROVATO CAPITANO tramite proprietà: ${p}`, "color: green; font-weight: bold;");
-                }
+                if(currentClub[p] && String(currentClub[p]) === String(user.id)) isCaptain = true;
             });
 
-            // 2. Controllo Membro
             let isMember = false;
             if (members.length > 0) {
                 members.forEach(m => {
                     let mId = (typeof m === 'object' && m !== null && m.id) ? m.id : m;
-                    if (String(mId) === String(user.id)) {
-                        isMember = true;
-                        console.log("%c TROVATO MEMBRO", "color: orange; font-weight: bold;");
-                    }
+                    if (String(mId) === String(user.id)) isMember = true;
                 });
             }
 
-            // 3. Visualizzazione Elementi
             if (isCaptain) {
                 document.getElementById('captain-badge').style.display = 'inline-flex';
                 document.getElementById('admin-panel').style.display = 'block';
-                document.getElementById('leave-btn').style.display = 'none'; // Il capo non si caccia
                 document.getElementById('join-btn').style.display = 'none';
+                document.getElementById('leave-btn').style.display = 'none';
                 renderRequests();
             } else if (isMember) {
                 document.getElementById('leave-btn').style.display = 'block';
                 document.getElementById('join-btn').style.display = 'none';
             } else {
-                // Se non è nulla
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-btn').onclick = () => requestJoin();
             }
@@ -332,11 +320,7 @@
         function renderRequests() {
             const requests = currentClub.requests || [];
             const listEl = document.getElementById('requests-list');
-
-            if (requests.length === 0) {
-                listEl.innerHTML = '<p class="text-muted">Nessuna richiesta in sospeso.</p>';
-                return;
-            }
+            if (requests.length === 0) { listEl.innerHTML = '<p class="text-muted" style="margin:0;">Nessuna richiesta in sospeso.</p>'; return; }
 
             let html = '';
             requests.forEach(req => {
@@ -357,11 +341,9 @@
 
         window.accept = async (userId) => {
             if(!confirm("Accettare questo membro?")) return;
-            
             if(!currentClub.members) currentClub.members = [];
             currentClub.members.push(userId);
             currentClub.requests = currentClub.requests.filter(id => String(id) !== String(userId));
-
             await saveData();
             alert('Membro aggiunto!');
             location.reload();
@@ -369,7 +351,6 @@
 
         window.reject = async (userId) => {
             if(!confirm("Rifiutare questa richiesta?")) return;
-            
             currentClub.requests = currentClub.requests.filter(id => String(id) !== String(userId));
             await saveData();
             alert('Richiesta rifiutata.');
@@ -378,13 +359,11 @@
 
         async function requestJoin() {
             if(!user) return alert("Accedi per unirti.");
-            
             if(!currentClub.requests) currentClub.requests = [];
             if(currentClub.requests.some(r => String(r) === String(user.id))) return alert("Richiesta già inviata.");
-
             currentClub.requests.push(user.id);
             await saveData();
-            alert('Richiesta inviata al capitano!');
+            alert('Richiesta inviata!');
             location.reload();
         }
 
@@ -401,7 +380,6 @@
                 if(idx !== -1) list[idx] = currentClub;
                 payload = allData;
             }
-
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
