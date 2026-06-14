@@ -70,11 +70,12 @@
         
         /* Stile Loghi Squadre */
         .team-logo-wrapper {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-primary); 
+            width: 32px; height: 32px; border-radius: 50%; background: var(--bg-primary); 
             display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; 
+            border: 1px solid var(--border-color);
         }
         .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
+        .team-logo-wrapper i { color: var(--text-muted); font-size: 0.9rem; }
         
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
@@ -356,7 +357,8 @@
                 const clubData = await clubRes.json();
                 
                 const competizioni = compData.record.competizioni || [];
-                allClubs = clubData.record.club || [];
+                // Supporto per 'club' o 'clubs'
+                allClubs = clubData.record.club || clubData.record.clubs || [];
                 currentComp = competizioni.find(c => c.id === compId);
                 
                 if (!currentComp) { showError(); return; }
@@ -392,7 +394,6 @@
             const costo = currentComp.costo || 0;
             document.getElementById('comp-cost').textContent = costo > 0 ? costo + ' €' : 'Gratis';
             
-            // FIX: Filtra solo gli ID che corrispondono a club esistenti
             const rawIds = currentComp.club_registrati || [];
             const registrati = rawIds.filter(id => allClubs.some(c => c.id === id));
             
@@ -456,24 +457,30 @@
             setupSubscribe(registrati, maxSq, costo);
         }
 
-        // --- LOGICA LOGHI SQUADRE ---
+        // --- FUNZIONE RENDER TEAMS MODIFICATA PER TROVARE IL LOGO ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
+            
             if (registrati.length > 0) {
                 const containerClass = registrati.length >= 5 ? 'teams-container-grid' : 'teams-container-list';
                 let html = `<div class="${containerClass}">`;
+                
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
-                        // Gestione Logo: se c'è prova a caricarlo, se fallisce mette l'icona, se non c'è mette l'icona
+                        // Cerca il logo in varie proprietà possibili
+                        const logoSrc = club.logo || club.immagine || club.image || '';
+                        
                         let logoHtml = '';
-                        if (club.logo) {
-                            // onerror gestisce link rotti
-                            logoHtml = `<img src="${club.logo}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
+                        if (logoSrc) {
+                            // Se c'è un link, prova a caricarlo. Se fallisce, mostra icona.
+                            logoHtml = `<img src="${logoSrc}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
                         } else {
+                            // Se non c'è link, mostra direttamente l'icona
                             logoHtml = '<i class="fas fa-shield-alt"></i>';
                         }
+                        
                         html += `<div class="team-list-item">
                             <div class="team-logo-wrapper">${logoHtml}</div>
                             <div class="team-name-text">${club.nome || club.name}</div>
@@ -482,7 +489,9 @@
                 });
                 html += '</div>';
                 teamsList.innerHTML = html;
-            } else { teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>'; }
+            } else {
+                teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>';
+            }
         }
 
         function setupSubscribe(registrati, maxSquadre, costo) {
@@ -545,7 +554,6 @@
                 return;
             }
 
-            // Stato Default: Iscriviti (Iscrizione Diretta)
             btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ISCRIVITI';
             
             btn.onclick = async () => {
@@ -563,14 +571,10 @@
                     const idx = list.findIndex(c => c.id === compId);
 
                     if (idx !== -1) {
-                        // 1. Aggiungi a club_registrati
                         if (!list[idx].club_registrati) list[idx].club_registrati = [];
-                        
                         if (!list[idx].club_registrati.includes(userClub.id)) {
                             list[idx].club_registrati.push(userClub.id);
                         }
-
-                        // 2. Inizializza Classifica
                         if (!list[idx].classifica) list[idx].classifica = {};
                         list[idx].classifica[userClub.id] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
 
