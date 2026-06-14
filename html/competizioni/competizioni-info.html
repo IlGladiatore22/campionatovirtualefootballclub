@@ -357,8 +357,14 @@
                 const clubData = await clubRes.json();
                 
                 const competizioni = compData.record.competizioni || [];
-                // Supporto per 'club' E 'clubs'
-                allClubs = clubData.record.club || clubData.record.clubs || [];
+                
+                // FIX: Gestione robusta del caricamento clubs (Array o Oggetto)
+                const clubRecord = clubData.record;
+                if (Array.isArray(clubRecord)) {
+                    allClubs = clubRecord;
+                } else {
+                    allClubs = clubRecord.club || clubRecord.clubs || clubRecord.teams || [];
+                }
                 
                 currentComp = competizioni.find(c => c.id === compId);
                 
@@ -375,35 +381,48 @@
             document.getElementById('error-state').style.display = 'block';
         }
 
-        // Funzione helper per trovare il logo in qualsiasi proprietà
+        // Funzione Helper: Cerca il logo ovunque nell'oggetto
         function getClubLogo(club) {
             if (!club) return '';
             
-            // 1. Controlla proprietà comuni
-            const commonProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'logoURL', 'pic', 'avatar', 'teamLogo', 'shield'];
-            for (let prop of commonProps) {
-                if (club[prop] && typeof club[prop] === 'string' && club[prop].trim() !== '') {
-                    console.log(`Logo trovato nella proprietà standard: '${prop}' per ${club.nome || club.name}`);
-                    return club[prop];
+            // Funzione ricorsiva per cercare stringhe che sembrano immagini
+            const searchDeep = (obj) => {
+                if (!obj || typeof obj !== 'object') return null;
+                
+                // 1. Controlla proprietà comuni
+                const commonProps = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'logoURL', 'pic', 'avatar', 'teamLogo', 'shield', 'emblem'];
+                for (let prop of commonProps) {
+                    if (obj[prop] && typeof obj[prop] === 'string' && obj[prop].length > 5) {
+                        return obj[prop];
+                    }
                 }
-            }
-            
-            // 2. Se non trovato, cerca in TUTTE le proprietà una stringa che sembri un link immagine
-            for (let key in club) {
-                if (club.hasOwnProperty(key)) {
-                    const val = club[key];
-                    // Se è una stringa, non troppo corta, e contiene punto o http (esclude ID brevi)
-                    if (typeof val === 'string' && val.length > 5) {
-                        if (val.includes('http') || val.includes('.png') || val.includes('.jpg') || val.includes('.webp') || val.includes('data:image')) {
-                             console.log(`Logo trovato nella proprietà generica: '${key}' per ${club.nome || club.name}`);
-                             return val;
+                
+                // 2. Controlla se ci sono link immagine in altre proprietà
+                for (let key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        const val = obj[key];
+                        if (typeof val === 'string' && val.length > 5) {
+                            // Se contiene http o estensioni immagine
+                            if (val.includes('http') || val.includes('.png') || val.includes('.jpg') || val.includes('.webp') || val.includes('data:image')) {
+                                return val;
+                            }
+                        }
+                        // 3. Se è un oggetto nidificato, cerca dentro
+                        if (typeof val === 'object' && val !== null) {
+                            const found = searchDeep(val);
+                            if (found) return found;
                         }
                     }
                 }
-            }
-            
-            console.log("Nessun logo trovato per:", club.nome || club.name, club);
-            return '';
+                return null;
+            };
+
+            // Esegui la ricerca
+            const result = searchDeep(club);
+            if (result) return result;
+
+            // Fallback vecchia modalità (proprieta diretta)
+            return club.logo || club.immagine || '';
         }
 
         function renderUI() {
@@ -488,7 +507,7 @@
             setupSubscribe(registrati, maxSq, costo);
         }
 
-        // --- RENDER TEAMS CON FUNZIONE LOGO AVANZATA ---
+        // --- RENDER TEAMS CON VISUALIZZAZIONE LOGHI MIGLIORATA ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -500,15 +519,18 @@
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
-                        // USA LA FUNZIONE AVANZATA
+                        // Trova il logo usando la funzione avanzata
                         const logoSrc = getClubLogo(club);
                         
                         let logoHtml = '';
                         if (logoSrc) {
-                            // Se ho un link, metto l'immagine. Se non carica, metto l'icona.
-                            logoHtml = `<img src="${logoSrc}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
+                            // Sanitizzazione base dell'URL per sicurezza virgolette
+                            const safeSrc = logoSrc.replace(/"/g, '&quot;');
+                            // Se l'immagine non carica, mostra l'icona
+                            logoHtml = `<img src="${safeSrc}" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                                        <i class="fas fa-shield-alt" style="display:none;"></i>`;
                         } else {
-                            // Se non ho nulla, metto l'icona
+                            // Se non c'è logo, mostra icona diretta
                             logoHtml = '<i class="fas fa-shield-alt"></i>';
                         }
                         
