@@ -93,11 +93,9 @@
                     <div class="tabs-container mb-3">
                         <button class="tab-btn active" data-tab="formation">Formazione</button>
                         <button class="tab-btn" id="req-tab" style="display:none;" data-tab="requests">Richieste</button>
-                        <!-- FIX: Pulsante Panoramica spostato qui -->
                         <button class="tab-btn" id="overview-tab" data-tab="overview">Panoramica</button>
                     </div>
 
-                    <!-- Tab Formazione -->
                     <div id="tab-formation" class="tab-content active">
                         <div class="main-layout">
                             <div class="pitch-box">
@@ -146,26 +144,22 @@
                         </div>
                     </div>
                     
-                    <!-- Tab Richieste -->
                     <div id="tab-requests" class="tab-content" style="display:none;"><div class="card"><h3>Richieste</h3><div id="req-list"></div></div></div>
                     
-                    <!-- FIX: Nuova Tab Panoramica -->
                     <div id="tab-overview" class="tab-content" style="display:none;">
                         <div class="card animate-slideUp">
                             <h3><i class="fas fa-chart-line text-gold"></i> Panoramica Stagione</h3>
                             <p class="text-muted mb-3">Statistiche e risultati del club.</p>
-                            
                             <div class="grid-3">
                                 <div class="stat-box"><span style="color: var(--accent-green); font-size: 2rem; font-weight: bold;">0</span><br>Vittorie</div>
                                 <div class="stat-box"><span style="color: var(--accent-red); font-size: 2rem; font-weight: bold;">0</span><br>Sconfitte</div>
                                 <div class="stat-box"><span style="color: var(--accent-gold); font-size: 2rem; font-weight: bold;">0</span><br>Pareggi</div>
                             </div>
-                            
                             <div class="mt-3">
                                 <p class="text-muted" style="font-size: 0.85rem;">
                                     * Le statistiche vengono calcolate in base ai risultati delle partite inserite.
                                     <br><br>
-                                    <a href="panoramica.html?id=${cId}" class="btn btn-secondary btn-sm"><i class="fas fa-external-link-alt"></i> Vedi Dettagli Completi</a>
+                                    <a id="link-panoramica" href="#" class="btn btn-secondary btn-sm"><i class="fas fa-external-link-alt"></i> Vedi Dettagli Completi</a>
                                 </p>
                             </div>
                         </div>
@@ -183,27 +177,45 @@
 
         let user = JSON.parse(localStorage.getItem('user') || 'null');
         let clubs = [], users = [], club = null, isCaptain = false;
+        let originalRecord = null; // Per salvare la struttura originale del DB
         const urlP = new URLSearchParams(window.location.search);
         const cId = urlP.get('id');
 
         window.onload = async function() {
             if (!user) return window.location.href = '../accesso.html';
             if (!cId) { document.getElementById('error-box').style.display = 'block'; document.getElementById('error-msg').textContent = "ID Club mancante."; return; }
+            
+            // Fix Link Panoramica
+            document.getElementById('link-panoramica').href = `panoramica.html?id=${cId}`;
+            
             setupUIEvents();
             await loadData();
         };
 
         async function loadData() {
             try {
+                // Carica Utenti
                 let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_USERS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                users = (await res.json()).record.users || [];
+                const userData = await res.json();
+                users = userData.record.users || [];
+                
+                // Carica Club
                 res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, { headers: { 'X-Master-Key': API_KEY }, cache: 'no-store' });
-                clubs = (await res.json()).record.clubs || [];
+                const clubData = await res.json();
+                originalRecord = clubData.record; // Salva record intero
+
+                // FIX: Gestione flessibile della struttura dati
+                if (Array.isArray(originalRecord)) {
+                    clubs = originalRecord;
+                } else {
+                    clubs = originalRecord.clubs || originalRecord.club || [];
+                }
                 
                 club = clubs.find(c => c.id === cId);
-                if (!club) throw new Error("Club non trovato.");
+                if (!club) throw new Error("Club non trovato nel database.");
 
-                isCaptain = (String(user.id) === String(club.captain));
+                // Controllo Capitano (esteso)
+                isCaptain = (String(user.id) === String(club.captain) || String(user.id) === String(club.owner) || String(user.id) === String(club.createdBy));
                 const isMember = (club.members || []).map(m => String(m)).includes(String(user.id));
 
                 renderHeader();
@@ -230,21 +242,36 @@
         }
 
         function renderHeader() {
-            document.getElementById('club-name').textContent = club.name;
-            const capUser = users.find(u => String(u.id) === String(club.captain));
+            document.getElementById('club-name').textContent = club.name || club.nome || 'Club';
+            const capUser = users.find(u => String(u.id) === String(club.captain || club.owner));
             document.getElementById('club-info').textContent = 'Capitano: ' + (capUser ? capUser.nomeEA : 'N/D');
             const logoDiv = document.getElementById('club-logo');
-            if (club.logo) {
-                logoDiv.innerHTML = `<img src="${club.logo}" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
+            const logoSrc = club.logo || club.immagine || club.img;
+            if (logoSrc) {
+                logoDiv.innerHTML = `<img src="${logoSrc}" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
             } else {
                 logoDiv.innerHTML = '<i class="fas fa-shield-alt"></i>';
             }
         }
 
         async function saveToCloud() {
+            let payload;
+            // Ricostruisce il payload mantenendo la struttura originale
+            if (Array.isArray(originalRecord)) {
+                // Se era un array, trova l'indice e aggiorna
+                let idx = originalRecord.findIndex(c => c.id === cId);
+                if(idx !== -1) originalRecord[idx] = club;
+                payload = originalRecord;
+            } else {
+                // Se era un oggetto, aggiorna la proprietà corretta
+                let key = originalRecord.clubs ? 'clubs' : 'club';
+                originalRecord[key] = clubs;
+                payload = originalRecord;
+            }
+
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                body: JSON.stringify({ clubs })
+                body: JSON.stringify(payload)
             });
         }
 
@@ -254,7 +281,6 @@
             document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
             document.getElementById('logout-btn').onclick = () => { localStorage.clear(); window.location.href = '../home-non-loggato.html'; };
             
-            // Tabs Logic (Fix per il nuovo tasto)
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.onclick = function() {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -276,7 +302,7 @@
             const numColor = isLightColor(c1) ? '#000' : '#fff';
             return `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
                 <path d="M28,42 L28,105 Q28,115 38,115 L62,115 Q72,115 72,105 L72,42 L82,32 Q60,22 50,22 Q40,22 18,32 Z" fill="${c1}" stroke="${c2}" stroke-width="2"/>
-                <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight: bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${playerNum || '?'}</text>
+                <text x="50" y="82" font-family="sans-serif" font-size="28" font-weight="bold" fill="${numColor}" text-anchor="middle" dominant-baseline="middle">${playerNum || '?'}</text>
             </svg>`;
         }
         function isLightColor(hex) { try { const c = hex.substring(1); const rgb = parseInt(c, 16); return ((rgb >> 16) & 0xff)*0.2126 + ((rgb >> 8) & 0xff)*0.7152 + ((rgb >> 0) & 0xff)*0.0722 > 127.5; } catch(e){ return false; } }
@@ -363,7 +389,7 @@
             });
         }
 
-        // === DATABASE MODULI FC26 (PORTIERE y=90) ===
+        // === DATABASE MODULI ===
         function getFormationCoords(f) {
             const formations = {
                 "4-3-3": [{x:50, y:90, abbrev:"POR"}, {x:18, y:65, abbrev:"TS"}, {x:38, y:68, abbrev:"DC"}, {x:62, y:68, abbrev:"DC"}, {x:82, y:65, abbrev:"TD"}, {x:28, y:45, abbrev:"CC"}, {x:50, y:48, abbrev:"REG"}, {x:72, y:45, abbrev:"CC"}, {x:20, y:20, abbrev:"AS"}, {x:50, y:18, abbrev:"AT"}, {x:80, y:20, abbrev:"AD"}],
