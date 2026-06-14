@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../estetica/animations.css">
     <link rel="stylesheet" href="../../estetica/components.css">
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    <link rel="icon" href="../../estetica/logosito.png">
     
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; }
@@ -67,9 +67,15 @@
         .teams-container-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
         .team-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .team-list-item:last-child { border-bottom: none; }
-        .team-logo-wrapper { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        
+        /* Stile Loghi Squadre */
+        .team-logo-wrapper {
+            width: 28px; height: 28px; border-radius: 50%; background: var(--bg-primary); 
+            display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; 
+        }
         .team-logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .team-logo-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
+        
         .team-name-text { font-size: 0.95rem; color: var(--text-primary); }
 
         .action-buttons-container {
@@ -338,7 +344,6 @@
         const compId = urlParams.get('id');
         let currentComp = null;
         let allClubs = [];
-        let globalRequests = []; 
 
         async function loadData() {
             if (!compId) { showError(); return; }
@@ -351,8 +356,6 @@
                 const clubData = await clubRes.json();
                 
                 const competizioni = compData.record.competizioni || [];
-                globalRequests = compData.record.richieste_iscrizione || []; 
-                
                 allClubs = clubData.record.club || [];
                 currentComp = competizioni.find(c => c.id === compId);
                 
@@ -450,9 +453,10 @@
                 };
             }
 
-            setupSubscribe(registrati, maxSq, costo, globalRequests);
+            setupSubscribe(registrati, maxSq, costo);
         }
 
+        // --- LOGICA LOGHI SQUADRE ---
         function renderTeams(registrati) {
             const teamsList = document.getElementById('teams-list');
             document.getElementById('teams-count').textContent = registrati.length;
@@ -462,8 +466,18 @@
                 registrati.forEach(clubId => {
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
-                        const logoHtml = club.logo ? `<img src="${club.logo}" alt="Logo">` : '<i class="fas fa-shield-alt"></i>';
-                        html += `<div class="team-list-item"><div class="team-logo-wrapper">${logoHtml}</div><div class="team-name-text">${club.nome || club.name}</div></div>`;
+                        // Gestione Logo: se c'è prova a caricarlo, se fallisce mette l'icona, se non c'è mette l'icona
+                        let logoHtml = '';
+                        if (club.logo) {
+                            // onerror gestisce link rotti
+                            logoHtml = `<img src="${club.logo}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`;
+                        } else {
+                            logoHtml = '<i class="fas fa-shield-alt"></i>';
+                        }
+                        html += `<div class="team-list-item">
+                            <div class="team-logo-wrapper">${logoHtml}</div>
+                            <div class="team-name-text">${club.nome || club.name}</div>
+                        </div>`;
                     }
                 });
                 html += '</div>';
@@ -471,7 +485,7 @@
             } else { teamsList.innerHTML = '<p class="text-muted">Nessuna squadra iscritta.</p>'; }
         }
 
-        function setupSubscribe(registrati, maxSquadre, costo, richieste) {
+        function setupSubscribe(registrati, maxSquadre, costo) {
             const btn = document.getElementById('subscribe-btn');
             const withdrawBtn = document.getElementById('withdraw-btn');
             
@@ -498,7 +512,7 @@
                 
                 withdrawBtn.style.display = 'inline-block';
                 withdrawBtn.onclick = async () => {
-                    if(!confirm("Sei sicuro di volerti ritirare dalla competizione? La tua posizione in classifica verrà persa.")) return;
+                    if(!confirm("Sei sicuro di volerti ritirare dalla competizione?")) return;
 
                     try {
                         withdrawBtn.disabled = true;
@@ -531,16 +545,8 @@
                 return;
             }
 
-            const pendingRequest = richieste.find(r => r.clubId === userClub.id && r.competizioneId === compId && r.stato === 'in_attesa');
-            if (pendingRequest) {
-                btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
-                btn.disabled = true;
-                btn.classList.add('btn-pending'); 
-                btn.onclick = null;
-                return;
-            }
-
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
+            // Stato Default: Iscriviti (Iscrizione Diretta)
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ISCRIVITI';
             
             btn.onclick = async () => {
                 if (currentComp.stato !== 'aperta') { alert('Iscrizioni chiuse.'); return; }
@@ -548,49 +554,40 @@
 
                 try {
                     btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iscrizione...';
 
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
                     const d = await res.json();
                     
-                    if (!d.record.richieste_iscrizione) d.record.richieste_iscrizione = [];
+                    let list = d.record.competizioni || [];
+                    const idx = list.findIndex(c => c.id === compId);
 
-                    const exists = d.record.richieste_iscrizione.find(r => r.clubId === userClub.id && r.competizioneId === compId);
-                    if (exists) {
-                        btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
-                        btn.classList.add('btn-pending');
-                        return;
+                    if (idx !== -1) {
+                        // 1. Aggiungi a club_registrati
+                        if (!list[idx].club_registrati) list[idx].club_registrati = [];
+                        
+                        if (!list[idx].club_registrati.includes(userClub.id)) {
+                            list[idx].club_registrati.push(userClub.id);
+                        }
+
+                        // 2. Inizializza Classifica
+                        if (!list[idx].classifica) list[idx].classifica = {};
+                        list[idx].classifica[userClub.id] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
+
+                        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
+                            method: 'PUT', 
+                            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
+                            body: JSON.stringify({ "competizioni": list }) 
+                        });
+
+                        alert('Iscrizione completata con successo!');
+                        location.reload();
                     }
-
-                    const nuovaRichiesta = {
-                        id: 'req_' + Date.now(),
-                        competizioneId: compId,
-                        competizioneNome: currentComp.nome,
-                        clubId: userClub.id,
-                        clubNome: userClub.nome,
-                        userId: user.id,
-                        userNome: user.nomeEA,
-                        stato: 'in_attesa',
-                        data: new Date().toISOString()
-                    };
-
-                    d.record.richieste_iscrizione.push(nuovaRichiesta);
-
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
-                        method: 'PUT', 
-                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, 
-                        body: JSON.stringify(d.record) 
-                    });
-
-                    alert('Richiesta inviata con successo! Attendi risposta dagli admin.');
-                    btn.innerHTML = '<i class="fas fa-clock"></i> RICHIESTA INVIATA, ATTENDI RISPOSTA';
-                    btn.classList.add('btn-pending');
-                    btn.disabled = true;
 
                 } catch(e) {
                     console.error(e);
-                    alert("Errore invio richiesta.");
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> INVIA RICHIESTA';
+                    alert("Errore durante l'iscrizione.");
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ISCRIVITI';
                     btn.disabled = false;
                 }
             };
