@@ -47,30 +47,6 @@
             letter-spacing: 1px;
             z-index: 1;
         }
-
-        /* Riga loghi squadre */
-        .teams-logos-row {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        .team-logo-small {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #333;
-            border: 2px solid var(--bg-primary);
-            margin-right: -8px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .team-logo-small img { width: 100%; height: 100%; object-fit: cover; }
-        .team-logo-small i { font-size: 0.6rem; color: var(--text-muted); }
-        .teams-count-label { margin-left: 15px; font-size: 0.8rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -264,14 +240,12 @@
                         const statusColor = statusVal === 'aperta' ? 'var(--accent-green)' : statusVal === 'chiusa' ? 'var(--accent-red)' : 'var(--accent-orange)';
                         const statusText = statusVal === 'aperta' ? 'Aperta' : statusVal === 'chiusa' ? 'Chiusa' : 'In Corso';
                         
-                        // --- LOGICA IMMAGINE MODIFICATA ---
+                        // --- LOGICA IMMAGINE ---
                         const imgSrc = comp.immagine || comp.image || '';
                         let imageContent = '';
                         if (imgSrc) {
-                            // Se c'è un link, prova a caricarlo. Se fallisce, mostra testo.
                             imageContent = `<img src="${imgSrc}" alt="${comp.nome || comp.name}" onerror="this.outerHTML='<span class=\\'no-image-text\\'>NESSUN IMMAGINE</span>'">`;
                         } else {
-                            // Se non c'è link, mostra testo.
                             imageContent = `<span class="no-image-text">NESSUN IMMAGINE</span>`;
                         }
                         
@@ -280,24 +254,9 @@
                         const costoComp = comp.costo || comp.cost || 0;
                         const maxSquadre = comp.max_squadre || comp.maxTeams || '∞';
                         
-                        // Calcolo partecipanti reali
+                        // Calcolo conteggio reale (solo numero, niente loghi)
                         const rawIds = comp.club_registrati || comp.registeredClubs || [];
-                        const validClubs = rawIds.map(id => allClubs.find(c => c.id === id)).filter(Boolean);
-                        const validCount = validClubs.length;
-
-                        // GENERAZIONE LOGHI SQUADRE
-                        let logosHtml = '';
-                        const maxLogos = 5;
-                        validClubs.slice(0, maxLogos).forEach(club => {
-                            if (club.logo) {
-                                logosHtml += `<div class="team-logo-small"><img src="${club.logo}" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'"></div>`;
-                            } else {
-                                logosHtml += `<div class="team-logo-small"><i class="fas fa-shield-alt"></i></div>`;
-                            }
-                        });
-                        if (validCount > maxLogos) {
-                            logosHtml += `<div class="team-logo-small" style="background: #555; font-size: 0.6rem; color: white;">+${validCount - maxLogos}</div>`;
-                        }
+                        const validCount = rawIds.filter(id => allClubs.some(c => c.id === id)).length;
 
                         card.innerHTML = `
                             <div class="card-image">${imageContent}</div>
@@ -305,20 +264,9 @@
                             <h4 class="card-title">${nomeComp}</h4>
                             <p class="card-description">${descComp}</p>
                             
-                            <!-- Loghi Squadre -->
-                            ${validCount > 0 ? `
-                            <div class="teams-logos-row">
-                                ${logosHtml}
-                                <span class="teams-count-label">${validCount}/${maxSquadre}</span>
-                            </div>
-                            ` : `
+                            <!-- Solo Conteggio Numerico -->
                             <div class="flex justify-between mt-2">
-                                <span class="text-muted"><i class="fas fa-users"></i> 0/${maxSquadre}</span>
-                            </div>
-                            `}
-                            
-                            <div class="flex justify-between mt-2" style="${validCount > 0 ? 'border-top: none; padding-top: 0;' : ''}">
-                                <span></span>
+                                <span class="text-muted"><i class="fas fa-users"></i> ${validCount}/${maxSquadre}</span>
                                 <span class="text-gold"><i class="fas fa-euro-sign"></i> ${costoComp > 0 ? costoComp + ' €' : 'Gratuito'}</span>
                             </div>`;
                         grid.appendChild(card);
