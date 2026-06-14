@@ -227,9 +227,9 @@
                             <a id="edit-link" href="#" class="btn btn-secondary" style="flex: 1;"><i class="fas fa-edit"></i> Modifica</a>
                         </div>
                         <!-- NUOVA SEZIONE RICHIESTE ADMIN -->
-                        <div id="admin-requests-section" class="mt-4" style="display:none;">
-                            <h5><i class="fas fa-user-clock"></i> Richieste in Attesa</h5>
-                            <div id="admin-requests-list"></div>
+                        <div id="admin-requests-section" class="mt-4">
+                            <h5 style="margin-bottom:10px;"><i class="fas fa-user-clock"></i> Richieste in Attesa (<span id="req-count">0</span>)</h5>
+                            <div id="admin-requests-list"><p class="text-muted">Nessuna richiesta in attesa.</p></div>
                         </div>
                     </div>
 
@@ -360,24 +360,19 @@
         });
 
         // --- FUNZIONE FIND LOGO "MAGNETICA" ---
-        // Cerca qualsiasi cosa assomigli a un link immagine, ignorando maiuscole/minuscole
         function findLogoUrl(clubObj) {
             if (!clubObj) return null;
             
-            // 1. Controllo diretto proprietà comuni (case-insensitive)
             const preferredKeys = ['logo', 'img', 'image', 'immagine', 'shield', 'emblem'];
             for (let key of preferredKeys) {
-                // Controlla sia key che Key che KEY
                 const val = clubObj[key] || clubObj[key.toLowerCase()] || clubObj[key.toUpperCase()] || clubObj[key.charAt(0).toUpperCase() + key.slice(1)];
                 if (val && typeof val === 'string' && val.length > 5) return val;
             }
 
-            // 2. Scansione totale proprietà
             for (let key in clubObj) {
                 if (clubObj.hasOwnProperty(key)) {
                     const val = clubObj[key];
                     if (val && typeof val === 'string') {
-                        // Se contiene http, drive, o estensioni immagine
                         if (val.includes('http') || val.includes('drive.google') || val.includes('.png') || val.includes('.jpg') || val.includes('.webp') || val.includes('data:image')) {
                             return val;
                         }
@@ -401,7 +396,6 @@
 
                 const competizioni = compData.record.competizioni || [];
                 
-                // Caricamento Club flessibile
                 if (Array.isArray(clubData.record)) {
                     allClubs = clubData.record;
                 } else {
@@ -501,7 +495,6 @@
                     const club = allClubs.find(c => c.id === clubId);
                     if (club) {
                         const logoUrl = findLogoUrl(club);
-                        console.log("LOGO TROVATO per", club.nome, ":", logoUrl); // Debug finale
 
                         let logoHtml = `<i class="fas fa-shield-alt" style="color: #ccc;"></i>`;
                         if (logoUrl) {
@@ -549,7 +542,6 @@
                 withdrawBtn.style.display = 'inline-block';
                 withdrawBtn.onclick = async () => {
                     if(!confirm("Sei sicuro di volerti ritirare?")) return;
-                    // Logica ritiro (come prima)
                     try {
                         withdrawBtn.disabled = true;
                         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}/latest`, { headers: { 'X-Master-Key': API_KEY } });
@@ -572,7 +564,10 @@
 
             // 2. Controllo se ho già inviato la richiesta
             const richieste = currentComp.richieste || [];
-            if (richieste.includes(userClub.id)) {
+            // Controllo sicuro (converte tutto a stringa per confronto)
+            const hasPending = richieste.some(r => String(r) === String(userClub.id));
+
+            if (hasPending) {
                 btn.innerHTML = '<i class="fas fa-hourglass-half"></i> IN ATTESA DI APPROVAZIONE';
                 btn.disabled = true;
                 btn.classList.add('btn-pending');
@@ -599,7 +594,10 @@
                     if (idx !== -1) {
                         // Aggiungi alle richieste
                         if (!list[idx].richieste) list[idx].richieste = [];
-                        list[idx].richieste.push(userClub.id);
+                        // Evita duplicati
+                        if (!list[idx].richieste.includes(userClub.id)) {
+                            list[idx].richieste.push(userClub.id);
+                        }
 
                         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                             method: 'PUT', 
@@ -648,18 +646,20 @@
                 const richieste = currentComp.richieste || [];
                 const reqSection = document.getElementById('admin-requests-section');
                 const reqList = document.getElementById('admin-requests-list');
+                const reqCount = document.getElementById('req-count');
+                
+                reqCount.textContent = richieste.length;
 
                 if (richieste.length > 0) {
-                    reqSection.style.display = 'block';
                     let html = '<ul style="list-style:none; padding:0;">';
                     
                     richieste.forEach(reqId => {
-                        const club = allClubs.find(c => c.id === reqId);
+                        const club = allClubs.find(c => String(c.id) === String(reqId)); // Controllo sicuro
                         if (club) {
                             html += `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
-                                <span>${club.nome}</span>
+                                <span><i class="fas fa-user"></i> <strong>${club.nome}</strong></span>
                                 <div>
-                                    <button onclick="acceptRequest('${reqId}')" class="btn btn-primary btn-small" style="padding:5px 10px;"><i class="fas fa-check"></i></button>
+                                    <button onclick="acceptRequest('${reqId}')" class="btn btn-primary btn-small" style="padding:5px 10px;"><i class="fas fa-check"></i> Accetta</button>
                                     <button onclick="rejectRequest('${reqId}')" class="btn btn-danger btn-small" style="padding:5px 10px; margin-left:5px;"><i class="fas fa-times"></i></button>
                                 </div>
                             </li>`;
@@ -667,6 +667,8 @@
                     });
                     html += '</ul>';
                     reqList.innerHTML = html;
+                } else {
+                    reqList.innerHTML = '<p class="text-muted" style="font-size:0.9em;">Nessuna richiesta in attesa.</p>';
                 }
             }
         }
@@ -681,10 +683,12 @@
 
                 if (idx !== -1) {
                     // Rimuovi dalle richieste
-                    list[idx].richieste = (list[idx].richieste || []).filter(id => id !== clubId);
+                    list[idx].richieste = (list[idx].richieste || []).filter(id => String(id) !== String(clubId));
                     // Aggiungi ai registrati
                     if (!list[idx].club_registrati) list[idx].club_registrati = [];
-                    list[idx].club_registrati.push(clubId);
+                    if (!list[idx].club_registrati.includes(clubId)) {
+                         list[idx].club_registrati.push(clubId);
+                    }
                     // Inizializza classifica
                     if (!list[idx].classifica) list[idx].classifica = {};
                     list[idx].classifica[clubId] = { punti: 0, gf: 0, gs: 0, vinte: 0, pareggi: 0, perse: 0 };
@@ -708,7 +712,7 @@
                 const idx = list.findIndex(c => c.id === compId);
 
                 if (idx !== -1) {
-                    list[idx].richieste = (list[idx].richieste || []).filter(id => id !== clubId);
+                    list[idx].richieste = (list[idx].richieste || []).filter(id => String(id) !== String(clubId));
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_COMP}`, {
                         method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                         body: JSON.stringify({ "competizioni": list })
