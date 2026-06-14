@@ -30,7 +30,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Badge Capitano in alto a destra */
+        /* Badge Capitano */
         .badge-captain {
             position: absolute;
             top: 10px;
@@ -45,7 +45,7 @@
             z-index: 2;
         }
 
-        /* Riga superiore: Icona + Nome */
+        /* Riga superiore */
         .club-header {
             display: flex;
             align-items: center;
@@ -86,7 +86,7 @@
             white-space: nowrap;
         }
 
-        /* Riga inferiore: Stadio */
+        /* Riga inferiore */
         .club-info-row {
             display: flex;
             align-items: center;
@@ -95,10 +95,7 @@
             font-size: 0.9rem;
             padding-left: 65px; 
         }
-        .club-info-row i {
-            width: 20px;
-            text-align: center;
-        }
+        .club-info-row i { width: 20px; text-align: center; }
 
         /* Footer Card */
         .club-footer {
@@ -110,12 +107,9 @@
             align-items: center;
             min-height: 30px;
         }
-        .btn-xs {
-            padding: 4px 10px;
-            font-size: 0.8rem;
-        }
+        .btn-xs { padding: 4px 10px; font-size: 0.8rem; }
         
-        /* Scritta CAPITANO in basso a destra */
+        /* Scritta CAPITANO */
         .status-captain {
             color: var(--accent-gold);
             font-weight: 800;
@@ -149,19 +143,15 @@
             </div>
         </header>
 
-        <!-- SIDEBAR OVERLAY -->
+        <!-- SIDEBAR -->
         <div id="overlay" class="sidebar-overlay"></div>
-
-        <!-- SIDEBAR COMPLETA -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
                     <div class="logo">FC</div>
                     <span class="site-name">FC27</span>
                 </div>
-                <button id="close-btn" class="sidebar-close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button>
             </div>
             
             <nav class="sidebar-nav">
@@ -224,7 +214,6 @@
                 <div id="empty-state" class="empty-state" style="display:none;">
                     <div class="empty-state-icon"><i class="fas fa-shield-alt"></i></div>
                     <h3 class="empty-state-title">Nessun Club trovato</h3>
-                    <p class="empty-state-text">Non ci sono club registrati nel database.</p>
                 </div>
             </div>
         </main>
@@ -286,7 +275,7 @@
             return club.name || club.nome || club.tag || 'Club';
         }
 
-        // === INVIA RICHIESTA ===
+        // === FUNZIONE INVIA RICHIESTA ===
         async function sendRequest(clubId) {
             if (!user) return alert("Devi essere loggato.");
             
@@ -305,8 +294,8 @@
                 const clubIndex = clubs.findIndex(c => c.id === clubId);
                 if (clubIndex === -1) return alert("Club non trovato.");
 
-                if (clubs[clubIndex].members && clubs[clubIndex].members.includes(user.id)) return alert("Sei già un membro di questo club!");
-                if (clubs[clubIndex].requests && clubs[clubIndex].requests.includes(user.id)) return alert("Hai già inviato una richiesta per questo club.");
+                if (clubs[clubIndex].members && clubs[clubIndex].members.includes(user.id)) return alert("Sei già un membro!");
+                if (clubs[clubIndex].requests && clubs[clubIndex].requests.includes(user.id)) return alert("Hai già inviato una richiesta.");
 
                 if (!clubs[clubIndex].requests) clubs[clubIndex].requests = [];
                 clubs[clubIndex].requests.push(user.id);
@@ -324,7 +313,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                alert('Richiesta inviata con successo!');
+                alert('Richiesta inviata!');
                 loadClubs();
 
             } catch (err) {
@@ -381,26 +370,56 @@
                         ? `<div class="club-info-row"><i class="fas fa-futbol"></i><span>${stadium}</span></div>` 
                         : '';
 
-                    // --- LOGICA VISUALIZZAZIONE STATO ---
-                    let footerContent = '';
+                    // --- LOGICA CAPITANO MIGLIORATA ---
+                    let isCaptain = false;
+                    let myId = String(user.id);
+                    let myName = String(user.nomeEA).toLowerCase();
+
+                    // Array di proprietà da controllare (in minuscolo per facilità)
+                    const captainKeys = ['captain', 'owner', 'presidente', 'createdby', 'founder', 'admin', 'leader', 'manager', 'userid', 'user_id'];
                     
-                    // 1. Controllo se è il Capitano (priorità assoluta)
-                    // Uso String() per confrontare numeri e stringhe senza problemi
-                    const isCaptain = user && (
-                        String(club.captain) === String(user.id) || 
-                        String(club.owner) === String(user.id) || 
-                        String(club.presidente) === String(user.id) ||
-                        String(club.createdBy) === String(user.id)
-                    );
+                    // Scansiona le proprietà del club
+                    for (let key in club) {
+                        // Se la chiave contiene parole chiave tipo "cap", "own", "pres", "creat", "admin"
+                        // OPPURE se la chiave è nella lista standard
+                        if (captainKeys.includes(key.toLowerCase()) || 
+                            key.toLowerCase().includes('cap') || 
+                            key.toLowerCase().includes('own') || 
+                            key.toLowerCase().includes('admin') ||
+                            key.toLowerCase().includes('founder') ||
+                            key.toLowerCase().includes('pres')) {
+                            
+                            let val = club[key];
+                            
+                            // Gestione Oggetto nidificato (es. captain: { id: ... })
+                            if (typeof val === 'object' && val !== null && val.id) {
+                                val = val.id;
+                            }
+
+                            let valStr = String(val).toLowerCase();
+
+                            // Confronto con ID e Nome Utente
+                            if (String(val) === myId || valStr === myName) {
+                                isCaptain = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Debug Console (F12 per vedere)
+                    if (user) {
+                        console.log(`DEBUG CLUB: ${displayName}`, `Capitano? ${isCaptain}`, `ID Utente: ${myId}`, `Nome: ${myName}`);
+                    }
+
+                    // --- GENERAZIONE HTML ---
+                    let footerContent = '';
 
                     if (isCaptain) {
-                        // Se sono capitano, mostro il badge in alto e la scritta in basso
                         footerContent = `
                             <span class="badge-captain">CAPITANO</span>
                             <span class="status-captain">CAPITANO</span>
                         `;
                     } else {
-                        // Altrimenti controllo se sono membro o ho richiesto
                         const isMember = user && club.members && club.members.includes(user.id);
                         const hasRequested = user && club.requests && club.requests.includes(user.id);
 
@@ -413,7 +432,6 @@
                         }
                     }
 
-                    // Costruzione Card
                     card.innerHTML = `
                         <div class="club-header">
                             <div class="club-icon-wrapper">${logoContent}</div>
@@ -425,7 +443,6 @@
                         </div>
                     `;
 
-                    // Click Intero va a Info
                     card.addEventListener('click', () => {
                         window.location.href = `club-info.html?id=${club.id}`;
                     });
