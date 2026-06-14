@@ -68,8 +68,7 @@
         .club-icon-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* FIX: Centra l'immagine senza tagliarla */
-            padding: 2px;
+            object-fit: cover; /* Cambiato in cover per riempire meglio */
         }
         .club-icon-wrapper i {
             font-size: 1.5rem;
@@ -262,6 +261,26 @@
             window.location.href = '../home-non-loggato.html';
         });
 
+        // === FUNZIONE TROVA LOGO (UNIVERSALE) ===
+        function getClubLogo(club) {
+            if (!club) return null;
+            // 1. Cerca proprietà standard
+            const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
+            for (let p of props) {
+                if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
+            }
+            // 2. Cerca qualsiasi stringa che sembra un link
+            for (let key in club) {
+                let val = club[key];
+                if (typeof val === 'string' && val.length > 10) {
+                    if (val.includes('http') || val.includes('data:image') || val.includes('.png') || val.includes('.jpg')) {
+                        return val;
+                    }
+                }
+            }
+            return null;
+        }
+
         // === FUNZIONE PER INVIARE RICHIESTA ===
         async function sendRequest(clubId) {
             if (!user) return alert("Devi essere loggato.");
@@ -273,9 +292,17 @@
                     cache: 'no-store'
                 });
                 const data = await res.json();
-                let clubs = data.record.clubs || [];
+                
+                // Gestione flessibile recupero dati
+                let clubs = [];
+                let originalRecord = data.record;
+                if (Array.isArray(originalRecord)) {
+                    clubs = originalRecord;
+                } else {
+                    clubs = originalRecord.clubs || originalRecord.club || [];
+                }
 
-                // 2. Troova il club specifico
+                // 2. Trova il club specifico
                 const clubIndex = clubs.findIndex(c => c.id === clubId);
                 if (clubIndex === -1) return alert("Club non trovato.");
 
@@ -291,11 +318,20 @@
                 if (!clubs[clubIndex].requests) clubs[clubIndex].requests = [];
                 clubs[clubIndex].requests.push(user.id);
 
-                // 5. Salva
+                // 5. Salva (Mantenendo la struttura originale)
+                let payload;
+                if (Array.isArray(originalRecord)) {
+                    payload = clubs;
+                } else {
+                    // Ricrea l'oggetto mantenendo la chiave originale (clubs o club)
+                    let key = originalRecord.clubs ? 'clubs' : 'club';
+                    payload = { ...originalRecord, [key]: clubs };
+                }
+
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                    body: JSON.stringify({ clubs })
+                    body: JSON.stringify(payload)
                 });
 
                 alert('Richiesta inviata con successo!');
@@ -322,7 +358,15 @@
                 if (!response.ok) throw new Error("Errore connessione DB");
                 
                 const data = await response.json();
-                const clubs = data.record.clubs || [];
+                
+                // FIX: Gestione flessibile del record
+                const record = data.record;
+                let clubs = [];
+                if (Array.isArray(record)) {
+                    clubs = record;
+                } else {
+                    clubs = record.clubs || record.club || [];
+                }
 
                 grid.innerHTML = ''; 
 
@@ -338,8 +382,10 @@
                     card.className = 'card club-card animate-slideUp';
                     card.style.animationDelay = (index * 0.05) + 's';
                     
-                    const logoContent = club.logo 
-                        ? `<img src="${club.logo}" alt="${club.name}">`
+                    // USA LA FUNZIONE UNIVERSALE PER IL LOGO
+                    const logoSrc = getClubLogo(club);
+                    const logoContent = logoSrc 
+                        ? `<img src="${logoSrc}" alt="${club.name}" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`
                         : `<i class="fas fa-shield-alt"></i>`;
 
                     // Logica Stato Utente
@@ -351,7 +397,7 @@
                     let cardHtml = `
                         <div class="club-header">
                             <div class="club-icon-wrapper">${logoContent}</div>
-                            <h4 class="club-name">${club.name}</h4>
+                            <h4 class="club-name">${club.name || 'Senza Nome'}</h4>
                         </div>
                         <div class="club-info-row">
                             <i class="fas fa-futbol"></i>
