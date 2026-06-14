@@ -30,7 +30,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Badge Capitano */
+        /* Badge Capitano in alto a destra */
         .badge-captain {
             position: absolute;
             top: 10px;
@@ -108,18 +108,18 @@
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            min-height: 30px; /* Altezza fissa per allineare */
+            min-height: 30px;
         }
         .btn-xs {
             padding: 4px 10px;
             font-size: 0.8rem;
         }
         
-        /* Stato Capitano nel footer */
+        /* Scritta CAPITANO in basso a destra */
         .status-captain {
             color: var(--accent-gold);
-            font-weight: 700;
-            font-size: 0.85rem;
+            font-weight: 800;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -266,7 +266,7 @@
             window.location.href = '../home-non-loggato.html';
         });
 
-        // === FUNZIONE TROVA LOGO ===
+        // === FUNZIONI UTILITA' ===
         function getClubLogo(club) {
             if (!club) return null;
             const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
@@ -282,13 +282,11 @@
             return null;
         }
 
-        // === FUNZIONE TROVA NOME (FIX "SENZA NOME") ===
         function getClubName(club) {
-            // Cerca proprietà comuni per il nome
-            return club.name || club.nome || club.tag || 'Club'; // Se non c'è nulla, mette solo 'Club'
+            return club.name || club.nome || club.tag || 'Club';
         }
 
-        // === FUNZIONE INVIA RICHIESTA ===
+        // === INVIA RICHIESTA ===
         async function sendRequest(clubId) {
             if (!user) return alert("Devi essere loggato.");
             
@@ -374,17 +372,20 @@
                         ? `<img src="${logoSrc}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`
                         : `<i class="fas fa-shield-alt"></i>`;
 
-                    // Nome (FIX)
+                    // Nome
                     const displayName = getClubName(club);
 
-                    // Stadio (FIX - Nasconde se non c'è)
+                    // Stadio
                     const stadium = club.stadium || club.stadio;
                     const stadiumHtml = stadium 
                         ? `<div class="club-info-row"><i class="fas fa-futbol"></i><span>${stadium}</span></div>` 
                         : '';
 
-                    // --- LOGICA CAPITANO MIGLIORATA ---
-                    // Controlla più varianti e converte tutto in stringa per sicurezza
+                    // --- LOGICA VISUALIZZAZIONE STATO ---
+                    let footerContent = '';
+                    
+                    // 1. Controllo se è il Capitano (priorità assoluta)
+                    // Uso String() per confrontare numeri e stringhe senza problemi
                     const isCaptain = user && (
                         String(club.captain) === String(user.id) || 
                         String(club.owner) === String(user.id) || 
@@ -392,37 +393,37 @@
                         String(club.createdBy) === String(user.id)
                     );
 
-                    const isMember = user && club.members && club.members.includes(user.id);
-                    const hasRequested = user && club.requests && club.requests.includes(user.id);
+                    if (isCaptain) {
+                        // Se sono capitano, mostro il badge in alto e la scritta in basso
+                        footerContent = `
+                            <span class="badge-captain">CAPITANO</span>
+                            <span class="status-captain">CAPITANO</span>
+                        `;
+                    } else {
+                        // Altrimenti controllo se sono membro o ho richiesto
+                        const isMember = user && club.members && club.members.includes(user.id);
+                        const hasRequested = user && club.requests && club.requests.includes(user.id);
 
-                    // Costruzione HTML Card
-                    let cardHtml = `
+                        if (isMember) {
+                            footerContent = `<span style="color: var(--accent-gold); font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Membro</span>`;
+                        } else if (hasRequested) {
+                            footerContent = `<button class="btn btn-xs" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-clock"></i> Richiesto</button>`;
+                        } else {
+                            footerContent = `<button class="btn btn-xs btn-primary" onclick="event.stopPropagation(); sendRequest('${club.id}')">Unisciti</button>`;
+                        }
+                    }
+
+                    // Costruzione Card
+                    card.innerHTML = `
                         <div class="club-header">
                             <div class="club-icon-wrapper">${logoContent}</div>
                             <h4 class="club-name">${displayName}</h4>
                         </div>
                         ${stadiumHtml}
                         <div class="club-footer">
+                            ${footerContent}
+                        </div>
                     `;
-
-                    // Visualizzazione Footer in base allo stato
-                    if (isCaptain) {
-                        // Aggiunge il Badge in alto a destra
-                        cardHtml += `<span class="badge-captain">CAPITANO</span>`;
-                        // In basso a destra scrive "CAPITANO" invece del tasto unisciti
-                        cardHtml += `<span class="status-captain">CAPITANO</span>`;
-                    } else if (isMember) {
-                        cardHtml += `<span style="color: var(--accent-gold); font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Membro</span>`;
-                    } else {
-                        if (hasRequested) {
-                            cardHtml += `<button class="btn btn-xs" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-clock"></i> Richiesto</button>`;
-                        } else {
-                            cardHtml += `<button class="btn btn-xs btn-primary" onclick="event.stopPropagation(); sendRequest('${club.id}')">Unisciti</button>`;
-                        }
-                    }
-
-                    cardHtml += `</div>`;
-                    card.innerHTML = cardHtml;
 
                     // Click Intero va a Info
                     card.addEventListener('click', () => {
