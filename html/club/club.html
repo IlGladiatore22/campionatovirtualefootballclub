@@ -17,7 +17,7 @@
         
         /* Stile Card Club */
         .club-card {
-            position: relative; /* Per posizionare il badge capitano */
+            position: relative; 
             cursor: pointer;
             padding: 15px;
             display: flex;
@@ -68,7 +68,7 @@
         .club-icon-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cambiato in cover per riempire meglio */
+            object-fit: cover;
         }
         .club-icon-wrapper i {
             font-size: 1.5rem;
@@ -93,14 +93,14 @@
             gap: 10px;
             color: var(--text-muted);
             font-size: 0.9rem;
-            padding-left: 65px; /* Allinea con il testo del nome */
+            padding-left: 65px; 
         }
         .club-info-row i {
             width: 20px;
             text-align: center;
         }
 
-        /* Footer Card con bottone richieste */
+        /* Footer Card */
         .club-footer {
             margin-top: 5px;
             padding-top: 10px;
@@ -108,10 +108,20 @@
             display: flex;
             justify-content: flex-end;
             align-items: center;
+            min-height: 30px; /* Altezza fissa per allineare */
         }
         .btn-xs {
             padding: 4px 10px;
             font-size: 0.8rem;
+        }
+        
+        /* Stato Capitano nel footer */
+        .status-captain {
+            color: var(--accent-gold);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -120,7 +130,6 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- FRECCIA INDIETRO -->
                 <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
                     <i class="fas fa-arrow-left"></i>
                 </a>
@@ -222,11 +231,11 @@
     </div>
 
     <script>
-        // === CONFIGURAZIONE JSONBIN ===
+        // === CONFIGURAZIONE ===
         const BIN_ID_CLUBS = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'; 
 
-        // === CONTROLLO SESSIONE ===
+        // === SESSIONE ===
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const token = localStorage.getItem('auth_token');
 
@@ -241,89 +250,72 @@
             }
         }
 
-        // === FUNZIONI SIDEBAR ===
+        // === UI CONTROLS ===
         const menuBtn = document.getElementById('menu-btn');
         const closeBtn = document.getElementById('close-btn');
         const overlay = document.getElementById('overlay');
         const sidebar = document.getElementById('sidebar');
 
-        function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-
-        menuBtn.addEventListener('click', openSidebar);
-        closeBtn.addEventListener('click', closeSidebar);
-        overlay.addEventListener('click', closeSidebar);
+        menuBtn.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; });
         
-        // Logout
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('user');
             localStorage.removeItem('auth_token');
             window.location.href = '../home-non-loggato.html';
         });
 
-        // === FUNZIONE TROVA LOGO (UNIVERSALE) ===
+        // === FUNZIONE TROVA LOGO ===
         function getClubLogo(club) {
             if (!club) return null;
-            // 1. Cerca proprietà standard
             const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
             for (let p of props) {
                 if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
             }
-            // 2. Cerca qualsiasi stringa che sembra un link
             for (let key in club) {
                 let val = club[key];
                 if (typeof val === 'string' && val.length > 10) {
-                    if (val.includes('http') || val.includes('data:image') || val.includes('.png') || val.includes('.jpg')) {
-                        return val;
-                    }
+                    if (val.includes('http') || val.includes('data:image') || val.includes('.png') || val.includes('.jpg')) return val;
                 }
             }
             return null;
         }
 
-        // === FUNZIONE PER INVIARE RICHIESTA ===
+        // === FUNZIONE TROVA NOME (FIX "SENZA NOME") ===
+        function getClubName(club) {
+            // Cerca proprietà comuni per il nome
+            return club.name || club.nome || club.tag || 'Club'; // Se non c'è nulla, mette solo 'Club'
+        }
+
+        // === FUNZIONE INVIA RICHIESTA ===
         async function sendRequest(clubId) {
             if (!user) return alert("Devi essere loggato.");
             
             try {
-                // 1. Prendi dati attuali
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
                 const data = await res.json();
                 
-                // Gestione flessibile recupero dati
                 let clubs = [];
                 let originalRecord = data.record;
-                if (Array.isArray(originalRecord)) {
-                    clubs = originalRecord;
-                } else {
-                    clubs = originalRecord.clubs || originalRecord.club || [];
-                }
+                if (Array.isArray(originalRecord)) clubs = originalRecord;
+                else clubs = originalRecord.clubs || originalRecord.club || [];
 
-                // 2. Trova il club specifico
                 const clubIndex = clubs.findIndex(c => c.id === clubId);
                 if (clubIndex === -1) return alert("Club non trovato.");
 
-                // 3. Controlla se già membro o già richiesto
-                if (clubs[clubIndex].members && clubs[clubIndex].members.includes(user.id)) {
-                    return alert("Sei già un membro di questo club!");
-                }
-                if (clubs[clubIndex].requests && clubs[clubIndex].requests.includes(user.id)) {
-                    return alert("Hai già inviato una richiesta per questo club.");
-                }
+                if (clubs[clubIndex].members && clubs[clubIndex].members.includes(user.id)) return alert("Sei già un membro di questo club!");
+                if (clubs[clubIndex].requests && clubs[clubIndex].requests.includes(user.id)) return alert("Hai già inviato una richiesta per questo club.");
 
-                // 4. Aggiungi richiesta
                 if (!clubs[clubIndex].requests) clubs[clubIndex].requests = [];
                 clubs[clubIndex].requests.push(user.id);
 
-                // 5. Salva (Mantenendo la struttura originale)
                 let payload;
-                if (Array.isArray(originalRecord)) {
-                    payload = clubs;
-                } else {
-                    // Ricrea l'oggetto mantenendo la chiave originale (clubs o club)
+                if (Array.isArray(originalRecord)) payload = clubs;
+                else {
                     let key = originalRecord.clubs ? 'clubs' : 'club';
                     payload = { ...originalRecord, [key]: clubs };
                 }
@@ -335,7 +327,7 @@
                 });
 
                 alert('Richiesta inviata con successo!');
-                loadClubs(); // Ricarica lista per aggiornare UI
+                loadClubs();
 
             } catch (err) {
                 console.error(err);
@@ -349,8 +341,7 @@
             const emptyState = document.getElementById('empty-state');
             
             try {
-                const cacheBuster = '?t=' + new Date().getTime();
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest${cacheBuster}`, {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_CLUBS}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
@@ -358,15 +349,10 @@
                 if (!response.ok) throw new Error("Errore connessione DB");
                 
                 const data = await response.json();
-                
-                // FIX: Gestione flessibile del record
                 const record = data.record;
                 let clubs = [];
-                if (Array.isArray(record)) {
-                    clubs = record;
-                } else {
-                    clubs = record.clubs || record.club || [];
-                }
+                if (Array.isArray(record)) clubs = record;
+                else clubs = record.clubs || record.club || [];
 
                 grid.innerHTML = ''; 
 
@@ -382,34 +368,49 @@
                     card.className = 'card club-card animate-slideUp';
                     card.style.animationDelay = (index * 0.05) + 's';
                     
-                    // USA LA FUNZIONE UNIVERSALE PER IL LOGO
+                    // Logo
                     const logoSrc = getClubLogo(club);
                     const logoContent = logoSrc 
-                        ? `<img src="${logoSrc}" alt="${club.name}" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`
+                        ? `<img src="${logoSrc}" alt="Logo" onerror="this.outerHTML='<i class=\\'fas fa-shield-alt\\'></i>'">`
                         : `<i class="fas fa-shield-alt"></i>`;
 
-                    // Logica Stato Utente
-                    let isCaptain = user && (club.captain === user.id);
-                    let isMember = user && club.members && club.members.includes(user.id);
-                    let hasRequested = user && club.requests && club.requests.includes(user.id);
+                    // Nome (FIX)
+                    const displayName = getClubName(club);
 
-                    // HTML Card
+                    // Stadio (FIX - Nasconde se non c'è)
+                    const stadium = club.stadium || club.stadio;
+                    const stadiumHtml = stadium 
+                        ? `<div class="club-info-row"><i class="fas fa-futbol"></i><span>${stadium}</span></div>` 
+                        : '';
+
+                    // --- LOGICA CAPITANO MIGLIORATA ---
+                    // Controlla più varianti e converte tutto in stringa per sicurezza
+                    const isCaptain = user && (
+                        String(club.captain) === String(user.id) || 
+                        String(club.owner) === String(user.id) || 
+                        String(club.presidente) === String(user.id) ||
+                        String(club.createdBy) === String(user.id)
+                    );
+
+                    const isMember = user && club.members && club.members.includes(user.id);
+                    const hasRequested = user && club.requests && club.requests.includes(user.id);
+
+                    // Costruzione HTML Card
                     let cardHtml = `
                         <div class="club-header">
                             <div class="club-icon-wrapper">${logoContent}</div>
-                            <h4 class="club-name">${club.name || 'Senza Nome'}</h4>
+                            <h4 class="club-name">${displayName}</h4>
                         </div>
-                        <div class="club-info-row">
-                            <i class="fas fa-futbol"></i>
-                            <span>${club.stadium || 'Stadio non definito'}</span>
-                        </div>
+                        ${stadiumHtml}
                         <div class="club-footer">
                     `;
 
-                    // Aggiunta Badge CAPITANO se loggato e capitano
+                    // Visualizzazione Footer in base allo stato
                     if (isCaptain) {
+                        // Aggiunge il Badge in alto a destra
                         cardHtml += `<span class="badge-captain">CAPITANO</span>`;
-                        cardHtml += `<button class="btn btn-xs btn-secondary" onclick="event.stopPropagation(); window.location.href='club-info.html?id=${club.id}'">Richieste (${club.requests ? club.requests.length : 0})</button>`;
+                        // In basso a destra scrive "CAPITANO" invece del tasto unisciti
+                        cardHtml += `<span class="status-captain">CAPITANO</span>`;
                     } else if (isMember) {
                         cardHtml += `<span style="color: var(--accent-gold); font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Membro</span>`;
                     } else {
