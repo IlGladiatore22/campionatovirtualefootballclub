@@ -290,7 +290,7 @@
         </main>
     </div>
 
-    <script>
+        <script>
         // CONFIG
         const BIN_ID = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
@@ -317,10 +317,21 @@
         document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
         document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.href = '../home-non-loggato.html'; };
 
-        // --- FUNZIONE AIUTO PER TROVARE L'ID UTENTE ---
+        // --- FUNZIONE NORMALIZZAZIONE ID ---
+        // Serve perché nel DB c'è "user_123" ma nel browser magari hai solo "123"
+        function normalizeId(id) {
+            if (!id) return "";
+            let str = String(id);
+            // Rimuovi prefissi come "user_" per fare un confronto pulito sui numeri
+            if (str.startsWith("user_")) {
+                return str.replace("user_", "");
+            }
+            return str;
+        }
+
         function getUserId(u) {
             if(!u) return null;
-            // Prova diverse chiavi comuni per l'ID
+            // Cerca l'ID in vari campi possibili
             return u.id || u._id || u.userId || u.uid || u.email;
         }
 
@@ -373,13 +384,15 @@
             }
         }
 
-        // --- RENDER LISTA (LOGICA CORRETTA) ---
+        // --- RENDER LISTA (LOGICA NORMALIZZATA) ---
         function renderClubList(clubs) {
             document.getElementById('clubs-list-view').style.display = 'block';
             const grid = document.getElementById('clubs-grid');
             
-            const myId = getUserId(user); // Ottieni ID utente normale
-            console.log("DEBUG: Il tuo ID utente è:", myId);
+            const myIdRaw = getUserId(user);
+            const myId = normalizeId(myIdRaw); // Il tuo ID "pulito"
+            
+            console.log("DEBUG: Il tuo ID grezzo:", myIdRaw, "-> Normalizzato:", myId);
             
             if (clubs.length === 0) {
                 grid.innerHTML = '<p class="text-muted text-center">Nessun club creato.</p>';
@@ -388,7 +401,7 @@
 
             let html = '';
             clubs.forEach(c => {
-                console.log("DEBUG: Controllo club:", c.name, "ID:", c.id);
+                console.log("DEBUG: Controllo club:", c.name);
                 
                 const logo = getLogo(c);
                 let logoHtml = logo ? `<img src="${logo}">` : `<i class="fas fa-shield-alt"></i>`;
@@ -399,20 +412,23 @@
                 let roleBadge = '';
                 
                 if (myId) {
-                    // Controllo Capitano (converte tutto a stringa per sicurezza)
+                    // Controllo Capitano (Confronta ID normalizzati)
+                    const captainId = normalizeId(c.captain);
+                    const ownerId = normalizeId(c.owner);
+                    const presidenteId = normalizeId(c.presidente);
+                    const founderId = normalizeId(c.createdBy); // o c.founder
+
                     const isCaptain = (
-                        String(c.captain) == String(myId) ||
-                        String(c.owner) == String(myId) ||
-                        String(c.presidente) == String(myId) ||
-                        String(c.createdBy) == String(myId) ||
-                        String(c.founder) == String(myId)
+                        captainId === myId ||
+                        ownerId === myId ||
+                        presidenteId === myId ||
+                        founderId === myId
                     );
                     
-                    // Controllo Membro (converte tutto a stringa)
-                    // Verifica se l'ID è presente nell'array members
-                    const isMember = members.some(m => String(m) == String(myId));
+                    // Controllo Membro
+                    const isMember = members.some(m => normalizeId(m) === myId);
 
-                    console.log(`DEBUG: Club ${c.name} -> Capitano? ${isCaptain}, Membro? ${isMember}`);
+                    console.log(`Club ${c.name}: CapitanoDB[${captainId}] vs Tu[${myId}] -> Match? ${isCaptain}`);
 
                     if (isCaptain) {
                         roleBadge = `<span class="role-badge badge-captain"><i class="fas fa-crown"></i> CAPITANO</span>`;
@@ -443,12 +459,13 @@
             grid.innerHTML = html;
         }
 
-        // --- RENDER DETTAGLIO (LOGICA CORRETTA) ---
+        // --- RENDER DETTAGLIO (LOGICA NORMALIZZATA) ---
         function renderClubDetail() {
             document.getElementById('clubs-list-view').style.display = 'none';
             document.getElementById('club-detail-view').style.display = 'block';
 
-            const myId = getUserId(user);
+            const myIdRaw = getUserId(user);
+            const myId = normalizeId(myIdRaw);
 
             document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
             const logoSrc = getLogo(currentClub);
@@ -474,16 +491,19 @@
             document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
 
             // --- LOGICA RUOLO DETTAGLIO ---
+            const captainId = normalizeId(currentClub.captain);
+            const ownerId = normalizeId(currentClub.owner);
+            const presidenteId = normalizeId(currentClub.presidente);
+            const founderId = normalizeId(currentClub.createdBy);
+
             const isCaptain = myId && (
-                String(currentClub.captain) == String(myId) ||
-                String(currentClub.owner) == String(myId) ||
-                String(currentClub.presidente) == String(myId) ||
-                String(currentClub.createdBy) == String(myId) ||
-                String(currentClub.founder) == String(myId)
+                captainId === myId ||
+                ownerId === myId ||
+                presidenteId === myId ||
+                founderId === myId
             );
 
-            // Usa .some per controllo membro
-            const isMember = myId && members.some(m => String(m) == String(myId));
+            const isMember = myId && members.some(m => normalizeId(m) === myId);
 
             if (isCaptain) {
                 document.getElementById('captain-badge').style.display = 'inline-flex';
@@ -524,7 +544,6 @@
             if(!confirm("Accettare questo membro?")) return;
             
             if(!currentClub.members) currentClub.members = [];
-            // Evita duplicati
             if(!currentClub.members.includes(userId)) {
                 currentClub.members.push(userId);
             }
@@ -545,12 +564,20 @@
 
         async function requestJoin() {
             if(!user) return alert("Accedi per unirti.");
-            const myId = getUserId(user);
+            const myIdRaw = getUserId(user);
+            const myId = normalizeId(myIdRaw); // Usa ID normalizzato per la richiesta
             
             if(!currentClub.requests) currentClub.requests = [];
-            if(currentClub.requests.includes(myId)) return alert("Richiesta già inviata.");
+            
+            // Controlla se è già membro o ha già richiesto
+            const isAlreadyMember = currentClub.members.some(m => normalizeId(m) === myId);
+            if(isAlreadyMember) return alert("Sei già un membro!");
 
-            currentClub.requests.push(myId);
+            const hasRequested = currentClub.requests.some(m => normalizeId(m) === myId);
+            if(hasRequested) return alert("Richiesta già inviata.");
+
+            // Salva l'ID GREZZO (quello originale) nella richiesta, per non rompere il DB
+            currentClub.requests.push(myIdRaw);
             await saveData();
             alert('Richiesta inviata al capitano!');
             location.reload();
