@@ -15,7 +15,7 @@
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; background: var(--bg-primary); }
         
-        /* --- STILI PAGINA DETTAGLIO (VECCHI) --- */
+        /* --- STILI PAGINA DETTAGLIO --- */
         .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
         @media (max-width: 768px) {
             .hero-card { flex-direction: column; align-items: center; text-align: center; }
@@ -69,7 +69,7 @@
             align-items: center;
         }
 
-        /* --- STILI LISTA CLUB (NUOVI) --- */
+        /* --- STILI LISTA CLUB --- */
         .clubs-grid {
             display: flex;
             flex-direction: column;
@@ -94,7 +94,6 @@
             background: rgba(255,255,255,0.08);
         }
 
-        /* Colonna Sinistra: Logo */
         .club-list-logo {
             width: 70px;
             height: 70px;
@@ -111,10 +110,9 @@
         .club-list-logo i { font-size: 2rem; color: var(--accent-gold); }
         .club-list-logo img { width: 100%; height: 100%; border-radius: 50%; }
 
-        /* Colonna Centro: Info */
         .club-list-info {
             flex: 1;
-            min-width: 0; /* Importante per il troncamento testo */
+            min-width: 0;
         }
         .club-list-name {
             font-size: 1.25rem;
@@ -133,7 +131,6 @@
             gap: 8px;
         }
 
-        /* Colonna Destra: Azioni */
         .club-list-actions {
             display: flex;
             flex-direction: column;
@@ -143,7 +140,6 @@
             padding-left: 15px;
         }
 
-        /* Badge Ruoli */
         .role-badge {
             font-size: 0.7rem;
             font-weight: 800;
@@ -166,7 +162,6 @@
             border: 1px solid rgba(59, 130, 246, 0.4);
         }
 
-        /* Mobile Fix per lista */
         @media (max-width: 480px) {
             .club-card-list {
                 flex-direction: column;
@@ -190,7 +185,6 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- CORRETTO: Torna alla Home -->
                 <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
                     <i class="fas fa-arrow-left"></i>
                 </a>
@@ -236,15 +230,13 @@
 
                 <div id="main-content" style="display: none;">
                     
-                    <!-- LISTA CLUB (Visibile se non c'è ID) -->
+                    <!-- LISTA CLUB -->
                     <div id="clubs-list-view" style="display: none;">
                         <h3 class="mb-3 section-title">Scegli il tuo Club</h3>
-                        <div id="clubs-grid" class="clubs-grid">
-                            <!-- I club verranno inseriti qui via JS -->
-                        </div>
+                        <div id="clubs-grid" class="clubs-grid"></div>
                     </div>
 
-                    <!-- DETTAGLIO CLUB (Visibile se c'è ID) -->
+                    <!-- DETTAGLIO CLUB -->
                     <div id="club-detail-view" style="display: none;">
                         <div class="card hero-card">
                             <div class="club-logo-wrapper" id="club-logo">
@@ -257,7 +249,6 @@
                             </div>
                         </div>
 
-                        <!-- Sezione Admin -->
                         <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
                             <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
                             <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata.</p>
@@ -291,7 +282,7 @@
                 <div id="error-state" class="empty-state" style="display: none;">
                     <div class="empty-state-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
                     <h3 class="empty-state-title">Errore</h3>
-                    <p class="text-muted">Impossibile caricare i dati del club.</p>
+                    <p class="text-muted">Impossibile caricare i dati.</p>
                     <a href="../home.html" class="btn btn-secondary mt-2">Torna alla Home</a>
                 </div>
 
@@ -306,7 +297,15 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const clubId = urlParams.get('id');
-        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        // Recupera user in modo sicuro
+        let user = null;
+        try {
+            user = JSON.parse(localStorage.getItem('user'));
+        } catch(e) {
+            console.error("Errore parsing user localStorage", e);
+            user = null;
+        }
 
         let currentClub = null;
         let allData = null; 
@@ -318,18 +317,18 @@
         document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); };
         document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.href = '../home-non-loggato.html'; };
 
-        // FUNZIONI UTILITA
+        // --- FUNZIONE AIUTO PER TROVARE L'ID UTENTE ---
+        function getUserId(u) {
+            if(!u) return null;
+            // Prova diverse chiavi comuni per l'ID
+            return u.id || u._id || u.userId || u.uid || u.email;
+        }
+
         function getLogo(club) {
             if (!club) return null;
             const props = ['logo', 'immagine', 'image', 'logoUrl', 'foto', 'img', 'shield'];
             for (let p of props) {
                 if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
-            }
-            for (let key in club) {
-                let val = club[key];
-                if (typeof val === 'string' && val.length > 10) {
-                    if (val.includes('http') || val.includes('data:image') || val.includes('.png')) return val;
-                }
             }
             return null;
         }
@@ -350,12 +349,11 @@
                 if (Array.isArray(allData)) clubs = allData;
                 else clubs = allData.clubs || allData.club || [];
                 
-                clubsArray = clubs; // Salva globale
+                clubsArray = clubs;
 
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
 
-                // LOGICA: Se c'è ID mostra dettaglio, altrimenti mostra lista
                 if (clubId) {
                     currentClub = clubs.find(c => c.id === clubId);
                     if (currentClub) {
@@ -375,40 +373,46 @@
             }
         }
 
-        // --- RENDER LISTA (NUOVA LOGICA) ---
+        // --- RENDER LISTA (LOGICA CORRETTA) ---
         function renderClubList(clubs) {
             document.getElementById('clubs-list-view').style.display = 'block';
             const grid = document.getElementById('clubs-grid');
             
+            const myId = getUserId(user); // Ottieni ID utente normale
+            console.log("DEBUG: Il tuo ID utente è:", myId);
+            
             if (clubs.length === 0) {
-                grid.innerHTML = '<p class="text-muted text-center">Nessun club creato al momento.</p>';
+                grid.innerHTML = '<p class="text-muted text-center">Nessun club creato.</p>';
                 return;
             }
 
             let html = '';
             clubs.forEach(c => {
-                // 1. Logo
+                console.log("DEBUG: Controllo club:", c.name, "ID:", c.id);
+                
                 const logo = getLogo(c);
                 let logoHtml = logo ? `<img src="${logo}">` : `<i class="fas fa-shield-alt"></i>`;
                 
-                // 2. Conteggio Membri
                 const members = c.members || [];
                 const memberCount = members.length;
 
-                // 3. Logica Ruolo
                 let roleBadge = '';
                 
-                if (user) {
-                    // Controlla se Capitano (supporta diverse chiavi nel database)
+                if (myId) {
+                    // Controllo Capitano (converte tutto a stringa per sicurezza)
                     const isCaptain = (
-                        String(c.captain) === String(user.id) ||
-                        String(c.owner) === String(user.id) ||
-                        String(c.presidente) === String(user.id) ||
-                        String(c.createdBy) === String(user.id) ||
-                        String(c.founder) === String(user.id)
+                        String(c.captain) == String(myId) ||
+                        String(c.owner) == String(myId) ||
+                        String(c.presidente) == String(myId) ||
+                        String(c.createdBy) == String(myId) ||
+                        String(c.founder) == String(myId)
                     );
                     
-                    const isMember = members.includes(user.id);
+                    // Controllo Membro (converte tutto a stringa)
+                    // Verifica se l'ID è presente nell'array members
+                    const isMember = members.some(m => String(m) == String(myId));
+
+                    console.log(`DEBUG: Club ${c.name} -> Capitano? ${isCaptain}, Membro? ${isMember}`);
 
                     if (isCaptain) {
                         roleBadge = `<span class="role-badge badge-captain"><i class="fas fa-crown"></i> CAPITANO</span>`;
@@ -417,7 +421,6 @@
                     }
                 }
 
-                // 4. Costruisci HTML Card
                 html += `
                     <div class="club-card-list">
                         <div class="club-list-logo">
@@ -440,26 +443,24 @@
             grid.innerHTML = html;
         }
 
-        // --- RENDER DETTAGLIO (VECCHIA LOGICA) ---
+        // --- RENDER DETTAGLIO (LOGICA CORRETTA) ---
         function renderClubDetail() {
             document.getElementById('clubs-list-view').style.display = 'none';
             document.getElementById('club-detail-view').style.display = 'block';
 
-            // Nome e Logo
+            const myId = getUserId(user);
+
             document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
             const logoSrc = getLogo(currentClub);
             if (logoSrc) {
                 document.getElementById('club-logo').innerHTML = `<img src="${logoSrc}" alt="Logo">`;
             }
 
-            // Stadio
             const stadium = currentClub.stadium || currentClub.stadio;
             document.getElementById('club-stadium').textContent = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : '';
 
-            // Data
             if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
 
-            // Membri
             const members = currentClub.members || [];
             document.getElementById('member-count').textContent = members.length;
             
@@ -472,16 +473,17 @@
             });
             document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
 
-            // --- LOGICA CAPITANO / UTENTE ---
-            const isCaptain = user && (
-                String(currentClub.captain) === String(user.id) ||
-                String(currentClub.owner) === String(user.id) ||
-                String(currentClub.presidente) === String(user.id) ||
-                String(currentClub.createdBy) === String(user.id) ||
-                String(currentClub.founder) === String(user.id)
+            // --- LOGICA RUOLO DETTAGLIO ---
+            const isCaptain = myId && (
+                String(currentClub.captain) == String(myId) ||
+                String(currentClub.owner) == String(myId) ||
+                String(currentClub.presidente) == String(myId) ||
+                String(currentClub.createdBy) == String(myId) ||
+                String(currentClub.founder) == String(myId)
             );
 
-            const isMember = user && members.includes(user.id);
+            // Usa .some per controllo membro
+            const isMember = myId && members.some(m => String(m) == String(myId));
 
             if (isCaptain) {
                 document.getElementById('captain-badge').style.display = 'inline-flex';
@@ -522,7 +524,10 @@
             if(!confirm("Accettare questo membro?")) return;
             
             if(!currentClub.members) currentClub.members = [];
-            currentClub.members.push(userId);
+            // Evita duplicati
+            if(!currentClub.members.includes(userId)) {
+                currentClub.members.push(userId);
+            }
             currentClub.requests = currentClub.requests.filter(id => id !== userId);
 
             await saveData();
@@ -538,20 +543,19 @@
             location.reload();
         };
 
-        // Richiesta utente normale
         async function requestJoin() {
             if(!user) return alert("Accedi per unirti.");
+            const myId = getUserId(user);
             
             if(!currentClub.requests) currentClub.requests = [];
-            if(currentClub.requests.includes(user.id)) return alert("Richiesta già inviata.");
+            if(currentClub.requests.includes(myId)) return alert("Richiesta già inviata.");
 
-            currentClub.requests.push(user.id);
+            currentClub.requests.push(myId);
             await saveData();
             alert('Richiesta inviata al capitano!');
             location.reload();
         }
 
-        // Salva dati
         async function saveData() {
             let payload;
             if (Array.isArray(allData)) {
