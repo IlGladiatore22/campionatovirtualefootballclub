@@ -67,6 +67,31 @@
             justify-content: space-between;
             align-items: center;
         }
+
+        /* Stili per la Lista Club */
+        .clubs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        .club-card-mini {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .club-card-mini:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+        }
+        .club-card-mini img {
+            width: 50px; height: 50px; object-fit: cover; border-radius: 50%; margin-bottom: 10px;
+        }
+        .club-card-mini i {
+            font-size: 2rem; color: var(--text-muted); margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -74,7 +99,8 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <a href="club.html" class="header-btn" style="background: transparent; border: none;">
+                <!-- CORRETTO: Ora punta alla Home, non a se stesso -->
+                <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <div class="logo-container">
@@ -119,46 +145,54 @@
 
                 <div id="main-content" style="display: none;">
                     
-                    <div class="card hero-card">
-                        <div class="club-logo-wrapper" id="club-logo">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="text-content">
-                            <h1 id="club-name" class="comp-title-main">Nome Club</h1>
-                            <p id="club-stadium" class="text-muted" style="margin-top:5px;"><i class="fas fa-map-marker-alt"></i> Stadio</p>
-                            <span id="captain-badge" class="tag-captain" style="display:none;"><i class="fas fa-crown"></i> SEI IL CAPITANO</span>
+                    <!-- LISTA CLUB (Visibile se non c'è ID) -->
+                    <div id="clubs-list-view" style="display: none;">
+                        <h3 class="mb-3">Scegli il tuo Club</h3>
+                        <div id="clubs-grid" class="clubs-grid">
+                            <!-- I club verranno inseriti qui via JS -->
                         </div>
                     </div>
 
-                    <!-- Sezione Admin (Visibile solo al Capitano) -->
-                    <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
-                        <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
-                        <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata dei nuovi membri.</p>
-                        
-                        <div id="requests-list" class="mt-3">
-                            <p class="text-muted">Nessuna richiesta in sospeso.</p>
+                    <!-- DETTAGLIO CLUB (Visibile se c'è ID) -->
+                    <div id="club-detail-view" style="display: none;">
+                        <div class="card hero-card">
+                            <div class="club-logo-wrapper" id="club-logo">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="text-content">
+                                <h1 id="club-name" class="comp-title-main">Nome Club</h1>
+                                <p id="club-stadium" class="text-muted" style="margin-top:5px;"><i class="fas fa-map-marker-alt"></i> Stadio</p>
+                                <span id="captain-badge" class="tag-captain" style="display:none;"><i class="fas fa-crown"></i> SEI IL CAPITANO</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
-                        <div class="stat-card">
-                            <div class="stat-header"><i class="fas fa-users"></i><span>Membri</span></div>
-                            <div id="member-count" class="stat-value-big">0</div>
+                        <!-- Sezione Admin -->
+                        <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
+                            <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
+                            <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata.</p>
+                            <div id="requests-list" class="mt-3"></div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><i class="fas fa-calendar"></i><span>Fondato</span></div>
-                            <div id="club-date" class="stat-value-big" style="font-size: 1rem;">-</div>
+
+                        <div class="stats-grid mt-4 animate-slideUp stagger-1 stats-grid-mod">
+                            <div class="stat-card">
+                                <div class="stat-header"><i class="fas fa-users"></i><span>Membri</span></div>
+                                <div id="member-count" class="stat-value-big">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header"><i class="fas fa-calendar"></i><span>Fondato</span></div>
+                                <div id="club-date" class="stat-value-big" style="font-size: 1rem;">-</div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="card mt-4 animate-slideUp stagger-2">
-                        <h4 class="mb-3"><i class="fas fa-users text-gold"></i> Rosa Squadra</h4>
-                        <div id="members-list"><p class="text-muted">Caricamento...</p></div>
-                    </div>
+                        <div class="card mt-4 animate-slideUp stagger-2">
+                            <h4 class="mb-3"><i class="fas fa-users text-gold"></i> Rosa Squadra</h4>
+                            <div id="members-list"><p class="text-muted">Caricamento...</p></div>
+                        </div>
 
-                    <div class="action-buttons-container mt-4">
-                        <button id="join-btn" class="btn btn-primary btn-large btn-block" style="display:none;">Unisciti</button>
-                        <button id="leave-btn" class="btn btn-danger btn-large btn-block" style="display:none;">Abbandona Club</button>
+                        <div class="action-buttons-container mt-4">
+                            <button id="join-btn" class="btn btn-primary btn-large btn-block" style="display:none;">Unisciti</button>
+                            <button id="leave-btn" class="btn btn-danger btn-large btn-block" style="display:none;">Abbandona Club</button>
+                        </div>
                     </div>
 
                 </div>
@@ -166,8 +200,9 @@
                 <div id="error-state" class="empty-state" style="display: none;">
                     <div class="empty-state-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
                     <h3 class="empty-state-title">Errore</h3>
-                    <p class="text-muted">Club non trovato.</p>
-                    <a href="club.html" class="btn btn-secondary mt-2">Torna ai Club</a>
+                    <p class="text-muted">Impossibile caricare i dati.</p>
+                    <!-- CORRETTO: Punta alla Home per uscire dall'errore -->
+                    <a href="../home.html" class="btn btn-secondary mt-2">Torna alla Home</a>
                 </div>
 
             </div>
@@ -184,7 +219,8 @@
         const user = JSON.parse(localStorage.getItem('user') || 'null');
 
         let currentClub = null;
-        let allData = null; // Salva tutto il record per poter salvare modifiche
+        let allData = null; 
+        let clubsArray = []; // Salva l'array dei club per la lista
 
         // UI SETUP
         document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
@@ -209,44 +245,75 @@
         }
 
         async function loadData() {
-            if (!clubId) { showError(); return; }
-
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': API_KEY },
                     cache: 'no-store'
                 });
-                const data = await res.json();
-                allData = data.record; // Salva record intero
+                
+                if(!res.ok) throw new Error("Errore API");
 
-                // FIX: Gestione flessibile struttura dati
+                const data = await res.json();
+                allData = data.record; 
+
                 let clubs = [];
                 if (Array.isArray(allData)) clubs = allData;
                 else clubs = allData.clubs || allData.club || [];
+                
+                clubsArray = clubs; // Salva globale
 
-                currentClub = clubs.find(c => c.id === clubId);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
 
-                if (!currentClub) {
-                    console.error("Club ID cercato:", clubId, "Lista disponibile:", clubs);
-                    showError();
+                // LOGICA: Se c'è ID mostra dettaglio, altrimenti mostra lista
+                if (clubId) {
+                    currentClub = clubs.find(c => c.id === clubId);
+                    if (currentClub) {
+                        renderClubDetail();
+                    } else {
+                        // Se l'ID è sbagliato, torna alla lista o errore
+                        document.getElementById('main-content').style.display = 'none';
+                        document.getElementById('error-state').style.display = 'block';
+                    }
                 } else {
-                    renderUI();
+                    renderClubList(clubs);
                 }
 
             } catch (e) {
                 console.error(e);
-                showError();
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
             }
         }
 
-        function showError() {
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('error-state').style.display = 'block';
+        function renderClubList(clubs) {
+            document.getElementById('clubs-list-view').style.display = 'block';
+            const grid = document.getElementById('clubs-grid');
+            
+            if (clubs.length === 0) {
+                grid.innerHTML = '<p class="text-muted">Nessun club creato.</p>';
+                return;
+            }
+
+            let html = '';
+            clubs.forEach(c => {
+                const logo = getLogo(c);
+                let logoHtml = logo ? `<img src="${logo}" alt="Logo">` : `<i class="fas fa-shield-alt"></i>`;
+                
+                html += `
+                    <div class="club-card-mini">
+                        ${logoHtml}
+                        <h4 style="font-size: 1rem; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.name || 'Senza Nome'}</h4>
+                        <a href="?id=${c.id}" class="btn btn-primary btn-xs" style="width: 100%;">Visualizza</a>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
         }
 
-        function renderUI() {
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
+        function renderClubDetail() {
+            document.getElementById('clubs-list-view').style.display = 'none';
+            document.getElementById('club-detail-view').style.display = 'block';
 
             // Nome e Logo
             document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
@@ -268,11 +335,9 @@
             
             let membersHtml = '';
             members.forEach(mId => {
-                // Qui potremmo fare una chiamata per ottenere i nomi utenti, ma per ora mostriamo l'ID o il nome se salvato
-                // Assumendo che members sia un array di ID stringa
                 membersHtml += `<div class="member-item">
                     <div class="member-avatar"><i class="fas fa-user"></i></div>
-                    <div class="member-name">Membro ID: ${mId}</div>
+                    <div class="member-name">ID: ${mId}</div>
                 </div>`;
             });
             document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
@@ -295,7 +360,6 @@
             } else if (isMember) {
                 document.getElementById('leave-btn').style.display = 'block';
             } else {
-                // Se non è né capitano né membro, può unirsi (se le richieste sono aperte o logica simile)
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-btn').onclick = () => requestJoin();
             }
@@ -327,7 +391,6 @@
         window.accept = async (userId) => {
             if(!confirm("Accettare questo membro?")) return;
             
-            // Aggiorna logica
             if(!currentClub.members) currentClub.members = [];
             currentClub.members.push(userId);
             currentClub.requests = currentClub.requests.filter(id => id !== userId);
@@ -339,7 +402,6 @@
 
         window.reject = async (userId) => {
             if(!confirm("Rifiutare questa richiesta?")) return;
-            
             currentClub.requests = currentClub.requests.filter(id => id !== userId);
             await saveData();
             alert('Richiesta rifiutata.');
@@ -359,16 +421,14 @@
             location.reload();
         }
 
-        // Salva dati (Mantenendo struttura originale)
+        // Salva dati
         async function saveData() {
             let payload;
             if (Array.isArray(allData)) {
-                // Se il record era un array, trova l'indice e sostituisci
                 let idx = allData.findIndex(c => c.id === clubId);
                 if(idx !== -1) allData[idx] = currentClub;
                 payload = allData;
             } else {
-                // Se era un oggetto, aggiorna la proprietà corretta
                 let key = allData.clubs ? 'clubs' : 'club';
                 let list = allData[key];
                 let idx = list.findIndex(c => c.id === clubId);
@@ -379,7 +439,7 @@
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                body: JSON.stringify(payload) // Invia tutto il record modificato
+                body: JSON.stringify(payload)
             });
         }
 
