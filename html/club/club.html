@@ -13,8 +13,9 @@
     <link rel="stylesheet" href="../../estetica/components.css">
     
     <style>
-        html, body { height: auto; min-height: 100vh; overflow-y: auto; }
+        html, body { height: auto; min-height: 100vh; overflow-y: auto; background: var(--bg-primary); }
         
+        /* --- STILI PAGINA DETTAGLIO (VECCHI) --- */
         .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
         @media (max-width: 768px) {
             .hero-card { flex-direction: column; align-items: center; text-align: center; }
@@ -68,29 +69,119 @@
             align-items: center;
         }
 
-        /* Stili per la Lista Club */
+        /* --- STILI LISTA CLUB (NUOVI) --- */
         .clubs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            display: flex;
+            flex-direction: column;
             gap: 15px;
+            padding-bottom: 50px;
         }
-        .club-card-mini {
+        
+        .club-card-list {
+            display: flex;
+            align-items: center;
             background: var(--bg-secondary);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 15px;
-            text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+            position: relative;
         }
-        .club-card-mini:hover {
-            transform: translateY(-5px);
+        
+        .club-card-list:hover {
+            transform: translateY(-2px);
             border-color: var(--accent-gold);
+            background: rgba(255,255,255,0.08);
         }
-        .club-card-mini img {
-            width: 50px; height: 50px; object-fit: cover; border-radius: 50%; margin-bottom: 10px;
+
+        /* Colonna Sinistra: Logo */
+        .club-list-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-gold);
+            flex-shrink: 0;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
         }
-        .club-card-mini i {
-            font-size: 2rem; color: var(--text-muted); margin-bottom: 10px;
+        .club-list-logo i { font-size: 2rem; color: var(--accent-gold); }
+        .club-list-logo img { width: 100%; height: 100%; border-radius: 50%; }
+
+        /* Colonna Centro: Info */
+        .club-list-info {
+            flex: 1;
+            min-width: 0; /* Importante per il troncamento testo */
+        }
+        .club-list-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .club-list-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Colonna Destra: Azioni */
+        .club-list-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            min-width: 120px;
+            padding-left: 15px;
+        }
+
+        /* Badge Ruoli */
+        .role-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge-captain { 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: #000; 
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        .badge-member { 
+            background: rgba(59, 130, 246, 0.2); 
+            color: #60A5FA; 
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        /* Mobile Fix per lista */
+        @media (max-width: 480px) {
+            .club-card-list {
+                flex-direction: column;
+                text-align: center;
+            }
+            .club-list-logo { margin-right: 0; margin-bottom: 10px; }
+            .club-list-info { width: 100%; margin-bottom: 10px; }
+            .club-list-actions { 
+                width: 100%; 
+                align-items: center; 
+                flex-direction: row; 
+                justify-content: space-between;
+                padding-left: 0;
+            }
+            .club-list-actions .btn { width: auto; flex: 1; }
         }
     </style>
 </head>
@@ -99,7 +190,7 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- CORRETTO: Ora punta alla Home, non a se stesso -->
+                <!-- CORRETTO: Torna alla Home -->
                 <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
                     <i class="fas fa-arrow-left"></i>
                 </a>
@@ -147,7 +238,7 @@
                     
                     <!-- LISTA CLUB (Visibile se non c'è ID) -->
                     <div id="clubs-list-view" style="display: none;">
-                        <h3 class="mb-3">Scegli il tuo Club</h3>
+                        <h3 class="mb-3 section-title">Scegli il tuo Club</h3>
                         <div id="clubs-grid" class="clubs-grid">
                             <!-- I club verranno inseriti qui via JS -->
                         </div>
@@ -200,8 +291,7 @@
                 <div id="error-state" class="empty-state" style="display: none;">
                     <div class="empty-state-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
                     <h3 class="empty-state-title">Errore</h3>
-                    <p class="text-muted">Impossibile caricare i dati.</p>
-                    <!-- CORRETTO: Punta alla Home per uscire dall'errore -->
+                    <p class="text-muted">Impossibile caricare i dati del club.</p>
                     <a href="../home.html" class="btn btn-secondary mt-2">Torna alla Home</a>
                 </div>
 
@@ -220,7 +310,7 @@
 
         let currentClub = null;
         let allData = null; 
-        let clubsArray = []; // Salva l'array dei club per la lista
+        let clubsArray = []; 
 
         // UI SETUP
         document.getElementById('menu-btn').onclick = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); };
@@ -271,7 +361,6 @@
                     if (currentClub) {
                         renderClubDetail();
                     } else {
-                        // Se l'ID è sbagliato, torna alla lista o errore
                         document.getElementById('main-content').style.display = 'none';
                         document.getElementById('error-state').style.display = 'block';
                     }
@@ -286,31 +375,72 @@
             }
         }
 
+        // --- RENDER LISTA (NUOVA LOGICA) ---
         function renderClubList(clubs) {
             document.getElementById('clubs-list-view').style.display = 'block';
             const grid = document.getElementById('clubs-grid');
             
             if (clubs.length === 0) {
-                grid.innerHTML = '<p class="text-muted">Nessun club creato.</p>';
+                grid.innerHTML = '<p class="text-muted text-center">Nessun club creato al momento.</p>';
                 return;
             }
 
             let html = '';
             clubs.forEach(c => {
+                // 1. Logo
                 const logo = getLogo(c);
-                let logoHtml = logo ? `<img src="${logo}" alt="Logo">` : `<i class="fas fa-shield-alt"></i>`;
+                let logoHtml = logo ? `<img src="${logo}">` : `<i class="fas fa-shield-alt"></i>`;
                 
+                // 2. Conteggio Membri
+                const members = c.members || [];
+                const memberCount = members.length;
+
+                // 3. Logica Ruolo
+                let roleBadge = '';
+                
+                if (user) {
+                    // Controlla se Capitano (supporta diverse chiavi nel database)
+                    const isCaptain = (
+                        String(c.captain) === String(user.id) ||
+                        String(c.owner) === String(user.id) ||
+                        String(c.presidente) === String(user.id) ||
+                        String(c.createdBy) === String(user.id) ||
+                        String(c.founder) === String(user.id)
+                    );
+                    
+                    const isMember = members.includes(user.id);
+
+                    if (isCaptain) {
+                        roleBadge = `<span class="role-badge badge-captain"><i class="fas fa-crown"></i> CAPITANO</span>`;
+                    } else if (isMember) {
+                        roleBadge = `<span class="role-badge badge-member"><i class="fas fa-user"></i> MEMBRO</span>`;
+                    }
+                }
+
+                // 4. Costruisci HTML Card
                 html += `
-                    <div class="club-card-mini">
-                        ${logoHtml}
-                        <h4 style="font-size: 1rem; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.name || 'Senza Nome'}</h4>
-                        <a href="?id=${c.id}" class="btn btn-primary btn-xs" style="width: 100%;">Visualizza</a>
+                    <div class="club-card-list">
+                        <div class="club-list-logo">
+                            ${logoHtml}
+                        </div>
+                        <div class="club-list-info">
+                            <h4 class="club-list-name">${c.name || c.nome || 'Nome Club'}</h4>
+                            <div class="club-list-meta">
+                                <i class="fas fa-users"></i>
+                                <span>${memberCount} Membri</span>
+                            </div>
+                        </div>
+                        <div class="club-list-actions">
+                            ${roleBadge}
+                            <a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>
+                        </div>
                     </div>
                 `;
             });
             grid.innerHTML = html;
         }
 
+        // --- RENDER DETTAGLIO (VECCHIA LOGICA) ---
         function renderClubDetail() {
             document.getElementById('clubs-list-view').style.display = 'none';
             document.getElementById('club-detail-view').style.display = 'block';
