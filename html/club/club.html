@@ -69,7 +69,7 @@
             align-items: center;
         }
 
-        /* --- STILI LISTA CLUB --- */
+        /* --- STILI LISTA CLUB (ORIZZONTALE) --- */
         .clubs-grid {
             display: flex;
             flex-direction: column;
@@ -140,6 +140,7 @@
             padding-left: 15px;
         }
 
+        /* Badge Ruoli */
         .role-badge {
             font-size: 0.7rem;
             font-weight: 800;
@@ -162,7 +163,7 @@
             border: 1px solid rgba(59, 130, 246, 0.4);
         }
 
-        /* --- AVVISO ACCESSO NEGATO (LISTA) --- */
+        /* Avviso Accesso Negato */
         .no-access-label {
             font-size: 0.75rem;
             font-weight: 700;
@@ -176,7 +177,7 @@
             border: 1px solid rgba(239, 68, 68, 0.35);
         }
 
-        /* --- AVVISO ACCESSO NEGATO (DETTAGLIO) --- */
+        /* Banner Dettaglio Accesso Negato */
         .access-denied-banner {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.4);
@@ -226,9 +227,11 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <a href="../home.html" class="header-btn" style="background: transparent; border: none;">
-                    <i class="fas fa-arrow-left"></i>
+                <!-- Pulsante "Home" con Icona del Sito -->
+                <a href="../home.html" class="header-btn">
+                    <img src="../../estetica/logosito.png" alt="Torna alla Home" style="width: 26px; height: 26px; object-fit: contain;">
                 </a>
+                
                 <div class="logo-container">
                     <div class="logo">FC</div>
                     <span class="site-name">FC27</span>
@@ -340,7 +343,7 @@
         </main>
     </div>
 
-       <script>
+    <script>
         // CONFIG
         const BIN_ID = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
@@ -659,7 +662,7 @@
                 if(idx !== -1) allData[idx] = currentClub;
                 payload = allData;
             } else {
-                let key = allData.clubs ? 'clubs' : (allData.club ? 'club' : 'clubs'); // Supporta anche 'club' singolare
+                let key = allData.clubs ? 'clubs' : (allData.club ? 'club' : 'clubs'); 
                 let list = allData[key];
                 let idx = list.findIndex(c => c.id === clubId);
                 if(idx !== -1) list[idx] = currentClub;
@@ -675,3 +678,5 @@
 
         loadData();
     </script>
+</body>
+</html>
