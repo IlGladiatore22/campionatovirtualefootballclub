@@ -340,7 +340,7 @@
         </main>
     </div>
 
-    <script>
+       <script>
         // CONFIG
         const BIN_ID = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
@@ -371,6 +371,7 @@
         function normalizeId(id) {
             if (!id) return "";
             let str = String(id);
+            // Rimuovi prefissi come "user_" per confrontare solo i numeri
             if (str.startsWith("user_")) {
                 return str.replace("user_", "");
             }
@@ -379,6 +380,7 @@
 
         function getUserId(u) {
             if(!u) return null;
+            // Controlla varie chiavi possibili dove potrebbe essere salvato l'ID
             return u.id || u._id || u.userId || u.uid || u.email;
         }
 
@@ -391,18 +393,29 @@
             return null;
         }
 
-        // --- Controlla se l'utente ha accesso a un club ---
+        // --- Controlla se l'utente ha accesso a un club (SUPPORTA ITA/ENG) ---
         function checkAccess(club) {
             const myIdRaw = getUserId(user);
             if (!myIdRaw) return { isCaptain: false, isMember: false };
 
             const myId = normalizeId(myIdRaw);
-            const members = club.members || [];
+            
+            // Supporta chiavi italiane e inglesi per i membri
+            const members = club.members || club.membri || [];
 
-            const captainId   = normalizeId(club.captain);
-            const ownerId     = normalizeId(club.owner);
+            // Supporta chiavi italiane e inglesi per il capitano/owner
+            const captainId   = normalizeId(club.captain || club.capitano);
+            const ownerId     = normalizeId(club.owner || club.proprietario);
             const presidenteId = normalizeId(club.presidente);
-            const founderId   = normalizeId(club.createdBy);
+            const founderId   = normalizeId(club.createdBy || club.fondatore);
+
+            console.log("CHECK ACCESSO:", {
+                clubName: club.name,
+                myId: myId,
+                dbCaptain: captainId,
+                dbOwner: ownerId,
+                dbMembers: members
+            });
 
             const isCaptain = (
                 captainId === myId ||
@@ -464,8 +477,6 @@
             const myIdRaw = getUserId(user);
             const myId = normalizeId(myIdRaw);
             
-            console.log("DEBUG: Il tuo ID grezzo:", myIdRaw, "-> Normalizzato:", myId);
-            
             if (clubs.length === 0) {
                 grid.innerHTML = '<p class="text-muted text-center">Nessun club creato.</p>';
                 return;
@@ -473,12 +484,11 @@
 
             let html = '';
             clubs.forEach(c => {
-                console.log("DEBUG: Controllo club:", c.name);
-                
                 const logo = getLogo(c);
                 let logoHtml = logo ? `<img src="${logo}">` : `<i class="fas fa-shield-alt"></i>`;
                 
-                const members = c.members || [];
+                // Supporta membri (ita/eng)
+                const members = c.members || c.membri || [];
                 const memberCount = members.length;
 
                 let roleBadge = '';
@@ -487,22 +497,16 @@
                 if (myId) {
                     const { isCaptain, isMember } = checkAccess(c);
 
-                    console.log(`Club ${c.name}: Capitano? ${isCaptain} | Membro? ${isMember}`);
-
                     if (isCaptain) {
                         roleBadge = `<span class="role-badge badge-captain"><i class="fas fa-crown"></i> CAPITANO</span>`;
-                        // Capitano: accesso libero
                         actionHtml = `<a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>`;
                     } else if (isMember) {
                         roleBadge = `<span class="role-badge badge-member"><i class="fas fa-user"></i> MEMBRO</span>`;
-                        // Membro: accesso libero
                         actionHtml = `<a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>`;
                     } else {
-                        // Non appartiene al club: mostra avviso, nessun link
                         actionHtml = `<span class="no-access-label"><i class="fas fa-lock"></i> Non sei nel club</span>`;
                     }
                 } else {
-                    // Utente non loggato: nessun accesso
                     actionHtml = `<span class="no-access-label"><i class="fas fa-lock"></i> Accedi per vedere</span>`;
                 }
 
@@ -546,7 +550,8 @@
 
             if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
 
-            const members = currentClub.members || [];
+            // Supporta membri (ita/eng)
+            const members = currentClub.members || currentClub.membri || [];
             document.getElementById('member-count').textContent = members.length;
             
             let membersHtml = '';
@@ -564,10 +569,8 @@
                 document.getElementById('admin-panel').style.display = 'block';
                 renderRequests();
             } else if (isMember) {
-                // Membro normale: può vedere tutto e abbandonare
                 document.getElementById('leave-btn').style.display = 'block';
             } else {
-                // Non è nel club: mostra banner di avviso e bottone unisciti
                 document.getElementById('access-denied-detail').style.display = 'flex';
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-btn').onclick = () => requestJoin();
@@ -575,7 +578,8 @@
         }
 
         function renderRequests() {
-            const requests = currentClub.requests || [];
+            // Supporta richieste (ita/eng)
+            const requests = currentClub.requests || currentClub.richieste || [];
             const listEl = document.getElementById('requests-list');
 
             if (requests.length === 0) {
@@ -600,11 +604,16 @@
         window.accept = async (userId) => {
             if(!confirm("Accettare questo membro?")) return;
             
-            if(!currentClub.members) currentClub.members = [];
-            if(!currentClub.members.includes(userId)) {
-                currentClub.members.push(userId);
+            // Supporta membri (ita/eng)
+            const membersKey = currentClub.members ? 'members' : (currentClub.membri ? 'membri' : 'members');
+            if(!currentClub[membersKey]) currentClub[membersKey] = [];
+            
+            if(!currentClub[membersKey].includes(userId)) {
+                currentClub[membersKey].push(userId);
             }
-            currentClub.requests = currentClub.requests.filter(id => id !== userId);
+            
+            const requestsKey = currentClub.requests ? 'requests' : (currentClub.richieste ? 'richieste' : 'requests');
+            currentClub[requestsKey] = currentClub[requestsKey].filter(id => id !== userId);
 
             await saveData();
             alert('Membro aggiunto!');
@@ -613,7 +622,8 @@
 
         window.reject = async (userId) => {
             if(!confirm("Rifiutare questa richiesta?")) return;
-            currentClub.requests = currentClub.requests.filter(id => id !== userId);
+            const requestsKey = currentClub.requests ? 'requests' : (currentClub.richieste ? 'richieste' : 'requests');
+            currentClub[requestsKey] = currentClub[requestsKey].filter(id => id !== userId);
             await saveData();
             alert('Richiesta rifiutata.');
             location.reload();
@@ -624,15 +634,19 @@
             const myIdRaw = getUserId(user);
             const myId = normalizeId(myIdRaw);
             
-            if(!currentClub.requests) currentClub.requests = [];
+            const requestsKey = currentClub.requests ? 'requests' : (currentClub.richieste ? 'richieste' : 'requests');
+            if(!currentClub[requestsKey]) currentClub[requestsKey] = [];
             
-            const isAlreadyMember = currentClub.members.some(m => normalizeId(m) === myId);
+            const membersKey = currentClub.members ? 'members' : (currentClub.membri ? 'membri' : 'members');
+            const members = currentClub[membersKey] || [];
+            
+            const isAlreadyMember = members.some(m => normalizeId(m) === myId);
             if(isAlreadyMember) return alert("Sei già un membro!");
 
-            const hasRequested = currentClub.requests.some(m => normalizeId(m) === myId);
+            const hasRequested = currentClub[requestsKey].some(m => normalizeId(m) === myId);
             if(hasRequested) return alert("Richiesta già inviata.");
 
-            currentClub.requests.push(myIdRaw);
+            currentClub[requestsKey].push(myIdRaw);
             await saveData();
             alert('Richiesta inviata al capitano!');
             location.reload();
@@ -645,7 +659,7 @@
                 if(idx !== -1) allData[idx] = currentClub;
                 payload = allData;
             } else {
-                let key = allData.clubs ? 'clubs' : 'club';
+                let key = allData.clubs ? 'clubs' : (allData.club ? 'club' : 'clubs'); // Supporta anche 'club' singolare
                 let list = allData[key];
                 let idx = list.findIndex(c => c.id === clubId);
                 if(idx !== -1) list[idx] = currentClub;
@@ -661,5 +675,3 @@
 
         loadData();
     </script>
-</body>
-</html>
