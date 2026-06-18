@@ -162,6 +162,47 @@
             border: 1px solid rgba(59, 130, 246, 0.4);
         }
 
+        /* --- AVVISO ACCESSO NEGATO (LISTA) --- */
+        .no-access-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        /* --- AVVISO ACCESSO NEGATO (DETTAGLIO) --- */
+        .access-denied-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .access-denied-banner .icon {
+            font-size: 2rem;
+            color: #F87171;
+            flex-shrink: 0;
+        }
+        .access-denied-banner h4 {
+            margin: 0 0 4px 0;
+            color: #F87171;
+            font-size: 1rem;
+        }
+        .access-denied-banner p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
         @media (max-width: 480px) {
             .club-card-list {
                 flex-direction: column;
@@ -249,6 +290,15 @@
                             </div>
                         </div>
 
+                        <!-- BANNER ACCESSO NEGATO (visibile solo se non membro/capitano) -->
+                        <div id="access-denied-detail" class="access-denied-banner" style="display:none;">
+                            <div class="icon"><i class="fas fa-lock"></i></div>
+                            <div>
+                                <h4>Accesso Limitato</h4>
+                                <p>Non sei un membro di questo club. Invia una richiesta al capitano per entrare a farne parte.</p>
+                            </div>
+                        </div>
+
                         <div id="admin-panel" class="card mt-4 animate-slideUp" style="display:none; border-color: var(--accent-orange);">
                             <h4 style="color: var(--accent-orange);"><i class="fas fa-user-shield"></i> Gestione Club</h4>
                             <p class="text-muted" style="font-size:0.9rem;">Gestisci le richieste di entrata.</p>
@@ -290,7 +340,7 @@
         </main>
     </div>
 
-        <script>
+    <script>
         // CONFIG
         const BIN_ID = '6a2bea3dda38895dfeb4410a';
         const API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
@@ -318,11 +368,9 @@
         document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.href = '../home-non-loggato.html'; };
 
         // --- FUNZIONE NORMALIZZAZIONE ID ---
-        // Serve perché nel DB c'è "user_123" ma nel browser magari hai solo "123"
         function normalizeId(id) {
             if (!id) return "";
             let str = String(id);
-            // Rimuovi prefissi come "user_" per fare un confronto pulito sui numeri
             if (str.startsWith("user_")) {
                 return str.replace("user_", "");
             }
@@ -331,7 +379,6 @@
 
         function getUserId(u) {
             if(!u) return null;
-            // Cerca l'ID in vari campi possibili
             return u.id || u._id || u.userId || u.uid || u.email;
         }
 
@@ -342,6 +389,31 @@
                 if (club[p] && typeof club[p] === 'string' && club[p].length > 5) return club[p];
             }
             return null;
+        }
+
+        // --- Controlla se l'utente ha accesso a un club ---
+        function checkAccess(club) {
+            const myIdRaw = getUserId(user);
+            if (!myIdRaw) return { isCaptain: false, isMember: false };
+
+            const myId = normalizeId(myIdRaw);
+            const members = club.members || [];
+
+            const captainId   = normalizeId(club.captain);
+            const ownerId     = normalizeId(club.owner);
+            const presidenteId = normalizeId(club.presidente);
+            const founderId   = normalizeId(club.createdBy);
+
+            const isCaptain = (
+                captainId === myId ||
+                ownerId === myId ||
+                presidenteId === myId ||
+                founderId === myId
+            );
+
+            const isMember = members.some(m => normalizeId(m) === myId);
+
+            return { isCaptain, isMember, myId, myIdRaw };
         }
 
         async function loadData() {
@@ -384,13 +456,13 @@
             }
         }
 
-        // --- RENDER LISTA (LOGICA NORMALIZZATA) ---
+        // --- RENDER LISTA ---
         function renderClubList(clubs) {
             document.getElementById('clubs-list-view').style.display = 'block';
             const grid = document.getElementById('clubs-grid');
             
             const myIdRaw = getUserId(user);
-            const myId = normalizeId(myIdRaw); // Il tuo ID "pulito"
+            const myId = normalizeId(myIdRaw);
             
             console.log("DEBUG: Il tuo ID grezzo:", myIdRaw, "-> Normalizzato:", myId);
             
@@ -410,31 +482,28 @@
                 const memberCount = members.length;
 
                 let roleBadge = '';
-                
+                let actionHtml = '';
+
                 if (myId) {
-                    // Controllo Capitano (Confronta ID normalizzati)
-                    const captainId = normalizeId(c.captain);
-                    const ownerId = normalizeId(c.owner);
-                    const presidenteId = normalizeId(c.presidente);
-                    const founderId = normalizeId(c.createdBy); // o c.founder
+                    const { isCaptain, isMember } = checkAccess(c);
 
-                    const isCaptain = (
-                        captainId === myId ||
-                        ownerId === myId ||
-                        presidenteId === myId ||
-                        founderId === myId
-                    );
-                    
-                    // Controllo Membro
-                    const isMember = members.some(m => normalizeId(m) === myId);
-
-                    console.log(`Club ${c.name}: CapitanoDB[${captainId}] vs Tu[${myId}] -> Match? ${isCaptain}`);
+                    console.log(`Club ${c.name}: Capitano? ${isCaptain} | Membro? ${isMember}`);
 
                     if (isCaptain) {
                         roleBadge = `<span class="role-badge badge-captain"><i class="fas fa-crown"></i> CAPITANO</span>`;
+                        // Capitano: accesso libero
+                        actionHtml = `<a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>`;
                     } else if (isMember) {
                         roleBadge = `<span class="role-badge badge-member"><i class="fas fa-user"></i> MEMBRO</span>`;
+                        // Membro: accesso libero
+                        actionHtml = `<a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>`;
+                    } else {
+                        // Non appartiene al club: mostra avviso, nessun link
+                        actionHtml = `<span class="no-access-label"><i class="fas fa-lock"></i> Non sei nel club</span>`;
                     }
+                } else {
+                    // Utente non loggato: nessun accesso
+                    actionHtml = `<span class="no-access-label"><i class="fas fa-lock"></i> Accedi per vedere</span>`;
                 }
 
                 html += `
@@ -451,7 +520,7 @@
                         </div>
                         <div class="club-list-actions">
                             ${roleBadge}
-                            <a href="?id=${c.id}" class="btn btn-primary btn-sm">Visualizza</a>
+                            ${actionHtml}
                         </div>
                     </div>
                 `;
@@ -459,13 +528,12 @@
             grid.innerHTML = html;
         }
 
-        // --- RENDER DETTAGLIO (LOGICA NORMALIZZATA) ---
+        // --- RENDER DETTAGLIO ---
         function renderClubDetail() {
             document.getElementById('clubs-list-view').style.display = 'none';
             document.getElementById('club-detail-view').style.display = 'block';
 
-            const myIdRaw = getUserId(user);
-            const myId = normalizeId(myIdRaw);
+            const { isCaptain, isMember, myId, myIdRaw } = checkAccess(currentClub);
 
             document.getElementById('club-name').textContent = currentClub.name || currentClub.nome || 'Club';
             const logoSrc = getLogo(currentClub);
@@ -474,7 +542,7 @@
             }
 
             const stadium = currentClub.stadium || currentClub.stadio;
-            document.getElementById('club-stadium').textContent = stadium ? `<i class="fas fa-map-marker-alt"></i> ${stadium}` : '';
+            document.getElementById('club-stadium').textContent = stadium ? `📍 ${stadium}` : '';
 
             if(currentClub.createdAt) document.getElementById('club-date').textContent = new Date(currentClub.createdAt).toLocaleDateString('it-IT');
 
@@ -491,27 +559,16 @@
             document.getElementById('members-list').innerHTML = membersHtml || '<p class="text-muted">Nessun membro.</p>';
 
             // --- LOGICA RUOLO DETTAGLIO ---
-            const captainId = normalizeId(currentClub.captain);
-            const ownerId = normalizeId(currentClub.owner);
-            const presidenteId = normalizeId(currentClub.presidente);
-            const founderId = normalizeId(currentClub.createdBy);
-
-            const isCaptain = myId && (
-                captainId === myId ||
-                ownerId === myId ||
-                presidenteId === myId ||
-                founderId === myId
-            );
-
-            const isMember = myId && members.some(m => normalizeId(m) === myId);
-
             if (isCaptain) {
                 document.getElementById('captain-badge').style.display = 'inline-flex';
                 document.getElementById('admin-panel').style.display = 'block';
                 renderRequests();
             } else if (isMember) {
+                // Membro normale: può vedere tutto e abbandonare
                 document.getElementById('leave-btn').style.display = 'block';
             } else {
+                // Non è nel club: mostra banner di avviso e bottone unisciti
+                document.getElementById('access-denied-detail').style.display = 'flex';
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-btn').onclick = () => requestJoin();
             }
@@ -565,18 +622,16 @@
         async function requestJoin() {
             if(!user) return alert("Accedi per unirti.");
             const myIdRaw = getUserId(user);
-            const myId = normalizeId(myIdRaw); // Usa ID normalizzato per la richiesta
+            const myId = normalizeId(myIdRaw);
             
             if(!currentClub.requests) currentClub.requests = [];
             
-            // Controlla se è già membro o ha già richiesto
             const isAlreadyMember = currentClub.members.some(m => normalizeId(m) === myId);
             if(isAlreadyMember) return alert("Sei già un membro!");
 
             const hasRequested = currentClub.requests.some(m => normalizeId(m) === myId);
             if(hasRequested) return alert("Richiesta già inviata.");
 
-            // Salva l'ID GREZZO (quello originale) nella richiesta, per non rompere il DB
             currentClub.requests.push(myIdRaw);
             await saveData();
             alert('Richiesta inviata al capitano!');
