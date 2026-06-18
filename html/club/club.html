@@ -15,6 +15,15 @@
     <style>
         html, body { height: auto; min-height: 100vh; overflow-y: auto; background: var(--bg-primary); }
         
+        /* --- STILI PER IL LOGO IMMAGINE (UGUALE A HOME) --- */
+        .logo { overflow: hidden; }
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
         /* --- STILI PAGINA DETTAGLIO --- */
         .hero-card { display: flex; align-items: flex-start; gap: 25px; text-align: left; }
         @media (max-width: 768px) {
@@ -227,14 +236,16 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <!-- Pulsante "Home" con Icona del Sito -->
-                <a href="../home.html" class="header-btn">
-                    <img src="../../estetica/logosito.png" alt="Torna alla Home" style="width: 26px; height: 26px; object-fit: contain;">
+                <!-- Pulsante Home con Stile Logo (Uguale a Home) -->
+                <a href="../home.html" class="logo-container" style="text-decoration: none;">
+                    <div class="logo">
+                        <img src="../../estetica/logosito.png" alt="FC27 Logo">
+                    </div>
                 </a>
                 
-                <div class="logo-container">
+                <div class="logo-container" style="margin-left: 10px;">
                     <div class="logo">FC</div>
-                    <span class="site-name">FC27</span>
+                    <span class="site-name">Club</span>
                 </div>
             </div>
             <div class="header-right">
@@ -249,8 +260,9 @@
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
-                    <div class="logo">FC</div>
-                    <span class="site-name">FC27</span>
+                    <div class="logo">
+                        <img src="../../estetica/logosito.png" alt="FC27 Logo">
+                    </div>
                 </div>
                 <button id="close-btn" class="sidebar-close"><i class="fas fa-times"></i></button>
             </div>
